@@ -20,9 +20,7 @@ export function showPage(activeButton, activeSection, toggleCleanModeBtn) {
         document.getElementById('nav-player')
     ];
     
-    views.forEach(sec => { 
-        if (sec) sec.classList.add('hidden'); 
-    });
+    views.forEach(sec => { if (sec) sec.classList.add('hidden'); });
     if (activeSection) activeSection.classList.remove('hidden');
 
     navs.forEach(btn => {
@@ -79,30 +77,20 @@ export function highlightActiveChapter(activeIndex) {
 export function cycleThemes() {
     const body = document.body;
     const html = document.documentElement;
-    
     if (!body) return;
 
     if (!body.classList.contains('theme-dark') && !body.classList.contains('theme-orange')) {
-        // Étape 1 : Activer le Mode Sombre
+        // Étape 1 : Mode Sombre
         body.classList.add('theme-dark');
-        if (html) {
-            html.classList.add('dark');
-            html.classList.remove('light');
-        }
+        if (html) { html.classList.add('dark'); html.classList.remove('light'); }
     } else if (body.classList.contains('theme-dark')) {
-        // Étape 2 : Activer le Mode Orange Contraste
+        // Étape 2 : Mode Orange Contraste
         body.classList.remove('theme-dark');
         body.classList.add('theme-orange');
-        if (html) {
-            html.classList.remove('dark');
-            html.classList.add('light');
-        }
+        if (html) { html.classList.remove('dark'); html.classList.add('light'); }
     } else {
-        // Étape 3 : Revenir au Mode Clair classique
+        // Étape 3 : Retour au Mode Clair
         body.classList.remove('theme-orange');
-        if (html) {
-            html.classList.remove('dark');
-            html.classList.add('light');
-        }
+        if (html) { html.classList.remove('dark'); html.classList.add('light'); }
     }
 }
