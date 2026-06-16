@@ -1,156 +1,136 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html class="light" lang="fr">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Lumière Audio — Lecteur DAISY Accessibilité</title>
-  <link rel="icon" type="image/png" href="#">
-  <link rel="stylesheet" href="css/style.css">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Lumière Audio - Lecteur DAISY</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+    .drop-zone-active {
+      border-color: #f59e0b !important;
+      background-color: rgba(245, 158, 11, 0.08) !important;
+    }
+    /* Forcer le texte en gras pour l'accessibilité visuelle malvoyante */
+    *, button, p, span { font-weight: 600 !important; }
+    h1, h2, h3, h4 { font-weight: 700 !important; }
+  </style>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "background": "#f8f9ff",
+            "surface": "#ffffff",
+            "surface-variant": "#d3e4fe",
+            "on-surface": "#0b1c30",
+            "on-surface-variant": "#435166",
+            "primary-container": "#f59e0b",
+            "on-primary": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#eff4ff",
+            "surface-container-high": "#dce9ff",
+            "outline-variant": "#d8c3ad",
+            "outline": "#867461"
+          },
+          fontFamily: {
+            sans: ["Lexend", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body class="theme-light">
+<body class="bg-background text-on-surface min-h-screen flex flex-col font-sans transition-colors duration-300 pb-24">
 
-  <div class="app-container">
-    
-    <header class="app-header">
-      <div class="app-title-group">
-        <h1 class="app-title">Lumière Audio</h1>
+  <header class="flex justify-between items-center px-4 w-full h-16 z-50 bg-surface shadow-sm sticky top-0 border-b border-surface-variant dark:bg-slate-900 dark:border-slate-700">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary-container text-3xl">light_mode</span>
+      <h1 class="text-xl font-bold dark:text-white">Lumière Audio</h1>
+    </div>
+    <div class="flex items-center gap-4">
+      <button id="btn-theme-toggle" aria-label="Changer le contraste visuel" class="p-3 rounded-xl hover:bg-surface-container-high transition-colors text-on-surface-variant dark:text-slate-300">
+        <span class="material-symbols-outlined text-2xl">palette</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-grow container mx-auto px-4 py-6 max-w-4xl">
+
+    <section id="view-help" class="space-y-6 animate-fade-in">
+      <div class="text-center md:text-left space-y-3">
+        <h2 class="text-2xl md:text-3xl font-bold leading-tight text-on-surface dark:text-white">
+          Votre lecteur de livres audio DAISY, simple et accessible.
+        </h2>
+        <p class="text-lg text-on-surface-variant dark:text-slate-300">
+          Glissez-déposez l'archive ZIP de votre livre DAISY ou parcourez vos fichiers pour démarrer immédiatement la lecture.
+        </p>
       </div>
-      <div class="header-controls">
-        <div class="contrast-selector" role="group" aria-label="Choisir le contraste visuel">
-          <button class="contrast-btn active" data-theme="light" aria-pressed="true">Clair</button>
-          <button class="contrast-btn" data-theme="dark" aria-pressed="false">Sombre</button>
-          <button class="contrast-btn" data-theme="orange" aria-pressed="false">Orange</button>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-surface-container-low dark:bg-slate-800 p-5 rounded-2xl flex gap-4 items-start border border-surface-variant dark:border-slate-700">
+          <div class="bg-primary-container text-on-primary w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0 font-bold text-xl">1</div>
+          <div>
+            <h4 class="text-lg font-bold text-on-surface dark:text-white mb-1">Importez le livre</h4>
+            <p class="text-sm text-on-surface-variant dark:text-slate-300">Sélectionnez un fichier compressé (.zip) contenant votre ouvrage au format DAISY dans l'onglet Lecteur.</p>
+          </div>
+        </div>
+        <div class="bg-surface-container-low dark:bg-slate-800 p-5 rounded-2xl flex gap-4 items-start border border-surface-variant dark:border-slate-700">
+          <div class="bg-primary-container text-on-primary w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0 font-bold text-xl">2</div>
+          <div>
+            <h4 class="text-lg font-bold text-on-surface dark:text-white mb-1">Choisissez votre mode</h4>
+            <p class="text-sm text-on-surface-variant dark:text-slate-300">Basculez entre l'affichage Complet ou l'affichage Épuré avec de gros boutons pour un confort maximal.</p>
+          </div>
         </div>
       </div>
-    </header>
 
-    <main class="app-main">
+      <div class="pt-4 flex justify-center">
+        <button id="help-cta-btn" class="w-full sm:w-auto bg-primary-container text-on-primary font-bold text-lg px-8 py-4 rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 h-14">
+          <span class="material-symbols-outlined">play_circle</span>
+          Ouvrir le lecteur DAISY
+        </button>
+      </div>
+    </section>
+
+
+    <section id="view-history" class="hidden space-y-4">
+      <h3 class="text-xl font-bold text-on-surface dark:text-white">Mes lectures en cours</h3>
       
-      <nav class="main-menu" aria-label="Menu principal">
-        <button id="menu-btn-help" class="btn-external">Comment utiliser Lumière Audio</button>
-        <button id="menu-btn-history" class="btn-external">Mes lectures en cours</button>
-        <button id="menu-btn-player" class="btn-external">Lecteur DAISY</button>
-      </nav>
-
-      <section id="view-help" class="sub-view-panel" style="display: none;">
-        <button class="btn-back go-to-menu">← Retour au menu principal</button>
-        <div class="info-section" style="margin-top: 1.5rem;">
-          <h2>Votre lecteur de livres audio DAISY, simple et accessible.</h2>
-          <p>Glissez-déposez l'archive ZIP de votre livre DAISY ou parcourez vos fichiers pour démarrer immédiatement la lecture.</p>
-          
-          <div class="steps-list" role="list">
-            <div class="step-card" role="listitem">
-              <div class="step-number" aria-hidden="true">1</div>
-              <div class="step-text">
-                <h3>Importez le livre</h3>
-                <p>Sélectionnez un fichier compressé (.zip) contenant votre ouvrage au format DAISY.</p>
-              </div>
-            </div>
-            <div class="step-card" role="listitem">
-              <div class="step-number" aria-hidden="true">2</div>
-              <div class="step-text">
-                <h3>Choisissez votre mode</h3>
-                <p>Basculez entre l'affichage Complet ou l'affichage Épuré (gros boutons).</p>
-              </div>
-            </div>
-          </div>
+      <div class="bg-surface border border-surface-variant dark:bg-slate-800 dark:border-slate-700 rounded-2xl p-8 text-center flex flex-col items-center shadow-sm">
+        <div class="w-20 h-20 bg-surface-container-low dark:bg-slate-700 rounded-full flex items-center justify-center mb-4 text-outline">
+          <span class="material-symbols-outlined text-4xl text-on-surface-variant dark:text-slate-300">auto_stories</span>
         </div>
-      </section>
+        <p class="text-lg font-bold mb-1 dark:text-white">Aucune lecture en cours pour le moment.</p>
+        <p class="text-sm text-on-surface-variant dark:text-slate-400 max-w-sm">Ici s'afficheront vos livres pour vous permettre de reprendre la lecture là où vous l'avez quittée.</p>
+      </div>
+    </section>
 
-      <section id="view-history" class="sub-view-panel" style="display: none;">
-        <button class="btn-back go-to-menu">← Retour au menu principal</button>
-        <h2>Mes lectures en cours</h2>
-        <p>Ici s'afficheront vos livres pour vous permettre de reprendre la lecture là où vous l'avez quittée.</p>
-        <div class="playlist-items" style="border: 3px solid var(--border-color); border-radius: 12px; padding: 1rem; margin-top: 1rem;">
-          <p style="font-style: italic; color: var(--text-muted); margin: 0;">Aucune lecture en cours pour le moment.</p>
+
+    <section id="view-daisy-root" class="hidden space-y-6">
+      
+      <div id="view-home" class="group relative bg-surface dark:bg-slate-800 border-4 border-dashed border-outline-variant dark:border-slate-600 rounded-2xl p-8 transition-all duration-300 hover:border-primary-container flex flex-col items-center justify-center text-center cursor-pointer min-h-[340px]" id="dropZone">
+        <div class="bg-primary-container text-on-primary p-5 rounded-full mb-4 group-hover:scale-110 transition-transform duration-200 shadow-md">
+          <span class="material-symbols-outlined text-4xl" style="font-size: 40px;">library_add</span>
         </div>
-      </section>
-
-      <section id="view-daisy-root" class="sub-view-panel" style="display: none;">
-        <button class="btn-back go-to-menu" style="margin-bottom: 1.5rem;">← Retour au menu principal</button>
-
-        <div id="view-home" class="upload-zone" role="button" tabindex="0" aria-label="Zone de dépôt. Glissez-déposez votre fichier ZIP ici ou appuyez sur Entrée pour parcourir vos fichiers.">
-          <div class="upload-icon-wrapper" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
-            </svg>
-          </div>
-          <h3>Ajouter un livre DAISY</h3>
-          <p>Fichiers acceptés : .ZIP ou .DAISY</p>
-          <button class="btn-upload" id="btn-browse" tabindex="-1">Parcourir les fichiers</button>
-          <input type="file" id="file-input" class="sr-only" accept=".zip" aria-hidden="true" />
-          
-          <div class="loading-overlay" id="loading-overlay">
-            <div class="loading-spinner" role="progressbar" aria-label="Chargement et analyse du livre DAISY en cours"></div>
-            <p>Analyse de l'archive en cours...</p>
-          </div>
+        <h3 class="text-xl font-bold mb-1 text-on-surface dark:text-white">Ajouter un livre DAISY</h3>
+        <p class="text-sm text-on-surface-variant dark:text-slate-300 mb-6">Fichiers acceptés : .ZIP ou .DAISY</p>
+        
+        <button id="btn-browse" class="bg-primary-container text-on-primary font-bold px-8 py-3 rounded-xl shadow-md hover:brightness-110 transition-all active:scale-95 flex items-center gap-2 h-12">
+          <span class="material-symbols-outlined">upload_file</span>
+          Parcourir les fichiers
+        </button>
+        <input accept=".zip" class="hidden" id="file-input" type="file"/>
+        
+        <div class="hidden absolute inset-0 bg-surface/95 dark:bg-slate-800/95 rounded-2xl flex flex-col items-center justify-center gap-4" id="loading-overlay">
+          <div class="w-12 h-12 border-4 border-primary-container border-t-transparent rounded-full animate-spin"></div>
+          <p class="font-bold text-on-surface dark:text-white">Analyse de l'archive en cours...</p>
         </div>
+      </div>
 
-        <div id="view-player" class="player-grid" style="display: none; margin-top: 1.5rem;">
-          
-          <aside class="playlist-sidebar" aria-label="Table des matières">
-            <div class="playlist-header"><h3>Sections / Chapitres</h3></div>
-            <div class="playlist-items" id="chapters-list" role="nav">
-              <button class="playlist-item active" aria-current="true"><span class="playlist-item-icon">▶</span> Section 1 : Introduction</button>
-            </div>
-          </aside>
-
-          <div class="player-main">
-            <div class="player-top-nav">
-              <button class="btn-back" id="btn-toggle-mode" aria-pressed="false">Passer au Mode Simple</button>
-            </div>
-
-            <div class="book-info-card">
-              <div class="book-cover-placeholder" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
-              </div>
-              <div class="book-details">
-                <h2 class="book-title" id="player-book-title">Titre du livre DAISY</h2>
-                <p class="book-author" id="player-book-author">Auteur inconnu</p>
-              </div>
-            </div>
-
-            <div class="progress-area">
-              <div class="progress-bar-container" id="progress-container" role="slider" aria-label="Progression dans le chapitre" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                <div class="progress-fill-area" id="progress-fill"><div class="progress-bar-handle"></div></div>
-              </div>
-              <div class="progress-time-labels"><span id="time-current">00:00</span><span id="time-total">00:00</span></div>
-            </div>
-
-            <div class="controls-panel">
-              <div class="controls-row-main">
-                <button class="btn-ctrl btn-ctrl-secondary" id="btn-prev-chapter" aria-label="Section précédente"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" /></svg></button>
-                <button class="btn-ctrl btn-ctrl-secondary" id="btn-rewind" aria-label="Reculer de 10 secondes"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg></button>
-                <button class="btn-ctrl btn-ctrl-primary" id="btn-play-pause" aria-label="Lire le livre"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" id="icon-play"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" /></svg></button>
-                <button class="btn-ctrl btn-ctrl-secondary" id="btn-fastforward" aria-label="Avancer de 10 secondes"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg></button>
-                <button class="btn-ctrl btn-ctrl-secondary" id="btn-next-chapter" aria-label="Section suivante"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653zM12 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" /></svg></button>
-              </div>
-            </div>
-
-            <div class="settings-row">
-              <div class="setting-control-group">
-                <label id="label-volume" for="slider-volume">Volume sonore</label>
-                <input type="range" id="slider-volume" class="slider-input" min="0" max="1" step="0.1" value="1" aria-labelledby="label-volume">
-              </div>
-              <div class="setting-control-group">
-                <label id="label-speed" for="select-speed">Vitesse d'élocution</label>
-                <select id="select-speed" class="speed-select" aria-labelledby="label-speed">
-                  <option value="0.75">Lent (0.75x)</option>
-                  <option value="1" selected>Normale (1x)</option>
-                  <option value="1.25">Un peu plus rapide (1.25x)</option>
-                  <option value="1.5">Rapide (1.5x)</option>
-                  <option value="2">Double (2x)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <script src="js/vendor/jszip.min.js"></script>
-  <script src="js/app.js"></script>
-</body>
-</html>
+      <div id="view-player" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
