@@ -7,16 +7,15 @@
   <link rel="icon" type="image/png" href="#">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="theme-light"> <div class="app-container">
+<body class="theme-light">
+
+  <div class="app-container">
     
     <header class="app-header">
       <div class="app-title-group">
         <h1 class="app-title">Lumière Audio</h1>
       </div>
       <div class="header-controls">
-        <a href="https://github." class="btn-external" target="_blank" aria-label="Consulter la documentation (s'ouvre dans un nouvel onglet)">
-          Aide
-        </a>
         <div class="contrast-selector" role="group" aria-label="Choisir le contraste visuel">
           <button class="contrast-btn active" data-theme="light" aria-pressed="true">Clair</button>
           <button class="contrast-btn" data-theme="dark" aria-pressed="false">Sombre</button>
@@ -27,8 +26,15 @@
 
     <main class="app-main">
       
-      <section id="view-home" class="landing-grid">
-        <div class="info-section">
+      <nav class="main-menu" aria-label="Menu principal">
+        <button id="menu-btn-help" class="btn-external">Comment utiliser Lumière Audio</button>
+        <button id="menu-btn-history" class="btn-external">Mes lectures en cours</button>
+        <button id="menu-btn-player" class="btn-external">Lecteur DAISY</button>
+      </nav>
+
+      <section id="view-help" class="sub-view-panel" style="display: none;">
+        <button class="btn-back go-to-menu">← Retour au menu principal</button>
+        <div class="info-section" style="margin-top: 1.5rem;">
           <h2>Votre lecteur de livres audio DAISY, simple et accessible.</h2>
           <p>Glissez-déposez l'archive ZIP de votre livre DAISY ou parcourez vos fichiers pour démarrer immédiatement la lecture.</p>
           
@@ -49,8 +55,21 @@
             </div>
           </div>
         </div>
+      </section>
 
-        <div class="upload-zone" id="drop-zone" role="button" tabindex="0" aria-label="Zone de dépôt. Glissez-déposez votre fichier ZIP ici ou appuyez sur Entrée pour parcourir vos fichiers.">
+      <section id="view-history" class="sub-view-panel" style="display: none;">
+        <button class="btn-back go-to-menu">← Retour au menu principal</button>
+        <h2>Mes lectures en cours</h2>
+        <p>Ici s'afficheront vos livres pour vous permettre de reprendre la lecture là où vous l'avez quittée.</p>
+        <div class="playlist-items" style="border: 3px solid var(--border-color); border-radius: 12px; padding: 1rem; margin-top: 1rem;">
+          <p style="font-style: italic; color: var(--text-muted); margin: 0;">Aucune lecture en cours pour le moment.</p>
+        </div>
+      </section>
+
+      <section id="view-daisy-root" class="sub-view-panel" style="display: none;">
+        <button class="btn-back go-to-menu" style="margin-bottom: 1.5rem;">← Retour au menu principal</button>
+
+        <div id="view-home" class="upload-zone" role="button" tabindex="0" aria-label="Zone de dépôt. Glissez-déposez votre fichier ZIP ici ou appuyez sur Entrée pour parcourir vos fichiers.">
           <div class="upload-icon-wrapper" aria-hidden="true">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
@@ -66,106 +85,65 @@
             <p>Analyse de l'archive en cours...</p>
           </div>
         </div>
-      </section>
 
-      <section id="view-player" class="player-grid" style="display: none;">
-        
-        <aside class="playlist-sidebar" aria-label="Table des matières">
-          <div class="playlist-header">
-            <h3>Sections / Chapitres</h3>
-          </div>
-          <div class="playlist-items" id="chapters-list" role="nav">
-            <button class="playlist-item active" aria-current="true">
-              <span class="playlist-item-icon">▶</span> Section 1 : Introduction
-            </button>
-            <button class="playlist-item">
-              <span class="playlist-item-icon">⏱</span> Section 2 : Chapitre Premier
-            </button>
-          </div>
-        </aside>
-
-        <div class="player-main">
+        <div id="view-player" class="player-grid" style="display: none; margin-top: 1.5rem;">
           
-          <div class="player-top-nav">
-            <button class="btn-back" id="btn-to-home" aria-label="Retourner à l'accueil et choisir un autre livre">
-              ← Accueil
-            </button>
-            <button class="btn-back" id="btn-toggle-mode" aria-pressed="false">
-              Passer au Mode Simple
-            </button>
-          </div>
-
-          <div class="book-info-card">
-            <div class="book-cover-placeholder" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-              </svg>
+          <aside class="playlist-sidebar" aria-label="Table des matières">
+            <div class="playlist-header"><h3>Sections / Chapitres</h3></div>
+            <div class="playlist-items" id="chapters-list" role="nav">
+              <button class="playlist-item active" aria-current="true"><span class="playlist-item-icon">▶</span> Section 1 : Introduction</button>
             </div>
-            <div class="book-details">
-              <h2 class="book-title" id="player-book-title">Titre du livre DAISY</h2>
-              <p class="book-author" id="player-book-author">Auteur inconnu</p>
-            </div>
-          </div>
+          </aside>
 
-          <div class="progress-area">
-            <div class="progress-bar-container" id="progress-container" role="slider" aria-label="Progression dans le chapitre" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-              <div class="progress-fill-area" id="progress-fill">
-                <div class="progress-bar-handle"></div>
+          <div class="player-main">
+            <div class="player-top-nav">
+              <button class="btn-back" id="btn-toggle-mode" aria-pressed="false">Passer au Mode Simple</button>
+            </div>
+
+            <div class="book-info-card">
+              <div class="book-cover-placeholder" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
+              </div>
+              <div class="book-details">
+                <h2 class="book-title" id="player-book-title">Titre du livre DAISY</h2>
+                <p class="book-author" id="player-book-author">Auteur inconnu</p>
               </div>
             </div>
-            <div class="progress-time-labels">
-              <span id="time-current">00:00</span>
-              <span id="time-total">00:00</span>
-            </div>
-          </div>
 
-          <div class="controls-panel">
-            <div class="controls-row-main">
-              <button class="btn-ctrl btn-ctrl-secondary" id="btn-prev-chapter" aria-label="Section précédente">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" /></svg>
-              </button>
-              <button class="btn-ctrl btn-ctrl-secondary" id="btn-rewind" aria-label="Reculer de 10 secondes">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
-              </button>
-              <button class="btn-ctrl btn-ctrl-primary" id="btn-play-pause" aria-label="Lire le livre">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" id="icon-play"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" /></svg>
-              </button>
-              <button class="btn-ctrl btn-ctrl-secondary" id="btn-fastforward" aria-label="Avancer de 10 secondes">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
-              </button>
-              <button class="btn-ctrl btn-ctrl-secondary" id="btn-next-chapter" aria-label="Section suivante">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653zM12 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" /></svg>
-              </button>
+            <div class="progress-area">
+              <div class="progress-bar-container" id="progress-container" role="slider" aria-label="Progression dans le chapitre" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="progress-fill-area" id="progress-fill"><div class="progress-bar-handle"></div></div>
+              </div>
+              <div class="progress-time-labels"><span id="time-current">00:00</span><span id="time-total">00:00</span></div>
             </div>
-          </div>
 
-          <div class="settings-row">
-            <div class="setting-control-group">
-              <label id="label-volume" for="slider-volume">Volume sonore</label>
-              <div class="volume-control-wrapper">
+            <div class="controls-panel">
+              <div class="controls-row-main">
+                <button class="btn-ctrl btn-ctrl-secondary" id="btn-prev-chapter" aria-label="Section précédente"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" /></svg></button>
+                <button class="btn-ctrl btn-ctrl-secondary" id="btn-rewind" aria-label="Reculer de 10 secondes"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg></button>
+                <button class="btn-ctrl btn-ctrl-primary" id="btn-play-pause" aria-label="Lire le livre"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" id="icon-play"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" /></svg></button>
+                <button class="btn-ctrl btn-ctrl-secondary" id="btn-fastforward" aria-label="Avancer de 10 secondes"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg></button>
+                <button class="btn-ctrl btn-ctrl-secondary" id="btn-next-chapter" aria-label="Section suivante"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653zM12 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" /></svg></button>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="setting-control-group">
+                <label id="label-volume" for="slider-volume">Volume sonore</label>
                 <input type="range" id="slider-volume" class="slider-input" min="0" max="1" step="0.1" value="1" aria-labelledby="label-volume">
               </div>
-            </div>
-            <div class="setting-control-group">
-              <label id="label-speed" for="select-speed">Vitesse d'élocution</label>
-              <select id="select-speed" class="speed-select" aria-labelledby="label-speed">
-                <option value="0.75">Lent (0.75x)</option>
-                <option value="1" selected>Normale (1x)</option>
-                <option value="1.25">Un peu plus rapide (1.25x)</option>
-                <option value="1.5">Rapide (1.5x)</option>
-                <option value="1.75">Très rapide (1.75x)</option>
-                <option value="2">Double (2x)</option>
-              </select>
+              <div class="setting-control-group">
+                <label id="label-speed" for="select-speed">Vitesse d'élocution</label>
+                <select id="select-speed" class="speed-select" aria-labelledby="label-speed">
+                  <option value="0.75">Lent (0.75x)</option>
+                  <option value="1" selected>Normale (1x)</option>
+                  <option value="1.25">Un peu plus rapide (1.25x)</option>
+                  <option value="1.5">Rapide (1.5x)</option>
+                  <option value="2">Double (2x)</option>
+                </select>
+              </div>
             </div>
           </div>
-
-          <div class="warning-banner" role="status">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.028M12 18.75h.007v.008H12v-.008zM12 3a9 9 0 110 18 9 9 0 010-18z" />
-            </svg>
-            <p>Astuce : Vous pouvez utiliser la barre d'espace pour mettre en pause ou relancer la lecture à tout moment.</p>
-          </div>
-
         </div>
       </section>
 
