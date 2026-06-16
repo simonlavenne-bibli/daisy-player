@@ -32,3 +32,45 @@ export function renderChaptersList(playlist, onChapterClick) {
         container.appendChild(btn);
     });
 }
+
+// Met en valeur visuellement le chapitre actif dans l'index (normal et automatique)
+export function highlightActiveChapter(activeIndex) {
+    const container = document.getElementById('chapters-container');
+    if (!container) return;
+    
+    const buttons = container.querySelectorAll('button');
+    buttons.forEach((btn, index) => {
+        const icon = btn.querySelector('.material-symbols-outlined');
+        if (index === activeIndex) {
+            // Style d'accessibilité actif (fond coloré léger et bordure gauche marquée)
+            btn.className = "w-full text-left px-4 py-3 rounded-lg bg-amber-500/10 border-l-4 border-amber-500 text-on-surface font-bold flex items-center gap-3 text-sm";
+            if (icon) { 
+                icon.textContent = "play_circle"; 
+                icon.style.fontVariationSettings = "'FILL' 1"; 
+            }
+        } else {
+            // Style de base inactif
+            btn.className = "w-full text-left px-4 py-3 rounded-lg hover:bg-surface-container-highest transition-colors flex items-center gap-3 text-sm";
+            if (icon) { 
+                icon.textContent = "radio_button_unchecked"; 
+                icon.style.fontVariationSettings = "'FILL' 0"; 
+            }
+        }
+    });
+}
+
+// Permet de cycler entre le thème clair, sombre et orange contrasté du fichier style.css
+export function cycleThemes() {
+    const body = document.body;
+    if (!body.classList.contains('theme-dark') && !body.classList.contains('theme-orange')) {
+        // Étape 1 : Passer au thème sombre
+        body.classList.add('theme-dark');
+    } else if (body.classList.contains('theme-dark')) {
+        // Étape 2 : Passer au thème orange
+        body.classList.remove('theme-dark');
+        body.classList.add('theme-orange');
+    } else {
+        // Étape 3 : Revenir au thème clair par défaut
+        body.classList.remove('theme-orange');
+    }
+}
