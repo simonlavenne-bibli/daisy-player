@@ -32,14 +32,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('cleanBookTitle').textContent = bookData.bookTitle;
                 document.getElementById('bookAuthor').textContent = bookData.bookAuthor;
 
+                // Initialiser le titre du premier chapitre sur l'écran épuré
+                if (bookData.playlist.length > 0) {
+                    document.getElementById('cleanChapterTitle').textContent = bookData.playlist[0].title;
+                }
+
                 ui.renderChaptersList(bookData.playlist, async (index) => {
                     player.currentIndex = index;
                     player.isPlaying = true;
                     ui.updatePlayPauseUI(true);
-                    await player.loadCurrentTrack();
+                    const track = await player.loadCurrentTrack();
+                    if (track) {
+                        document.getElementById('cleanChapterTitle').textContent = track.title;
+                        ui.highlightActiveChapter(player.currentIndex);
+                    }
                 });
 
                 await player.loadCurrentTrack();
+                ui.highlightActiveChapter(player.currentIndex);
                 ui.showPage(navPlayer, document.getElementById('view-player'), toggleCleanModeBtn);
             } catch (err) {
                 alert(err.message);
@@ -57,8 +67,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('playPause').addEventListener('click', playPauseAction);
     document.getElementById('cleanPlayPause').addEventListener('click', playPauseAction);
 
-    document.getElementById('btn-next').addEventListener('click', () => player.next());
-    document.getElementById('cleanNext').addEventListener('click', () => player.next());
-    document.getElementById('btn-prev').addEventListener('click', () => player.prev());
-    document.getElementById('cleanPrev').addEventListener('click', () => player.prev());
-});
+    // Fonction centrale pour appliquer les changements de chapitre (Interface + Audio)
+    async function handleTrackChange(trackPromise) {
+        const track = await trackPromise;
+        if (track) {
+            document.getElementById('cleanChapterTitle').textContent = track.title;
+            ui.highlightActiveChapter(player.currentIndex);
+        } else if (player.currentIndex === player.playlist.length - 1 && !player.isPlaying) {
+            // Si on a tenté d'avancer mais qu'on est au bout du livre
+            ui.updatePlayPauseUI(false);
+        }
+    }
+
+    // Assignation des boutons Suivant et Précédent (Modes normal et épuré)
+    document.getElementById('btn-next').addEventListener('click', () => handleTrackChange(player.next()));
+    document.getElementById('cleanNext').addEventListener('click', () => handleTrackChange(player.next()));
+    document.getElementById('btn-prev').addEventListener('click', () => handleTrackChange(player.prev()));
+    document.getElementById('cleanPrev').addEventListener('click', () => handleTrackChange(player
