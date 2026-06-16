@@ -1,104 +1,94 @@
 // =========================================================================
-// LUMIÈRE AUDIO — LOGIQUE DE L'INTERFACE (JOUR 2)
+// LUMIÈRE AUDIO — LOGIQUE DES PAGES ET DE L'INTERFACE
 // =========================================================================
 
-// Dès que le document HTML est complètement chargé par le navigateur
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. SÉLECTEURS DES ÉLÉMENTS DU CODE HTML ---
+    // --- 1. SÉLECTEURS ÉLÉMENTS DE THÈME & AFFICHAGE ---
     const bodyElement = document.body;
-    
-    // Boutons de changement de Thème
     const themeButtons = document.querySelectorAll('.contrast-btn');
     
-    // Boutons de navigation d'écrans et modes
-    const btnToggleMode = document.getElementById('btn-toggle-mode');
-    const btnToHome = document.getElementById('btn-to-home');
+    // Boutons du Menu Principal
+    const menuBtnHelp = document.getElementById('menu-btn-help');
+    const menuBtnHistory = document.getElementById('menu-btn-history');
+    const menuBtnPlayer = document.getElementById('menu-btn-player');
     
-    // Les deux grands écrans (sections) de notre application
-    const viewHome = document.getElementById('view-home');
-    const viewPlayer = document.getElementById('view-player');
+    // Les 3 blocs de pages (sections)
+    const viewHelp = document.getElementById('view-help');
+    const viewHistory = document.getElementById('view-history');
+    const viewDaisyRoot = document.getElementById('view-daisy-root');
+    
+    // Boutons de retour collectifs "← Retour au menu principal"
+    const backToMenuButtons = document.querySelectorAll('.go-to-menu');
+    
+    // Éléments internes du lecteur DAISY (Bascule mode simple/complet)
+    const btnToggleMode = document.getElementById('btn-toggle-mode');
     const playerGrid = document.querySelector('.player-grid');
 
-    // --- 2. GESTION DES THÈMES ET DU CONTRASTE ---
-    
-    // Fonction qui applique un thème et met à jour les boutons (accessibilité)
+
+    // --- 2. FONCTION DE NAVIGATION (AIGUILLAGE DES PAGES) ---
+    // Cette fonction cache tout le monde et affiche uniquement la page demandée
+    function switchPage(targetPage) {
+        // On masque toutes les sections
+        viewHelp.style.display = 'none';
+        viewHistory.style.display = 'none';
+        viewDaisyRoot.style.display = 'none';
+        
+        // Si la cible est 'menu', on laisse tout masqué (seul le menu reste visible)
+        if (targetPage === 'help') {
+            viewHelp.style.display = 'block';
+        } else if (targetPage === 'history') {
+            viewHistory.style.display = 'block';
+        } else if (targetPage === 'daisy') {
+            viewDaisyRoot.style.display = 'block';
+        }
+    }
+
+    // Assignation des clics sur les boutons du menu principal
+    if(menuBtnHelp) menuBtnHelp.addEventListener('click', () => switchPage('help'));
+    if(menuBtnHistory) menuBtnHistory.addEventListener('click', () => switchPage('history'));
+    if(menuBtnPlayer) menuBtnPlayer.addEventListener('click', () => switchPage('daisy'));
+
+    // Configurer tous les boutons "← Retour au menu principal" d'un coup
+    backToMenuButtons.forEach(button => {
+        button.addEventListener('click', () => switchPage('menu'));
+    });
+
+
+    // --- 3. GESTION DES THÈMES (CONSERVÉE DU JOUR 2) ---
     function applyTheme(themeName) {
-        // 1. On retire les anciennes classes de thème du body
         bodyElement.classList.remove('theme-light', 'theme-dark', 'theme-orange');
-        // 2. On ajoute la classe du thème sélectionné
         bodyElement.classList.add(`theme-${themeName}`);
         
-        // 3. Mise à jour visuelle et accessibilité (ARIA) des boutons
         themeButtons.forEach(button => {
             const isCurrentTheme = button.getAttribute('data-theme') === themeName;
-            if (isCurrentTheme) {
-                button.classList.add('active');
-                button.setAttribute('aria-pressed', 'true');
-            } else {
-                button.classList.remove('active');
-                button.setAttribute('aria-pressed', 'false');
-            }
+            button.classList.toggle('active', isCurrentTheme);
+            button.setAttribute('aria-pressed', isCurrentTheme ? 'true' : 'false');
         });
-
-        // 4. On sauvegarde ce choix dans la mémoire du navigateur (LocalStorage)
         localStorage.setItem('lumiere-audio-theme', themeName);
     }
 
-    // Écoute du clic sur chaque bouton de thème
     themeButtons.forEach(button => {
         button.addEventListener('click', () => {
-            const selectedTheme = button.getAttribute('data-theme');
-            applyTheme(selectedTheme);
+            applyTheme(button.getAttribute('data-theme'));
         });
     });
-
-    // Chargement du thème sauvegardé au démarrage
-    const savedTheme = localStorage.getItem('lumiere-audio-theme') || 'light';
-    applyTheme(savedTheme);
+    applyTheme(localStorage.getItem('lumiere-audio-theme') || 'light');
 
 
-    // --- 3. GESTION DES MODES D'AFFICHAGE (COMPLET / SIMPLE) ---
-    
+    // --- 4. GESTION DU MODE COMPACT / SIMPLE DU LECTEUR ---
     if (btnToggleMode) {
         btnToggleMode.addEventListener('click', () => {
-            // On vérifie si le mode simple est actuellement actif
             const isSimpleMode = playerGrid.classList.contains('player-mode-simple');
-            
             if (isSimpleMode) {
-                // Si oui, on repasse en mode complet
                 playerGrid.classList.remove('player-mode-simple');
                 btnToggleMode.textContent = "Passer au Mode Simple";
                 btnToggleMode.setAttribute('aria-pressed', 'false');
             } else {
-                // Si non, on active le mode simple (gros boutons épurés)
                 playerGrid.classList.add('player-mode-simple');
                 btnToggleMode.textContent = "Passer au Mode Complet";
                 btnToggleMode.setAttribute('aria-pressed', 'true');
             }
         });
     }
-
-
-    // --- 4. NAVIGATION ENTRE LES ÉCRANS ---
-    // (Pour l'instant, on configure le bouton retour à l'accueil)
-    if (btnToHome) {
-        btnToHome.addEventListener('click', () => {
-            // On masque le lecteur et on réaffiche l'accueil
-            viewPlayer.style.display = 'none';
-            viewHome.style.display = 'grid'; // 'grid' correspond au style de landing-grid
-            
-            // Notification vocale optionnelle pour les lecteurs d'écran
-            console.log("Retour à l'écran d'accueil");
-        });
-    }
-
-    // ASTUCE POUR LE JOUR 2 : 
-    // Pour pouvoir tester l'écran du lecteur aujourd'hui sans avoir à charger de livre,
-    // vous pouvez décommenter les deux lignes ci-dessous. Elles masqueront l'accueil pour afficher le lecteur.
-    // Pour la production finale, nous les supprimerons.
-    
-    // viewHome.style.display = 'none';
-    // viewPlayer.style.display = 'grid';
-
 });
