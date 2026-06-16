@@ -1,6 +1,6 @@
 export async function parseDaisyZip(file) {
     const zip = await window.JSZip.loadAsync(file);
-    let indexFile = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('.ncc') || name.toLowerCase().endsWith('.opf'));
+    let indexFile = Object.keys(zip.files).find(name => name.toLowerCase().endsWith('ncc.html') || name.toLowerCase().endsWith('.ncc') || name.toLowerCase().endsWith('.opf'));
     
     if (!indexFile) {
         throw new Error("Ce fichier ne semble pas être une archive DAISY valide (aucun fichier d'index .ncc ou .opf trouvé).");
