@@ -4,165 +4,111 @@ import * as ui from './ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const player = new DaisyPlayer();
+    const toggleCleanModeBtn = document.getElementById('toggleCleanMode');
     
-    // Fonction de sécurité pour éviter le krach du script si un ID n'est pas trouvé
     function listen(id, event, callback) {
         const el = document.getElementById(id);
         if (el) el.addEventListener(event, callback);
     }
 
-    const toggleCleanModeBtn = document.getElementById('toggleCleanMode');
-    
-    // Navigation inter-pages
-    listen('nav-home', 'click', () => { 
-        ui.showPage(document.getElementById('nav-home'), document.getElementById('view-home'), toggleCleanModeBtn); 
-        loadHistory(); 
+    // Gestion de la navigation principale
+    listen('nav-home', 'click', () => {
+        ui.showPage(document.getElementById('nav-home'), document.getElementById('view-home'), toggleCleanModeBtn);
+        loadHistory();
     });
-    listen('nav-history', 'click', () => { 
-        ui.showPage(document.getElementById('nav-history'), document.getElementById('view-history'), toggleCleanModeBtn); 
-        loadHistory(); 
+    listen('nav-history', 'click', () => {
+        ui.showPage(document.getElementById('nav-history'), document.getElementById('view-history'), toggleCleanModeBtn);
+        loadHistory();
     });
-    listen('nav-player', 'click', () => { 
-        ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'), toggleCleanModeBtn); 
+    listen('nav-player', 'click', () => {
+        ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'), toggleCleanModeBtn);
     });
 
-    // Sécurité Thèmes : On écoute les deux variantes d'ID possibles dans votre HTML
-    listen('theme-toggle', 'click', () => ui.cycleThemes());
     listen('btn-theme-toggle', 'click', () => ui.cycleThemes());
 
-    // Basculement Mode Épuré / Mode Classique
+    // Gestion adaptative du Mode Épuré
     let isCleanMode = false;
     listen('toggleCleanMode', 'click', () => {
+        const normalLayout = document.getElementById('player-normal-layout');
+        const cleanLayout = document.getElementById('player-clean-layout');
         isCleanMode = !isCleanMode;
-        const playerClassic = document.getElementById('player-classic');
-        const playerClean = document.getElementById('player-clean');
         
-        if (isCleanMode) {
-            if (playerClassic) playerClassic.classList.add('hidden');
-            if (playerClean) playerClean.classList.remove('hidden');
-            if (toggleCleanModeBtn) {
-                const icon = toggleCleanModeBtn.querySelector('span');
-                if (icon) icon.textContent = 'playlist_play';
-                toggleCleanModeBtn.title = "Mode Classique";
-            }
-        } else {
-            if (playerClassic) playerClassic.classList.remove('hidden');
-            if (playerClean) playerClean.classList.add('hidden');
-            if (toggleCleanModeBtn) {
-                const icon = toggleCleanModeBtn.querySelector('span');
-                if (icon) icon.textContent = 'auto_awesome';
-                toggleCleanModeBtn.title = "Mode Épuré";
+        if (normalLayout && cleanLayout) {
+            if (isCleanMode) {
+                normalLayout.classList.add('hidden');
+                cleanLayout.classList.remove('hidden');
+                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined text-2xl">workspace_premium</span><span class="text-xs font-bold">MODE NORMAL</span>';
+            } else {
+                normalLayout.classList.remove('hidden');
+                cleanLayout.classList.add('hidden');
+                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined text-2xl">buttons_alt</span><span class="text-xs font-bold">MODE ÉPURÉ</span>';
             }
         }
     });
 
-    // Modification de la vitesse de la voix
-    let currentSpeed = 1.0;
-    listen('select-speed', 'change', (e) => {
-        currentSpeed = parseFloat(e.target.value);
-        player.audio.playbackRate = currentSpeed;
-    });
+    // Gestion Drag & Drop et Sélections de fichiers
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('dropZone');
 
-    // Maintien de la vitesse personnalisée lors du passage au chapitre suivant
-    player.audio.addEventListener('canplay', () => {
-        player.audio.playbackRate = currentSpeed;
-    });
-
-    // Sauts temporels (Boutons reculer/avancer de 10 secondes)
-    listen('btn-skip-back', 'click', () => {
-        player.audio.currentTime = Math.max(0, player.audio.currentTime - 10);
-    });
-    listen('btn-skip-forward', 'click', () => {
-        player.audio.currentTime = Math.min(player.audio.duration, player.audio.currentTime + 10);
-    });
-
-    // Convertisseur de secondes en affichage standard (00:00)
-    function formatTime(seconds) {
-        if (isNaN(seconds)) return "00:00";
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    // Gestion de la barre de progression (Timeline)
-    const audioSlider = document.getElementById('audio-slider');
-    const timeCurrent = document.getElementById('time-current');
-    const timeDuration = document.getElementById('time-duration');
-
-    player.audio.addEventListener('loadedmetadata', () => {
-        if (audioSlider) {
-            audioSlider.max = Math.floor(player.audio.duration);
-            audioSlider.value = 0;
-        }
-        if (timeDuration) timeDuration.textContent = formatTime(player.audio.duration);
-        if (timeCurrent) timeCurrent.textContent = "00:00";
-    });
-
-    player.audio.addEventListener('timeupdate', () => {
-        if (audioSlider && !audioSlider.seeking) {
-            audioSlider.value = Math.floor(player.audio.currentTime);
-        }
-        if (timeCurrent) timeCurrent.textContent = formatTime(player.audio.currentTime);
-    });
-
-    if (audioSlider) {
-        audioSlider.addEventListener('input', () => audioSlider.seeking = true);
-        audioSlider.addEventListener('change', () => {
-            player.audio.currentTime = parseFloat(audioSlider.value);
-            audioSlider.seeking = false;
+    listen('btn-browse', 'click', (e) => { e.stopPropagation(); if (fileInput) fileInput.click(); });
+    if (dropZone) {
+        dropZone.addEventListener('click', () => { if (fileInput) fileInput.click(); });
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-primary'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-primary'));
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-primary');
+            if (e.dataTransfer.files.length > 0) {
+                await handleFileSelection(e.dataTransfer.files[0]);
+            }
         });
     }
-
-    // Importation et analyse du fichier ZIP DAISY
-    const fileInput = document.getElementById('file-input');
-    listen('btn-browse', 'click', (e) => { e.stopPropagation(); if (fileInput) fileInput.click(); });
-    listen('dropZone', 'click', () => { if (fileInput) fileInput.click(); });
 
     if (fileInput) {
         fileInput.addEventListener('change', async (e) => {
             if (e.target.files.length > 0) {
-                const loader = document.getElementById('loading-overlay');
-                if (loader) loader.classList.remove('hidden');
-                try {
-                    const bookData = await parseDaisyZip(e.target.files[0]);
-                    player.setBook(bookData.zip, bookData.playlist);
-                    
-                    const t1 = document.getElementById('bookTitle'); if (t1) t1.textContent = bookData.bookTitle;
-                    const t2 = document.getElementById('cleanBookTitle'); if (t2) t2.textContent = bookData.bookTitle;
-                    const aut = document.getElementById('bookAuthor'); if (aut) aut.textContent = bookData.bookAuthor;
-
-                    addToHistory(bookData.bookTitle, bookData.bookAuthor);
-
-                    const cleanChTitle = document.getElementById('cleanChapterTitle');
-                    if (cleanChTitle && bookData.playlist.length > 0) {
-                        cleanChTitle.textContent = bookData.playlist[0].title;
-                    }
-
-                    ui.renderChaptersList(bookData.playlist, async (index) => {
-                        player.currentIndex = index;
-                        player.isPlaying = true;
-                        ui.updatePlayPauseUI(true);
-                        const track = await player.loadCurrentTrack();
-                        if (track && cleanChTitle) cleanChTitle.textContent = track.title;
-                        ui.highlightActiveChapter(player.currentIndex);
-                    });
-
-                    await player.loadCurrentTrack();
-                    ui.highlightActiveChapter(player.currentIndex);
-                    
-                    const navPlayerEl = document.getElementById('nav-player');
-                    const viewPlayerEl = document.getElementById('view-player');
-                    if (navPlayerEl && viewPlayerEl) ui.showPage(navPlayerEl, viewPlayerEl, toggleCleanModeBtn);
-                } catch (err) {
-                    alert(err.message);
-                } finally {
-                    if (loader) loader.classList.add('hidden');
-                }
+                await handleFileSelection(e.target.files[0]);
             }
         });
     }
 
-    // Commandes principales Play / Pause
+    async function handleFileSelection(file) {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.classList.remove('hidden');
+        try {
+            const bookData = await parseDaisyZip(file);
+            player.setBook(bookData.zip, bookData.playlist);
+            
+            // Assignation des textes dans la vue classique et épurée
+            const bTitle = document.getElementById('book-title');
+            if (bTitle) bTitle.textContent = bookData.title;
+            const bAuthor = document.getElementById('book-author');
+            if (bAuthor) bAuthor.textContent = bookData.author;
+            const cBookTitle = document.getElementById('cleanBookTitle');
+            if (cBookTitle) cBookTitle.textContent = bookData.title;
+
+            // Rendu de la liste cliquable des chapitres
+            ui.renderChaptersList(player.playlist, async (index) => {
+                player.currentIndex = index;
+                await handleTrackChange(player.loadCurrentTrack());
+                if (!player.isPlaying) playPauseAction();
+            });
+
+            // Initialisation de la première piste
+            await handleTrackChange(player.loadCurrentTrack());
+            addToHistory(bookData.title, bookData.author);
+
+            // Redirection automatique sur la page de lecture
+            ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'), toggleCleanModeBtn);
+        } catch (error) {
+            alert(error.message || "Erreur de chargement du fichier DAISY.");
+            console.error(error);
+        } finally {
+            if (overlay) overlay.classList.add('hidden');
+        }
+    }
+
+    // Gestionnaires des boutons multimédias
     const playPauseAction = () => {
         const isPlaying = player.toggle();
         ui.updatePlayPauseUI(isPlaying);
@@ -170,15 +116,13 @@ document.addEventListener('DOMContentLoaded', () => {
     listen('playPause', 'click', playPauseAction);
     listen('cleanPlayPause', 'click', playPauseAction);
 
-    // Commandes Suivant / Précédent (avec rafraîchissement d'interface)
     async function handleTrackChange(trackPromise) {
         const track = await trackPromise;
-        const cleanChTitle = document.getElementById('cleanChapterTitle');
-        if (track && cleanChTitle) {
-            cleanChTitle.textContent = track.title;
-        }
-        ui.highlightActiveChapter(player.currentIndex);
-        if (!track && player.currentIndex === player.playlist.length - 1 && !player.isPlaying) {
+        if (track) {
+            const cChapterTitle = document.getElementById('cleanChapterTitle');
+            if (cChapterTitle) cChapterTitle.textContent = track.title;
+            ui.highlightActiveChapter(player.currentIndex);
+        } else if (player.currentIndex === player.playlist.length - 1 && !player.isPlaying) {
             ui.updatePlayPauseUI(false);
         }
     }
@@ -188,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     listen('btn-prev', 'click', () => handleTrackChange(player.prev()));
     listen('cleanPrev', 'click', () => handleTrackChange(player.prev()));
 
-    // Enchaînement automatique à la fin du morceau
+    // Enchaînement automatique à la fin d'un chapitre
     player.audio.addEventListener('ended', () => {
         if (player.currentIndex < player.playlist.length - 1) {
             handleTrackChange(player.next());
@@ -198,37 +142,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Fonctions liées à la persistance de l'historique de lecture
+    // Système d'historique en LocalStorage
     function loadHistory() {
         const historyContainer = document.getElementById('history-container');
-        const historyEmpty = document.getElementById('history-empty');
         if (!historyContainer) return;
-
-        const history = JSON.parse(localStorage.getItem('daisy_history') || '[]');
+        
         historyContainer.innerHTML = "";
+        const history = JSON.parse(localStorage.getItem('daisy_history') || '[]');
         
         if (history.length === 0) {
-            if (historyEmpty) {
-                historyEmpty.classList.remove('hidden');
-                historyContainer.appendChild(historyEmpty);
-            }
+            historyContainer.innerHTML = `
+                <div class="text-center py-8 text-on-surface-variant dark:text-slate-400">
+                    <span class="material-symbols-outlined text-4xl mb-2">history</span>
+                    <p class="text-sm font-bold">Aucun livre lu récemment</p>
+                </div>`;
             return;
         }
 
-        if (historyEmpty) historyEmpty.classList.add('hidden');
-
         history.forEach(item => {
             const div = document.createElement('div');
-            div.className = "p-4 rounded-xl bg-white dark:bg-slate-800 border flex items-center justify-between shadow-sm text-on-surface dark:text-white";
+            div.className = "p-4 rounded-xl bg-surface-container dark:bg-slate-800/50 border border-outline-variant dark:border-slate-700/50 flex justify-between items-center gap-4";
             div.innerHTML = `
-                <div>
-                    <h4 class="font-bold text-base text-amber-600 dark:text-amber-400">${item.title}</h4>
-                    <p class="text-xs opacity-70">${item.author} — Lu le ${item.date}</p>
+                <div class="flex-1 min-w-0">
+                    <h4 class="font-bold text-on-surface dark:text-white text-sm truncate">${item.title}</h4>
+                    <p class="text-xs text-on-surface-variant dark:text-slate-400 truncate mt-0.5">${item.author}</p>
+                    <span class="text-[10px] text-slate-400 block mt-2 font-medium">${item.date}</span>
                 </div>
                 <span class="material-symbols-outlined text-amber-500 text-xl">menu_book</span>
             `;
             historyContainer.appendChild(div);
         });
+
+        const clearBtn = document.createElement('button');
+        clearBtn.className = "mt-4 w-full py-2 border border-outline-variant text-on-surface-variant dark:text-slate-400 rounded-xl text-sm font-bold hover:bg-surface-container transition-colors";
+        clearBtn.innerHTML = '<span class="material-symbols-outlined text-sm align-middle">delete</span> Effacer l\'historique';
+        clearBtn.addEventListener('click', () => {
+            localStorage.removeItem('daisy_history');
+            loadHistory();
+        });
+        historyContainer.appendChild(clearBtn);
     }
 
     function addToHistory(title, author) {
@@ -243,11 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         localStorage.setItem('daisy_history', JSON.stringify(history));
     }
-
-    listen('btn-clear-history', 'click', () => {
-        localStorage.removeItem('daisy_history');
-        loadHistory();
-    });
 
     loadHistory();
 });
