@@ -11,6 +11,7 @@ export class DaisyPlayer {
         this.zip = zip;
         this.playlist = playlist;
         this.currentIndex = 0;
+        this.isPlaying = false;
     }
 
     async loadCurrentTrack() {
@@ -29,7 +30,7 @@ export class DaisyPlayer {
             try {
                 await this.audio.play();
             } catch (err) {
-                console.log("Lecture automatique bloquée par le navigateur, en attente d'une action utilisateur.", err);
+                console.log("Lecture automatique bloquée par le navigateur.", err);
             }
         }
         return track;
@@ -38,8 +39,11 @@ export class DaisyPlayer {
     toggle() {
         if (this.playlist.length === 0) return false;
         this.isPlaying = !this.isPlaying;
-        if (this.isPlaying) this.audio.play();
-        else this.audio.pause();
+        if (this.isPlaying) {
+            this.audio.play().catch(e => console.warn(e));
+        } else {
+            this.audio.pause();
+        }
         return this.isPlaying;
     }
 
@@ -48,7 +52,7 @@ export class DaisyPlayer {
             this.currentIndex++;
             return await this.loadCurrentTrack();
         }
-        return null; // Indique qu'on a atteint la fin du livre
+        return null;
     }
 
     async prev() {
@@ -59,6 +63,6 @@ export class DaisyPlayer {
             this.currentIndex--;
             return await this.loadCurrentTrack();
         }
-        return null; // Indique qu'on est déjà au premier chapitre
+        return null;
     }
 }
