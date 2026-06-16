@@ -24,7 +24,14 @@ export class DaisyPlayer {
         
         this.audio.src = track.audioUrl;
         this.audio.load();
-        if (this.isPlaying) await this.audio.play();
+        
+        if (this.isPlaying) {
+            try {
+                await this.audio.play();
+            } catch (err) {
+                console.log("Lecture automatique bloquée par le navigateur, en attente d'une action utilisateur.", err);
+            }
+        }
         return track;
     }
 
@@ -39,16 +46,19 @@ export class DaisyPlayer {
     async next() {
         if (this.currentIndex < this.playlist.length - 1) {
             this.currentIndex++;
-            await this.loadCurrentTrack();
+            return await this.loadCurrentTrack();
         }
+        return null; // Indique qu'on a atteint la fin du livre
     }
 
     async prev() {
         if (this.audio.currentTime > 5) {
             this.audio.currentTime = 0;
+            return this.playlist[this.currentIndex];
         } else if (this.currentIndex > 0) {
             this.currentIndex--;
-            await this.loadCurrentTrack();
+            return await this.loadCurrentTrack();
         }
+        return null; // Indique qu'on est déjà au premier chapitre
     }
 }
