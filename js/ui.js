@@ -1,21 +1,38 @@
 export function updatePlayPauseUI(isPlaying) {
     const iconName = isPlaying ? 'pause' : 'play_arrow';
-    const pIcon = document.getElementById('playPauseIcon'); if (pIcon) pIcon.textContent = iconName;
-    const cIcon = document.getElementById('cleanPlayIcon'); if (cIcon) cIcon.textContent = iconName;
-    const cLabel = document.getElementById('cleanPlayLabel'); if (cLabel) cLabel.textContent = isPlaying ? 'PAUSE' : 'LECTURE';
+    const pIcon = document.getElementById('playPauseIcon'); 
+    if (pIcon) pIcon.textContent = iconName;
+    const cIcon = document.getElementById('cleanPlayIcon'); 
+    if (cIcon) cIcon.textContent = iconName;
+    const cLabel = document.getElementById('cleanPlayLabel'); 
+    if (cLabel) cLabel.textContent = isPlaying ? 'PAUSE' : 'LECTURE';
 }
 
 export function showPage(activeButton, activeSection, toggleCleanModeBtn) {
-    const views = [document.getElementById('view-home'), document.getElementById('view-history'), document.getElementById('view-player')];
-    const navs = [document.getElementById('nav-home'), document.getElementById('nav-history'), document.getElementById('nav-player')];
+    const views = [
+        document.getElementById('view-home'), 
+        document.getElementById('view-history'), 
+        document.getElementById('view-player')
+    ];
+    const navs = [
+        document.getElementById('nav-home'), 
+        document.getElementById('nav-history'), 
+        document.getElementById('nav-player')
+    ];
     
-    views.forEach(sec => { if (sec) sec.classList.add('hidden'); });
+    views.forEach(sec => { 
+        if (sec) sec.classList.add('hidden'); 
+    });
     if (activeSection) activeSection.classList.remove('hidden');
 
     navs.forEach(btn => {
-        if (btn) btn.className = "flex flex-col items-center justify-center text-on-surface-variant dark:text-slate-400 p-2 hover:bg-surface-container dark:hover:bg-slate-800 transition-all rounded-xl";
+        if (btn) {
+            btn.className = "flex flex-col items-center justify-center text-on-surface-variant dark:text-slate-400 p-2 hover:bg-surface-container dark:hover:bg-slate-800 transition-all rounded-xl";
+        }
     });
-    if (activeButton) activeButton.className = "flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-5 py-1.5 shadow-sm";
+    if (activeButton) {
+        activeButton.className = "flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-5 py-1.5 shadow-sm";
+    }
     
     if (activeSection && toggleCleanModeBtn) {
         const isPlayer = activeSection.id === 'view-player';
@@ -63,21 +80,29 @@ export function cycleThemes() {
     const body = document.body;
     const html = document.documentElement;
     
+    if (!body) return;
+
     if (!body.classList.contains('theme-dark') && !body.classList.contains('theme-orange')) {
-        // Mode Sombre
+        // Étape 1 : Activer le Mode Sombre
         body.classList.add('theme-dark');
-        html.classList.add('dark');
-        html.classList.remove('light');
+        if (html) {
+            html.classList.add('dark');
+            html.classList.remove('light');
+        }
     } else if (body.classList.contains('theme-dark')) {
-        // Mode Orange Contraste
+        // Étape 2 : Activer le Mode Orange Contraste
         body.classList.remove('theme-dark');
-        html.classList.remove('dark');
         body.classList.add('theme-orange');
-        html.classList.add('light');
+        if (html) {
+            html.classList.remove('dark');
+            html.classList.add('light');
+        }
     } else {
-        // Retour au Mode Clair
+        // Étape 3 : Revenir au Mode Clair classique
         body.classList.remove('theme-orange');
-        html.classList.remove('dark');
-        html.classList.add('light');
+        if (html) {
+            html.classList.remove('dark');
+            html.classList.add('light');
+        }
     }
 }
