@@ -5,132 +5,298 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>Lumière Audio - Lecteur DAISY</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-  
-  <style>
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
-    }
-    .drop-zone-active {
-      border-color: #f59e0b !important;
-      background-color: rgba(245, 158, 11, 0.08) !important;
-    }
-    /* Forcer le texte en gras pour l'accessibilité visuelle malvoyante */
-    *, button, p, span { font-weight: 600 !important; }
-    h1, h2, h3, h4 { font-weight: 700 !important; }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
   <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
       theme: {
         extend: {
-          colors: {
+          "colors": {
+            "surface-dim": "#cbdbf5",
             "background": "#f8f9ff",
-            "surface": "#ffffff",
-            "surface-variant": "#d3e4fe",
-            "on-surface": "#0b1c30",
-            "on-surface-variant": "#435166",
-            "primary-container": "#f59e0b",
-            "on-primary": "#ffffff",
+            "on-secondary-container": "#5c647a",
+            "secondary-fixed-dim": "#bec6e0",
+            "surface-bright": "#f8f9ff",
+            "on-primary-fixed-variant": "#653e00",
+            "on-secondary": "#ffffff",
             "surface-container-lowest": "#ffffff",
-            "surface-container-low": "#eff4ff",
-            "surface-container-high": "#dce9ff",
             "outline-variant": "#d8c3ad",
-            "outline": "#867461"
+            "on-primary": "#ffffff",
+            "surface-variant": "#d3e4fe",
+            "inverse-surface": "#213145",
+            "primary-container": "#f59e0b",
+            "secondary-container": "#dae2fd",
+            "on-tertiary-fixed-variant": "#4d4727",
+            "primary-fixed-dim": "#ffb95f",
+            "on-error-container": "#93000a",
+            "tertiary-fixed": "#ede3b8",
+            "on-secondary-fixed-variant": "#3f465c",
+            "error": "#ba1a1a",
+            "surface-tint": "#855300",
+            "tertiary": "#665f3d",
+            "on-background": "#0b1c30",
+            "on-surface-variant": "#534434",
+            "surface": "#f8f9ff",
+            "surface-container-high": "#dce9ff",
+            "primary-fixed": "#ffddb8",
+            "surface-container-highest": "#d3e4fe",
+            "inverse-on-surface": "#eaf1ff",
+            "on-tertiary-container": "#4a4424",
+            "inverse-primary": "#ffb95f",
+            "on-tertiary-fixed": "#201c02",
+            "surface-container-low": "#eff4ff",
+            "tertiary-container": "#bab189",
+            "on-secondary-fixed": "#131b2e",
+            "on-tertiary": "#ffffff",
+            "tertiary-fixed-dim": "#d1c79d",
+            "primary": "#855300",
+            "on-surface": "#0b1c30",
+            "secondary": "#565e74",
+            "on-error": "#ffffff",
+            "outline": "#867461",
+            "error-container": "#ffdad6",
+            "secondary-fixed": "#dae2fd",
+            "surface-container": "#e5eeff",
+            "on-primary-container": "#2a1700",
+            "on-primary-fixed": "#2a1700"
           },
-          fontFamily: {
-            sans: ["Lexend", "sans-serif"]
+          "spacing": {
+            "sm": "12px", "xs": "4px", "gutter": "24px", "base": "8px",
+            "margin-desktop": "32px", "xl": "64px", "lg": "40px", "md": "24px",
+            "margin-mobile": "16px", "stack-md": "24px", "stack-lg": "48px"
+          },
+          "fontFamily": {
+            "body-md": ["Lexend"], "headline-md": ["Lexend"], "display-lg": ["Lexend"],
+            "headline-lg": ["Lexend"], "label-md": ["Lexend"], "headline-lg-mobile": ["Lexend"],
+            "label-sm": ["Lexend"], "body-lg": ["Lexend"], "headline-xl": ["Lexend"]
           }
-        }
-      }
+        },
+      },
     }
   </script>
-</head>
-<body class="bg-background text-on-surface min-h-screen flex flex-col font-sans transition-colors duration-300 pb-24">
 
-  <header class="flex justify-between items-center px-4 w-full h-16 z-50 bg-surface shadow-sm sticky top-0 border-b border-surface-variant dark:bg-slate-900 dark:border-slate-700">
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 48;
+      user-select: none;
+    }
+    .touch-active:active {
+      transform: scale(0.96);
+      transition: transform 0.1s ease-out;
+    }
+    .custom-range { accent-color: #f59e0b; }
+    body { min-height: max(884px, 100dvh); }
+    .drop-zone-active {
+      border-color: #f59e0b !important;
+      background-color: rgba(245, 158, 11, 0.08) !important;
+    }
+    /* Accessibilité améliorée : textes naturellement denses */
+    *, button, span, p { font-weight: 550 !important; }
+    h1, h2, h3, h4, .font-bold { font-weight: 700 !important; }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md overflow-x-hidden min-h-screen dark:bg-slate-950 dark:text-slate-50">
+
+  <header class="flex justify-between items-center px-4 w-full h-16 z-40 bg-surface-container-lowest shadow-sm fixed top-0 border-b border-surface-container dark:bg-slate-900 dark:border-slate-800">
     <div class="flex items-center gap-2">
       <span class="material-symbols-outlined text-primary-container text-3xl">light_mode</span>
-      <h1 class="text-xl font-bold dark:text-white">Lumière Audio</h1>
+      <h1 class="font-headline-lg-mobile text-xl font-bold text-on-surface dark:text-white">Lumière Audio</h1>
     </div>
-    <div class="flex items-center gap-4">
-      <button id="btn-theme-toggle" aria-label="Changer le contraste visuel" class="p-3 rounded-xl hover:bg-surface-container-high transition-colors text-on-surface-variant dark:text-slate-300">
-        <span class="material-symbols-outlined text-2xl">palette</span>
+    <div class="flex gap-3">
+      <button id="btn-theme-toggle" class="p-2 rounded-full hover:bg-surface-container dark:hover:bg-slate-800 transition-colors" title="Changer de thème">
+        <span class="material-symbols-outlined text-on-surface-variant dark:text-slate-300">palette</span>
+      </button>
+      <button id="toggleCleanMode" class="hidden px-4 py-2 bg-on-background text-surface-container-lowest font-label-md text-sm rounded-xl shadow-sm flex items-center gap-2 hover:opacity-90 transition-all touch-active dark:bg-amber-500 dark:text-slate-950">
+        <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+        <span>Mode Épuré</span>
       </button>
     </div>
   </header>
 
-  <main class="flex-grow container mx-auto px-4 py-6 max-w-4xl">
-
-    <section id="view-help" class="space-y-6 animate-fade-in">
-      <div class="text-center md:text-left space-y-3">
-        <h2 class="text-2xl md:text-3xl font-bold leading-tight text-on-surface dark:text-white">
+  <main class="pt-24 pb-32 px-4 md:px-gutter max-w-4xl mx-auto w-full transition-all duration-300" id="mainContent">
+    
+    <section id="view-home" class="space-y-8 animate-in fade-in duration-300">
+      <div class="text-center space-y-3 max-w-2xl mx-auto">
+        <h2 class="font-headline-xl text-2xl md:text-3xl font-bold text-on-surface dark:text-white leading-tight">
           Votre lecteur de livres audio DAISY, simple et accessible.
         </h2>
-        <p class="text-lg text-on-surface-variant dark:text-slate-300">
+        <p class="text-base text-on-surface-variant dark:text-slate-300">
           Glissez-déposez l'archive ZIP de votre livre DAISY ou parcourez vos fichiers pour démarrer immédiatement la lecture.
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-surface-container-low dark:bg-slate-800 p-5 rounded-2xl flex gap-4 items-start border border-surface-variant dark:border-slate-700">
-          <div class="bg-primary-container text-on-primary w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0 font-bold text-xl">1</div>
-          <div>
-            <h4 class="text-lg font-bold text-on-surface dark:text-white mb-1">Importez le livre</h4>
-            <p class="text-sm text-on-surface-variant dark:text-slate-300">Sélectionnez un fichier compressé (.zip) contenant votre ouvrage au format DAISY dans l'onglet Lecteur.</p>
-          </div>
-        </div>
-        <div class="bg-surface-container-low dark:bg-slate-800 p-5 rounded-2xl flex gap-4 items-start border border-surface-variant dark:border-slate-700">
-          <div class="bg-primary-container text-on-primary w-12 h-12 flex items-center justify-center rounded-full flex-shrink-0 font-bold text-xl">2</div>
-          <div>
-            <h4 class="text-lg font-bold text-on-surface dark:text-white mb-1">Choisissez votre mode</h4>
-            <p class="text-sm text-on-surface-variant dark:text-slate-300">Basculez entre l'affichage Complet ou l'affichage Épuré avec de gros boutons pour un confort maximal.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="pt-4 flex justify-center">
-        <button id="help-cta-btn" class="w-full sm:w-auto bg-primary-container text-on-primary font-bold text-lg px-8 py-4 rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 h-14">
-          <span class="material-symbols-outlined">play_circle</span>
-          Ouvrir le lecteur DAISY
-        </button>
-      </div>
-    </section>
-
-
-    <section id="view-history" class="hidden space-y-4">
-      <h3 class="text-xl font-bold text-on-surface dark:text-white">Mes lectures en cours</h3>
-      
-      <div class="bg-surface border border-surface-variant dark:bg-slate-800 dark:border-slate-700 rounded-2xl p-8 text-center flex flex-col items-center shadow-sm">
-        <div class="w-20 h-20 bg-surface-container-low dark:bg-slate-700 rounded-full flex items-center justify-center mb-4 text-outline">
-          <span class="material-symbols-outlined text-4xl text-on-surface-variant dark:text-slate-300">auto_stories</span>
-        </div>
-        <p class="text-lg font-bold mb-1 dark:text-white">Aucune lecture en cours pour le moment.</p>
-        <p class="text-sm text-on-surface-variant dark:text-slate-400 max-w-sm">Ici s'afficheront vos livres pour vous permettre de reprendre la lecture là où vous l'avez quittée.</p>
-      </div>
-    </section>
-
-
-    <section id="view-daisy-root" class="hidden space-y-6">
-      
-      <div id="view-home" class="group relative bg-surface dark:bg-slate-800 border-4 border-dashed border-outline-variant dark:border-slate-600 rounded-2xl p-8 transition-all duration-300 hover:border-primary-container flex flex-col items-center justify-center text-center cursor-pointer min-h-[340px]" id="dropZone">
-        <div class="bg-primary-container text-on-primary p-5 rounded-full mb-4 group-hover:scale-110 transition-transform duration-200 shadow-md">
+      <div id="dropZone" class="group relative bg-surface-container-lowest dark:bg-slate-900 border-4 border-dashed border-outline-variant dark:border-slate-700 rounded-2xl p-8 transition-all duration-300 hover:border-primary-container flex flex-col items-center justify-center text-center cursor-pointer min-h-[280px]">
+        <div class="bg-primary-container text-on-primary p-5 rounded-full mb-4 group-hover:scale-105 transition-transform duration-200 shadow-md">
           <span class="material-symbols-outlined text-4xl" style="font-size: 40px;">library_add</span>
         </div>
-        <h3 class="text-xl font-bold mb-1 text-on-surface dark:text-white">Ajouter un livre DAISY</h3>
-        <p class="text-sm text-on-surface-variant dark:text-slate-300 mb-6">Fichiers acceptés : .ZIP ou .DAISY</p>
-        
-        <button id="btn-browse" class="bg-primary-container text-on-primary font-bold px-8 py-3 rounded-xl shadow-md hover:brightness-110 transition-all active:scale-95 flex items-center gap-2 h-12">
+        <h3 class="text-xl font-bold text-on-surface dark:text-white mb-1">Ajouter un livre DAISY</h3>
+        <p class="text-sm text-on-surface-variant dark:text-slate-400 mb-4">Fichiers acceptés : .ZIP ou .DAISY</p>
+        <button id="btn-browse" class="bg-primary-container text-on-background dark:text-on-primary font-bold px-6 py-3 rounded-xl shadow-md hover:brightness-105 transition-all touch-active flex items-center gap-2">
           <span class="material-symbols-outlined">upload_file</span>
           Parcourir les fichiers
         </button>
         <input accept=".zip" class="hidden" id="file-input" type="file"/>
-        
-        <div class="hidden absolute inset-0 bg-surface/95 dark:bg-slate-800/95 rounded-2xl flex flex-col items-center justify-center gap-4" id="loading-overlay">
+
+        <div id="loading-overlay" class="hidden absolute inset-0 bg-surface-container-lowest/95 dark:bg-slate-900/95 rounded-2xl flex flex-col items-center justify-center gap-4">
           <div class="w-12 h-12 border-4 border-primary-container border-t-transparent rounded-full animate-spin"></div>
-          <p class="font-bold text-on-surface dark:text-white">Analyse de l'archive en cours...</p>
+          <p class="font-bold dark:text-white">Analyse de l'archive DAISY en cours...</p>
         </div>
       </div>
 
-      <div id="view-player" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-surface-container-low dark:bg-slate-900 p-5 rounded-xl flex gap-4 items-start border border-surface-variant dark:border-slate-800">
+          <div class="bg-primary-container text-on-background w-10 h-10 flex items-center justify-center rounded-full flex-shrink-0 font-bold text-lg">1</div>
+          <div>
+            <h4 class="font-bold text-on-surface dark:text-white mb-1">Importez l'archive</h4>
+            <p class="text-sm text-on-surface-variant dark:text-slate-400">Déposez un fichier compressé (.zip) contenant la structure DAISY de votre ouvrage.</p>
+          </div>
+        </div>
+        <div class="bg-surface-container-low dark:bg-slate-900 p-5 rounded-xl flex gap-4 items-start border border-surface-variant dark:border-slate-800">
+          <div class="bg-primary-container text-on-background w-10 h-10 flex items-center justify-center rounded-full flex-shrink-0 font-bold text-lg">2</div>
+          <div>
+            <h4 class="font-bold text-on-surface dark:text-white mb-1">Contrôles simplifiés</h4>
+            <p class="text-sm text-on-surface-variant dark:text-slate-400">Basculez sur le mode épuré à tout moment pour n'afficher que l'essentiel en gros boutons.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-history" class="hidden space-y-4 animate-in fade-in duration-300">
+      <h3 class="font-headline-lg text-xl font-bold text-on-surface dark:text-white">Mes lectures en cours</h3>
+      <div class="bg-surface-container-low dark:bg-slate-900 rounded-2xl p-10 text-center flex flex-col items-center border border-surface-variant dark:border-slate-800 shadow-sm">
+        <div class="w-20 h-20 bg-surface-container-high dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 text-outline">
+          <span class="material-symbols-outlined text-4xl text-on-surface-variant dark:text-slate-300">auto_stories</span>
+        </div>
+        <p class="text-lg font-bold mb-1 dark:text-white">Aucune lecture active.</p>
+        <p class="text-sm text-on-surface-variant dark:text-slate-400 max-w-sm">Dès qu'un livre DAISY sera chargé, vous pourrez reprendre son écoute instantanément depuis cet onglet.</p>
+      </div>
+    </section>
+
+    <section id="view-player" class="hidden space-y-6 animate-in fade-in duration-300">
+      
+      <div class="flex flex-col items-center text-center">
+        <div class="relative group mb-6">
+          <div class="absolute -inset-1 bg-primary-container rounded-xl blur opacity-25"></div>
+          <div class="relative w-40 h-40 md:w-52 md:h-52 bg-surface-container-highest dark:bg-slate-800 rounded-xl shadow-md border border-surface-container flex items-center justify-center">
+            <span class="material-symbols-outlined text-6xl text-primary-container">audio_file</span>
+          </div>
+        </div>
+        <h2 class="font-headline-xl text-2xl text-on-surface dark:text-white mb-1 px-4" id="bookTitle">Titre du livre DAISY</h2>
+        <p class="font-body-lg text-md text-on-surface-variant dark:text-slate-400" id="bookAuthor">Auteur inconnu</p>
+      </div>
+
+      <div class="bg-surface-container-low dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-outline-variant dark:border-slate-800">
+        <div class="flex justify-between text-sm mb-2 text-on-surface-variant dark:text-slate-300 font-bold">
+          <span id="time-current">00:00</span>
+          <span id="time-total">00:00</span>
+        </div>
+        <input id="progress-range" class="w-full h-3 bg-surface-variant dark:bg-slate-700 rounded-full appearance-none cursor-pointer custom-range" type="range" value="0" min="0" max="100"/>
+      </div>
+
+      <div class="flex items-center justify-center gap-6" id="controlPanel">
+        <button id="btn-prev" class="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full bg-surface-container-high dark:bg-slate-800 text-on-surface dark:text-white hover:bg-surface-variant dark:hover:bg-slate-700 transition-all touch-active" title="Section précédente">
+          <span class="material-symbols-outlined text-3xl md:text-4xl">skip_previous</span>
+        </button>
+        <button id="playPause" class="w-24 h-24 md:w-28 md:h-28 flex items-center justify-center rounded-full bg-primary-container text-on-primary-container shadow-xl hover:shadow-2xl transition-all touch-active" title="Lecture / Pause">
+          <span id="playPauseIcon" class="material-symbols-outlined text-5xl md:text-6xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+        </button>
+        <button id="btn-next" class="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full bg-surface-container-high dark:bg-slate-800 text-on-surface dark:text-white hover:bg-surface-variant dark:hover:bg-slate-700 transition-all touch-active" title="Section suivante">
+          <span class="material-symbols-outlined text-3xl md:text-4xl">skip_next</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-5 bg-surface-container dark:bg-slate-900 rounded-2xl border border-outline-variant dark:border-slate-800">
+          <h3 class="font-headline-md text-base mb-3 flex items-center gap-2 text-on-surface dark:text-white">
+            <span class="material-symbols-outlined text-primary-container">speed</span>
+            Vitesse d'élocution
+          </h3>
+          <div class="grid grid-cols-4 gap-2" id="speed-buttons-container">
+            <button data-speed="0.75" class="py-2.5 rounded-xl bg-surface-container-lowest dark:bg-slate-800 border border-outline-variant dark:border-slate-700 font-bold text-sm touch-active dark:text-white">0.75x</button>
+            <button data-speed="1" class="py-2.5 rounded-xl bg-primary-container text-on-primary-container font-bold text-sm touch-active border border-primary-container">1x</button>
+            <button data-speed="1.25" class="py-2.5 rounded-xl bg-surface-container-lowest dark:bg-slate-800 border border-outline-variant dark:border-slate-700 font-bold text-sm touch-active dark:text-white">1.25x</button>
+            <button data-speed="1.5" class="py-2.5 rounded-xl bg-surface-container-lowest dark:bg-slate-800 border border-outline-variant dark:border-slate-700 font-bold text-sm touch-active dark:text-white">1.5x</button>
+          </div>
+        </div>
+        <div class="p-5 bg-surface-container dark:bg-slate-900 rounded-2xl border border-outline-variant dark:border-slate-800">
+          <h3 class="font-headline-md text-base mb-3 flex items-center gap-2 text-on-surface dark:text-white">
+            <span class="material-symbols-outlined text-primary-container">volume_up</span>
+            Volume sonore
+          </h3>
+          <div class="flex items-center gap-3 h-10">
+            <span class="material-symbols-outlined text-on-surface-variant dark:text-slate-400">volume_mute</span>
+            <input id="volume-range" class="w-full h-2 bg-surface-variant dark:bg-slate-700 rounded-full appearance-none cursor-pointer custom-range" type="range" value="80" min="0" max="100"/>
+            <span class="material-symbols-outlined text-primary-container">volume_up</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-low dark:bg-slate-900 rounded-2xl overflow-hidden border border-outline-variant dark:border-slate-800">
+        <button class="w-full px-5 py-4 flex justify-between items-center bg-surface-container-high dark:bg-slate-800 transition-colors" id="toggleChapters">
+          <span class="font-headline-md font-bold flex items-center gap-2 text-on-surface dark:text-white">
+            <span class="material-symbols-outlined text-primary-container">toc</span>
+            Index des chapitres
+          </span>
+          <span class="material-symbols-outlined transition-transform duration-300 text-on-surface dark:text-white" id="chevron">expand_more</span>
+        </button>
+        <div class="max-h-0 overflow-hidden transition-all duration-300" id="chapterList">
+          <div class="p-2 space-y-1 divide-y divide-surface-variant dark:divide-slate-800" id="chapters-container">
+            <div class="p-3 text-center text-sm text-on-surface-variant dark:text-slate-400">Aucun chapitre chargé</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center px-4 py-2 bg-surface-container-lowest border-t border-surface-container shadow-xl dark:bg-slate-900 dark:border-slate-800">
+    <button id="nav-home" class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-5 py-1.5 transition-all touch-active shadow-sm">
+      <span class="material-symbols-outlined">home</span>
+      <span class="text-xs font-bold">Accueil</span>
+    </button>
+    <button id="nav-history" class="flex flex-col items-center justify-center text-on-surface-variant dark:text-slate-400 p-2 hover:bg-surface-container dark:hover:bg-slate-800 transition-all touch-active rounded-xl">
+      <span class="material-symbols-outlined">library_books</span>
+      <span class="text-xs font-bold">Mes livres</span>
+    </button>
+    <button id="nav-player" class="flex flex-col items-center justify-center text-on-surface-variant dark:text-slate-400 p-2 hover:bg-surface-container dark:hover:bg-slate-800 transition-all touch-active rounded-xl">
+      <span class="material-symbols-outlined">play_circle</span>
+      <span class="text-xs font-bold">Lecteur</span>
+    </button>
+  </nav>
+
+  <div class="fixed inset-0 bg-background dark:bg-slate-950 z-50 hidden flex-col items-center justify-center p-6 animate-in fade-in duration-200" id="cleanModeOverlay">
+    <div class="w-full max-w-lg space-y-8 text-center">
+      <div>
+        <h2 class="text-2xl font-bold text-on-surface dark:text-white mb-2" id="cleanBookTitle">Titre du livre DAISY</h2>
+        <p class="text-lg text-primary font-bold" id="cleanChapterTitle">Section active</p>
+      </div>
+      
+      <div class="space-y-4">
+        <button class="w-full py-16 rounded-2xl bg-primary-container text-on-primary-container shadow-2xl flex flex-col items-center justify-center gap-3 touch-active" id="cleanPlayPause">
+          <span class="material-symbols-outlined text-7xl" id="cleanPlayIcon">play_arrow</span>
+          <span class="text-xl font-bold tracking-wide" id="cleanPlayLabel">LECTURE</span>
+        </button>
+        <div class="flex gap-4">
+          <button id="cleanPrev" class="flex-1 py-10 rounded-2xl bg-surface-container-highest dark:bg-slate-800 text-on-surface dark:text-white flex flex-col items-center justify-center gap-2 touch-active border border-outline-variant dark:border-slate-700 shadow-md">
+            <span class="material-symbols-outlined text-4xl">skip_previous</span>
+            <span class="text-xs font-bold">PRÉCÉDENT</span>
+          </button>
+          <button id="cleanNext" class="flex-1 py-10 rounded-2xl bg-surface-container-highest dark:bg-slate-800 text-on-surface dark:text-white flex flex-col items-center justify-center gap-2 touch-active border border-outline-variant dark:border-slate-700 shadow-md">
+            <span class="material-symbols-outlined text-4xl">skip_next</span>
+            <span class="text-xs font-bold">SUIVANT</span>
+          </button>
+        </div>
+      </div>
+      
+      <button class="w-full py-4 border-2 border-outline-variant dark:border-slate-700 text-on-surface-variant dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-surface-container dark:hover:bg-slate-800 transition-colors touch-active" id="exitCleanMode">
+        RETOUR AU MODE COMPLET
+      </button>
+    </div>
+  </div>
+
+  <script src="js/vendor/jszip.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
