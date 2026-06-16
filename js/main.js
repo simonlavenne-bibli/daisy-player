@@ -16,6 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
     navHistory.addEventListener('click', () => ui.showPage(navHistory, document.getElementById('view-history'), toggleCleanModeBtn));
     navPlayer.addEventListener('click', () => ui.showPage(navPlayer, document.getElementById('view-player'), toggleCleanModeBtn));
 
+    // Gestion du bouton de changement de thème (Palette)
+    const themeBtn = document.getElementById('btn-theme-toggle');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => ui.cycleThemes());
+    }
+
     // Drag and Drop & Input File
     const fileInput = document.getElementById('file-input');
     document.getElementById('btn-browse').addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
@@ -83,4 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-next').addEventListener('click', () => handleTrackChange(player.next()));
     document.getElementById('cleanNext').addEventListener('click', () => handleTrackChange(player.next()));
     document.getElementById('btn-prev').addEventListener('click', () => handleTrackChange(player.prev()));
-    document.getElementById('cleanPrev').addEventListener('click', () => handleTrackChange(player
+    document.getElementById('cleanPrev').addEventListener('click', () => handleTrackChange(player.prev()));
+
+    // ENCHAÎNEMENT AUTOMATIQUE : Écoute de la fin de la piste audio
+    player.audio.addEventListener('ended', () => {
+        if (player.currentIndex < player.playlist.length - 1) {
+            // S'il reste des chapitres, on passe au suivant automatiquement
+            handleTrackChange(player.next());
+        } else {
+            // Fin du livre atteinte
+            player.isPlaying = false;
+            ui.updatePlayPauseUI(false);
+        }
+    });
+});
