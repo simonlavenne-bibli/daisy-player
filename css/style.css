@@ -1,9 +1,12 @@
 /* =========================================================================
-   LUMIÈRE AUDIO — FEUILLE DE STYLE MODERNE & MOBILE-FIRST (JOUR 2 - MAJ)
+   LUMIÈRE AUDIO — FEUILLE DE STYLE MODERNE, ACCESSIBLE & MODULES
    ========================================================================= */
 
-/* Configuration de base */
+/* 1. Configuration de base & Police d'accessibilité */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap');
+
 :root {
+  /* On applique la police Luciole si installée, sinon Outfit */
   font-family: 'Luciole', 'Outfit', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   box-sizing: border-box;
@@ -11,37 +14,44 @@
 
 *, *::before, *::after {
   box-sizing: inherit;
-  font-weight: 700 !important; /* Maintien du texte en gras pour l'accessibilité */
+  /* Maintien du texte en gras pour l'accessibilité sur TOUT le site */
+  font-weight: 700 !important; 
   transition: background-color 0.2s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
 
-/* Thèmes à fort contraste mais adoucis visuellement */
-body.theme-light {
-  --bg-app: #F4F6F9;          /* Fond d'application gris très clair moderne */
+/* 2. Liaison de vos thèmes avec les variables lues par Tailwind */
+
+/* Mode Jour (theme-light) */
+html, body, body.theme-light {
+  --bg-app: #F4F6F9;          /* Fond d'application gris très clair */
   --bg-card: #FFFFFF;         /* Cartes blanches */
   --bg-hover: #F0F2F5;
   --text-main: #1A1A1A;       /* Noir doux moins agressif */
   --text-muted: #4A4A4A;
   --color-primary: #000000;
-  --color-accent: #E2E8F0;
   --border-color: #000000;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --outline-focus: 3px solid #000000;
+  
+  /* Redéfinition des couleurs Tailwind pour qu'elles suivent VOTRE thème */
+  --tw-bg-opacity: 1;
+  background-color: var(--bg-app) !important;
+  color: var(--text-main) !important;
 }
 
+/* Mode Nuit (theme-dark) */
 body.theme-dark {
-  --bg-app: #0F172A;          /* Bleu nuit profond moderne */
+  --bg-app: #0F172A;          /* Bleu nuit profond */
   --bg-card: #1E293B;         /* Cartes légèrement plus claires */
   --bg-hover: #334155;
   --text-main: #F8FAFC;       /* Blanc cassé reposant */
   --text-muted: #CBD5E1;
   --color-primary: #FFFFFF;
-  --color-accent: #334155;
   --border-color: #FFFFFF;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  --outline-focus: 3px solid #FFFFFF;
+  
+  background-color: var(--bg-app) !important;
+  color: var(--text-main) !important;
 }
 
+/* Mode Contraste Orange & Noir (theme-orange) */
 body.theme-orange {
   --bg-app: #000000;
   --bg-card: #1A1100;         /* Noir teinté d'orange */
@@ -49,158 +59,33 @@ body.theme-orange {
   --text-main: #FF9F1C;       /* Orange vif accessible */
   --text-muted: #FFBF69;
   --color-primary: #FF9F1C;
-  --color-accent: #221100;
   --border-color: #FF9F1C;
-  --shadow: 0 0 10px rgba(255, 159, 28, 0.2);
-  --outline-focus: 3.5px solid #FF9F1C;
+  
+  background-color: var(--bg-app) !important;
+  color: var(--text-main) !important;
 }
 
-/* Styles Généraux de la page */
-body {
-  margin: 0;
-  background-color: var(--bg-app);
-  color: var(--text-main);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+/* 3. Application de vos styles de boutons d'accessibilité aux éléments du lecteur */
+button, .btn-external, [id^="btn-"], #playPause, #cleanPlayPause {
+  border: 3px solid var(--border-color) !important;
+  border-radius: 16px !important;
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
 }
 
-/* Conteneur principal fluide */
-.app-container {
-  width: 100%;
-  max-width: 800px; /* Centré et resserré pour une lecture confortable */
-  margin: 0 auto;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
+button:hover, [id^="btn-"]:hover, #playPause:hover {
+  background-color: var(--bg-hover) !important;
+  transform: translateY(-2px);
 }
 
-/* En-tête modernisé */
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 0 1rem 0;
-  border-bottom: 2px solid var(--border-color);
-  margin-bottom: 1.5rem;
-  gap: 1rem;
+/* Ajustement spécifique pour les icônes Google Material Symbols */
+.material-symbols-outlined {
+  color: var(--text-main) !important;
 }
 
-.app-title {
-  margin: 0;
-  font-size: 1.8rem;
-  letter-spacing: -0.5px;
+/* Zone de dépôt du fichier ZIP adaptée à vos thèmes */
+#dropZone {
+  background-color: var(--bg-card) !important;
+  border: 4px dashed var(--border-color) !important;
+  color: var(--text-main) !important;
 }
-
-/* Sélecteur de thème arrondi et discret */
-.contrast-selector {
-  display: inline-flex;
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-color);
-  border-radius: 20px;
-  padding: 3px;
-  gap: 2px;
-}
-
-.contrast-btn {
-  padding: 0.4rem 0.8rem;
-  border: none;
-  background: none;
-  border-radius: 16px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  color: var(--text-muted);
-}
-
-.contrast-btn.active {
-  background-color: var(--color-primary);
-  color: var(--bg-card) !important;
-}
-
-/* --- LE MENU PRINCIPAL À 3 BOUTONS (OPTIMISÉ MOBILE) --- */
-.main-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
-  margin: 1rem 0;
-}
-
-/* Style de gros bouton moderne */
-.btn-external, .btn-back {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 1.2rem;
-  font-size: 1.2rem;
-  text-align: center;
-  background-color: var(--bg-card);
-  color: var(--text-main);
-  border: 3px solid var(--border-color);
-  border-radius: 16px;
-  cursor: pointer;
-  box-shadow: var(--shadow);
-  text-decoration: none;
-}
-
-.btn-external:hover, .btn-back:hover {
-  background-color: var(--bg-hover);
-  transform: translateY(-2px); /* Léger effet de surélévation moderne */
-}
-
-.btn-external:active, .btn-back:active {
-  transform: translateY(0);
-}
-
-/* Boutons de retour en haut des pages */
-.btn-back {
-  padding: 0.8rem 1.2rem;
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
-  width: auto;
-  align-self: flex-start; /* Ne prend que la taille de son texte */
-}
-
-/* --- PANNEAUX DE PAGES SECONDAIRES --- */
-.sub-view-panel {
-  background-color: var(--bg-card);
-  border: 3px solid var(--border-color);
-  border-radius: 24px;
-  padding: 1.5rem;
-  box-shadow: var(--shadow);
-  display: flex;
-  flex-direction: column;
-}
-
-.sub-view-panel h2 {
-  font-size: 1.6rem;
-  margin: 0 0 1rem 0;
-}
-
-/* Liste d'étapes dans la page d'aide */
-.info-section p {
-  font-size: 1.1rem;
-  color: var(--text-muted);
-  line-height: 1.5;
-  margin: 0 0 1.5rem 0;
-}
-
-.steps-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.step-card {
-  display: flex;
-  gap: 1rem;
-  background-color: var(--bg-hover);
-  padding: 1rem;
-  border-radius: 16px;
-  align-items: center;
-}
-
-.step-number {
-  background-color:
