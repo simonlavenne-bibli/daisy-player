@@ -1,91 +1,461 @@
-/* =========================================================================
-   LUMIÈRE AUDIO — FEUILLE DE STYLE MODERNE, ACCESSIBLE & MODULES
-   ========================================================================= */
+/* ================================================================
+   LUMIÈRE AUDIO v2 — style.css
+   Police Luciole, 4 thèmes accessibles, tailles agrandies, WCAG AA
+   ================================================================ */
 
-/* 1. Configuration de base & Police d'accessibilité */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap');
+/* ── 1. Police Luciole (Braille Institute, open-source) ──────── */
+@font-face {
+  font-family: 'Luciole';
+  src: url('https://cdn.jsdelivr.net/gh/brailleinstitute/luciole@main/Luciole-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style:  normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Luciole';
+  src: url('https://cdn.jsdelivr.net/gh/brailleinstitute/luciole@main/Luciole-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style:  normal;
+  font-display: swap;
+}
 
+/* ── 2. Variables racine & base ───────────────────────────────── */
 :root {
-  /* On applique la police Luciole si installée, sinon Outfit */
-  font-family: 'Luciole', 'Outfit', system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
+  font-family: 'Luciole', 'Lexend', system-ui, -apple-system, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
   box-sizing: border-box;
+
+  /* Couleurs par défaut (Thème Classique) */
+  --bg-app:        #F8F9FF;
+  --bg-card:       #FFFFFF;
+  --bg-hover:      #EFF4FF;
+  --text-main:     #0B1C30;
+  --text-muted:    #534434;
+  --color-primary: #855300;
+  --border-color:  #D8C3AD;
+  --bg-button:     #F59E0B;
+  --text-button:   #2A1700;
+  --color-accent:  #F59E0B;
 }
 
 *, *::before, *::after {
   box-sizing: inherit;
-  /* Maintien du texte en gras pour l'accessibilité sur TOUT le site */
-  font-weight: 700 !important; 
-  transition: background-color 0.2s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  font-family: inherit;
 }
 
-/* 2. Liaison de vos thèmes avec les variables lues par Tailwind */
-
-/* Mode Jour (theme-light) */
-html, body, body.theme-light {
-  --bg-app: #F4F6F9;          /* Fond d'application gris très clair */
-  --bg-card: #FFFFFF;         /* Cartes blanches */
-  --bg-hover: #F0F2F5;
-  --text-main: #1A1A1A;       /* Noir doux moins agressif */
-  --text-muted: #4A4A4A;
-  --color-primary: #000000;
-  --border-color: #000000;
-  
-  /* Redéfinition des couleurs Tailwind pour qu'elles suivent VOTRE thème */
-  --tw-bg-opacity: 1;
-  background-color: var(--bg-app) !important;
-  color: var(--text-main) !important;
+body {
+  min-height: max(884px, 100dvh);
+  background-color: var(--bg-app);
+  color:            var(--text-main);
+  overflow-x: hidden;
 }
 
-/* Mode Nuit (theme-dark) */
-body.theme-dark {
-  --bg-app: #0F172A;          /* Bleu nuit profond */
-  --bg-card: #1E293B;         /* Cartes légèrement plus claires */
-  --bg-hover: #334155;
-  --text-main: #F8FAFC;       /* Blanc cassé reposant */
-  --text-muted: #CBD5E1;
+/* ── 3. THÈME 1 — Classique (couleurs d'origine) ─────────────── */
+html.theme-classique,
+body.theme-classique {
+  --bg-app:        #F8F9FF;
+  --bg-card:       #FFFFFF;
+  --bg-hover:      #EFF4FF;
+  --text-main:     #0B1C30;
+  --text-muted:    #534434;
+  --color-primary: #855300;
+  --border-color:  #D8C3AD;
+  --bg-button:     #F59E0B;
+  --text-button:   #2A1700;
+  --color-accent:  #F59E0B;
+}
+
+/* ── 4. THÈME 2 — Blanc sur noir (contraste 21:1, WCAG AAA) ──── */
+html.theme-blanc-sur-noir,
+body.theme-blanc-sur-noir {
+  --bg-app:        #000000;
+  --bg-card:       #111111;
+  --bg-hover:      #222222;
+  --text-main:     #FFFFFF;
+  --text-muted:    #CCCCCC;
   --color-primary: #FFFFFF;
-  --border-color: #FFFFFF;
-  
-  background-color: var(--bg-app) !important;
+  --border-color:  #FFFFFF;
+  --bg-button:     #FFFFFF;
+  --text-button:   #000000;
+  --color-accent:  #FFFFFF;
+}
+
+/* ── 5. THÈME 3 — Noir sur blanc (contraste 21:1, WCAG AAA) ──── */
+html.theme-noir-sur-blanc,
+body.theme-noir-sur-blanc {
+  --bg-app:        #FFFFFF;
+  --bg-card:       #F0F0F0;
+  --bg-hover:      #DDDDDD;
+  --text-main:     #000000;
+  --text-muted:    #333333;
+  --color-primary: #000000;
+  --border-color:  #000000;
+  --bg-button:     #000000;
+  --text-button:   #FFFFFF;
+  --color-accent:  #000000;
+}
+
+/* ── 6. THÈME 4 — Jaune sur noir (contraste ≈9.5:1, WCAG AAA) ── */
+html.theme-jaune-sur-noir,
+body.theme-jaune-sur-noir {
+  --bg-app:        #000000;
+  --bg-card:       #1A1400;
+  --bg-hover:      #332800;
+  --text-main:     #FFD700;
+  --text-muted:    #FFBF00;
+  --color-primary: #FFD700;
+  --border-color:  #FFD700;
+  --bg-button:     #FFD700;
+  --text-button:   #000000;
+  --color-accent:  #FFD700;
+}
+
+/* ── 7. Application globale des thèmes ───────────────────────── */
+body,
+body *,
+body button,
+body span,
+body p,
+body h1,
+body h2,
+body h3,
+body h4,
+body label,
+body input {
   color: var(--text-main) !important;
 }
 
-/* Mode Contraste Orange & Noir (theme-orange) */
-body.theme-orange {
-  --bg-app: #000000;
-  --bg-card: #1A1100;         /* Noir teinté d'orange */
-  --bg-hover: #331A00;
-  --text-main: #FF9F1C;       /* Orange vif accessible */
-  --text-muted: #FFBF69;
-  --color-primary: #FF9F1C;
-  --border-color: #FF9F1C;
-  
-  background-color: var(--bg-app) !important;
-  color: var(--text-main) !important;
-}
-
-/* 3. Application de vos styles de boutons d'accessibilité aux éléments du lecteur */
-button, .btn-external, [id^="btn-"], #playPause, #cleanPlayPause {
-  border: 3px solid var(--border-color) !important;
-  border-radius: 16px !important;
+/* Fonds des conteneurs Tailwind → thème */
+.bg-background,
+.bg-surface-container-lowest,
+.bg-surface-container-low,
+.bg-surface-container,
+.bg-surface-container-high,
+.bg-surface-container-highest,
+[class*="dark:bg-slate-9"],
+[class*="dark:bg-slate-8"] {
   background-color: var(--bg-card) !important;
-  color: var(--text-main) !important;
 }
 
-button:hover, [id^="btn-"]:hover, #playPause:hover {
+/* Header et nav */
+header,
+nav {
+  background-color: var(--bg-card)    !important;
+  border-color:     var(--border-color) !important;
+}
+
+/* ── 8. Typographie agrandie pour accessibilité ──────────────── */
+h1 { font-size: 2.2rem   !important; font-weight: 700 !important; line-height: 1.2; }
+h2 { font-size: 1.9rem   !important; font-weight: 700 !important; line-height: 1.3; }
+h3 { font-size: 1.5rem   !important; font-weight: 700 !important; }
+h4 { font-size: 1.25rem  !important; font-weight: 700 !important; }
+p  { font-size: 1.05rem  !important; font-weight: 700 !important; }
+span, button { font-weight: 700 !important; }
+
+/* ── 9. Icônes Material Symbols ──────────────────────────────── */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 600, 'GRAD' 0, 'opsz' 48;
+  user-select:  none;
+  color:        var(--text-main) !important;
+  font-size:    2rem !important;
+}
+
+/* ── 10. Zones tactiles minimum 48×48 px (WCAG 2.5.5) ────────── */
+button,
+[role="button"],
+input[type="range"],
+.nav-btn {
+  min-height: 48px;
+  min-width:  48px;
+}
+
+/* ── 11. Visibilité focus clavier (WCAG 2.4.7) ───────────────── */
+:focus-visible {
+  outline:        4px solid var(--color-primary) !important;
+  outline-offset: 3px;
+  border-radius:  4px;
+}
+
+/* ── 12. Boutons ─────────────────────────────────────────────── */
+button,
+[id^="btn-"],
+#playPause,
+#cleanPlayPause {
+  border:           3px solid var(--border-color) !important;
+  border-radius:    16px !important;
+  background-color: var(--bg-card)  !important;
+  color:            var(--text-main) !important;
+  font-size:        1.1rem !important;
+  cursor:           pointer;
+  transition:       background-color 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+}
+
+button:hover,
+[id^="btn-"]:hover {
   background-color: var(--bg-hover) !important;
+  transform:        translateY(-2px);
+}
+
+/* Bouton Play/Pause — accent fort */
+#playPause,
+#cleanPlayPause {
+  background-color: var(--bg-button)  !important;
+  color:            var(--text-button) !important;
+  border:           4px solid var(--border-color) !important;
+}
+
+#playPause:hover,
+#cleanPlayPause:hover {
+  filter:    brightness(1.1);
   transform: translateY(-2px);
 }
 
-/* Ajustement spécifique pour les icônes Google Material Symbols */
-.material-symbols-outlined {
-  color: var(--text-main) !important;
+/* Animation tactile */
+.touch-active:active {
+  transform:  scale(0.96);
+  transition: transform 0.1s ease-out;
 }
 
-/* Zone de dépôt du fichier ZIP adaptée à vos thèmes */
+/* ── 13. Barre de progression & range ────────────────────────── */
+.custom-range {
+  accent-color: var(--color-accent) !important;
+}
+input[type="range"] {
+  border: none !important;
+  background-color: transparent !important;
+  min-height: 44px;
+}
+
+/* ── 14. Boutons de vitesse ───────────────────────────────────── */
+.speed-btn--active {
+  background-color: var(--bg-button)  !important;
+  color:            var(--text-button) !important;
+  border-color:     var(--color-primary) !important;
+  font-weight:      700 !important;
+}
+
+/* ── 15. Navigation bas de page ──────────────────────────────── */
+.nav-btn {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  justify-content: center;
+  gap:            4px;
+  padding:        8px 12px;
+  border:         2px solid transparent !important;
+  border-radius:  12px !important;
+  background:     transparent !important;
+  font-size:      0.75rem !important;
+  transition:     background-color 0.15s ease;
+}
+
+.nav-btn--active {
+  background-color: var(--bg-button)  !important;
+  color:            var(--text-button) !important;
+  border-color:     var(--border-color) !important;
+}
+
+.nav-btn .material-symbols-outlined {
+  font-size: 1.8rem !important;
+}
+
+/* ── 16. Liste des chapitres ──────────────────────────────────── */
+.chapter-btn {
+  display:          flex;
+  align-items:      center;
+  gap:              12px;
+  width:            100%;
+  text-align:       left;
+  padding:          14px 16px;
+  border-radius:    12px !important;
+  border:           2px solid transparent !important;
+  background:       transparent !important;
+  font-size:        1rem !important;
+  transition:       background-color 0.15s ease;
+}
+
+.chapter-btn:hover {
+  background-color: var(--bg-hover) !important;
+  transform:        none;
+}
+
+.chapter-btn--active {
+  background-color: var(--bg-button) !important;
+  color:            var(--text-button) !important;
+  border-color:     var(--color-primary) !important;
+}
+
+.chapter-btn__icon {
+  font-size:   1.5rem !important;
+  flex-shrink: 0;
+}
+
+.chapter-btn__title {
+  flex: 1;
+  font-size:   1rem !important;
+  font-weight: 700 !important;
+}
+
+/* ── 17. Historique ───────────────────────────────────────────── */
+.history-item {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     center;
+  gap:             16px;
+  padding:         16px;
+  border-radius:   12px;
+  border:          2px solid var(--border-color);
+  background-color: var(--bg-card);
+  margin-bottom:   8px;
+}
+
+.history-item__text { flex: 1; min-width: 0; }
+.history-item__title  { font-size: 1rem !important; font-weight: 700 !important; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-item__author { font-size: 0.9rem !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.history-item__date   { font-size: 0.8rem !important; opacity: 0.75; }
+.history-item__icon   { font-size: 2rem !important; flex-shrink: 0; color: var(--color-accent) !important; }
+
+.history-empty {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  gap:             12px;
+  padding:         48px 16px;
+  text-align:      center;
+}
+.history-empty__icon { font-size: 3rem !important; opacity: 0.5; }
+
+.btn-clear-history {
+  display:    flex;
+  align-items: center;
+  gap:         8px;
+  width:       100%;
+  justify-content: center;
+  margin-top:  16px;
+  padding:     12px !important;
+  font-size:   0.95rem !important;
+}
+
+/* ── 18. Zone de dépôt ────────────────────────────────────────── */
 #dropZone {
-  background-color: var(--bg-card) !important;
-  border: 4px dashed var(--border-color) !important;
-  color: var(--text-main) !important;
+  background-color: var(--bg-card)    !important;
+  border:           4px dashed var(--border-color) !important;
+  color:            var(--text-main)  !important;
+}
+
+.drop-zone-active {
+  border-color:     var(--color-primary) !important;
+  background-color: color-mix(in srgb, var(--bg-button) 10%, var(--bg-card)) !important;
+}
+
+/* ── 19. Mode Épuré — Overlay ────────────────────────────────── */
+#cleanModeOverlay {
+  background-color: var(--bg-app) !important;
+}
+
+#cleanPlayPause {
+  min-height: 200px !important;
+  border-radius: 24px !important;
+}
+
+#cleanPlayIcon {
+  font-size: 5rem !important;
+}
+
+#cleanPlayLabel {
+  font-size:   2rem   !important;
+  font-weight: 700    !important;
+  letter-spacing: 0.05em;
+}
+
+/* ── 20. Bouton Mode Épuré (header) ──────────────────────────── */
+#toggleCleanMode {
+  display:      flex;
+  align-items:  center;
+  gap:          8px;
+  padding:      10px 18px !important;
+  font-size:    0.95rem !important;
+  border-radius: 14px !important;
+}
+
+/* ── 21. Lecteur audio — conteneur principal ─────────────────── */
+#view-player .player-cover {
+  width:            160px;
+  height:           160px;
+  border-radius:    20px;
+  background-color: var(--bg-card);
+  border:           3px solid var(--border-color);
+  display:          flex;
+  align-items:      center;
+  justify-content:  center;
+  margin-bottom:    16px;
+}
+
+#view-player .player-cover .material-symbols-outlined {
+  font-size: 5rem !important;
+  color:     var(--color-primary) !important;
+}
+
+/* ── 22. Boutons de contrôle dans le lecteur ─────────────────── */
+#playPause {
+  width:  96px;
+  height: 96px;
+  border-radius: 50% !important;
+}
+
+#playPause .material-symbols-outlined,
+#cleanPlayPause .material-symbols-outlined {
+  font-size: 3.5rem !important;
+}
+
+#btn-prev .material-symbols-outlined,
+#btn-next .material-symbols-outlined {
+  font-size: 2.5rem !important;
+}
+
+#btn-backward60 .material-symbols-outlined,
+#btn-forward60  .material-symbols-outlined {
+  font-size: 2rem !important;
+}
+
+/* ── 23. Accessibilité : classe sr-only ──────────────────────── */
+.sr-only {
+  position:   absolute;
+  width:      1px;
+  height:     1px;
+  padding:    0;
+  margin:     -1px;
+  overflow:   hidden;
+  clip:       rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border:     0;
+}
+
+/* ── 24. Animations de transition ────────────────────────────── */
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 25. Spinner de chargement ───────────────────────────────── */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── 26. Texte de temps ─────────────────────────────────────── */
+#time-current,
+#time-total {
+  font-size:   1rem   !important;
+  font-weight: 700    !important;
+  font-variant-numeric: tabular-nums;
 }
