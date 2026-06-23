@@ -2,11 +2,62 @@
 
 :root {
     --font-luciole: 'Luciole', Arial, sans-serif;
+    
+    /* 1. THÈME CLAIR (Par défaut) */
+    --bg-primary: #f8fafc;
+    --bg-secondary: #e2e8f0;
+    --surface: #ffffff;
+    --surface-hover: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --accent: #d97706;
+    --text-on-accent: #ffffff;
+    --border: #cbd5e1;
 }
 
+/* 2. THÈME SOMBRE STRICT */
+body.theme-dark {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --surface: #1e293b;
+    --surface-hover: #334155;
+    --text-primary: #FFFFFF;    /* Blanc absolu obligatoire */
+    --text-secondary: #E5E5E5;  /* Gris très clair maximum */
+    --accent: #f59e0b;
+    --text-on-accent: #000000;
+    --border: #475569;
+}
+
+/* 3. THÈME CONTRASTE ÉLEVÉ (Noir pur / Blanc pur) */
+body.theme-hc {
+    --bg-primary: #000000;
+    --bg-secondary: #000000;
+    --surface: #000000;
+    --surface-hover: #1a1a1a;
+    --text-primary: #FFFFFF;
+    --text-secondary: #FFFFFF;
+    --accent: #FFFFFF;
+    --text-on-accent: #000000;
+    --border: #FFFFFF;
+}
+
+/* 4. THÈME SÉPIA (Repos visuel) */
+body.theme-sepia {
+    --bg-primary: #f4ecd8;
+    --bg-secondary: #eaddc5;
+    --surface: #fbf0d9;
+    --surface-hover: #dfcdae;
+    --text-primary: #433422;
+    --text-secondary: #5f4b32;
+    --accent: #854d0e;
+    --text-on-accent: #ffffff;
+    --border: #d3c4a9;
+}
+
+/* Base typographique */
 body {
     font-family: var(--font-luciole) !important;
-    font-size: 1.8rem !important;
+    font-size: 1rem !important; /* Base 16px garantie */
 }
 
 button, input, select, textarea {
@@ -14,157 +65,108 @@ button, input, select, textarea {
 }
 
 /* =========================================================================
-   REFONTE DE LA ZONE DE CONTRÔLE (GRILLE PARFAITE ET RESPONSIVE)
+   ZONE DE CONTRÔLE : LIGNE UNIQUE ET SYMÉTRIQUE
    ========================================================================= */
 
-/* Les 4 boutons périphériques (-1m, Précédent, Suivant, +1m) */
+.player-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .player-row { gap: 1rem; }
+}
+
 .control-btn {
-    height: clamp(6rem, 14vh, 9rem) !important;
-    border: 4px solid var(--border-color, #cbd5e1) !important; /* Gris clair par défaut */
-    border-radius: 24px !important;
-    background-color: var(--bg-card, #f8fafc) !important;
-    color: var(--text-main, #1e293b) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    width: 100% !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
-    transition: transform 0.1s ease, background-color 0.2s ease !important;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid var(--border) !important;
+    border-radius: 1.5rem !important;
+    background-color: var(--surface) !important;
+    color: var(--text-primary) !important;
+    min-height: 85px; /* Dépasse largement les 44px d'accessibilité */
+    padding: 0.5rem;
+    transition: transform 0.1s ease, background-color 0.2s ease;
+    cursor: pointer;
 }
 
-/* Bouton Central GÉANT (Lecture/Pause) */
-.control-btn-main {
-    height: clamp(8rem, 18vh, 12rem) !important;
-    border: 6px solid var(--border-color, #d97706) !important;
-    border-radius: 32px !important;
-    background-color: var(--bg-main-btn, #d97706) !important;
-    color: var(--text-main-btn, #ffffff) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 12px !important;
-    width: 100% !important;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
-    transition: transform 0.1s ease !important;
+.control-btn:hover {
+    background-color: var(--surface-hover) !important;
 }
 
-/* Effet de clic universel */
 .control-btn:active, .control-btn-main:active {
-    transform: scale(0.95) !important;
+    transform: scale(0.95);
 }
 
-/* Typographie standardisée des icônes et textes */
+/* Bouton Central Lecture */
+.control-btn-main {
+    flex: 1.2;
+    border-color: var(--accent) !important;
+    background-color: var(--accent) !important;
+    color: var(--text-on-accent) !important;
+}
+
+.control-btn-main * {
+    color: var(--text-on-accent) !important;
+}
+
+/* Typographie standardisée des contrôles */
 .control-icon {
-    font-size: clamp(2.5rem, 6vw, 4rem) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    line-height: 1 !important;
+    font-size: 2rem !important; /* Taille d'icône unique */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     pointer-events: none;
 }
+
 .control-icon-main {
-    font-size: clamp(4rem, 10vw, 6rem) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    line-height: 1 !important;
+    font-size: 3rem !important; /* Icône Lecture plus grande */
     pointer-events: none;
 }
+
 .control-text {
-    font-size: clamp(1rem, 2.5vw, 1.5rem) !important;
+    font-size: 1rem !important; /* RÈGLE STRICTE : 16px minimum */
     font-weight: 900 !important;
-    text-transform: uppercase !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    pointer-events: none;
-}
-.control-text-main {
-    font-size: clamp(1.5rem, 4vw, 2.5rem) !important;
-    font-weight: 900 !important;
-    letter-spacing: 0.1em !important;
-    text-transform: uppercase !important;
-    white-space: nowrap !important;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    white-space: nowrap; /* Aucun retour à la ligne */
     pointer-events: none;
 }
 
-/* =========================================================================
-   THÈMES D'ACCESSIBILITÉ FORCÉS (WCAG AA)
-   ========================================================================= */
-
-body.theme-white-on-black,
-body.theme-white-on-black main,
-body.theme-white-on-black header,
-body.theme-white-on-black nav,
-body.theme-white-on-black div,
-body.theme-white-on-black section {
-    background-color: #000000 !important;
-    color: #ffffff !important;
-    border-color: #ffffff !important;
-}
-body.theme-white-on-black .control-btn, 
-body.theme-white-on-black .control-btn-main,
-body.theme-white-on-black .nav-tab,
-body.theme-white-on-black button {
-    background-color: #1a1a1a !important;
-    color: #ffffff !important;
-    border: 4px solid #ffffff !important;
-}
-body.theme-white-on-black input[type="range"] {
-    accent-color: #ffffff !important;
-    background-color: #444444 !important;
+/* ASTUCE D'ACCESSIBILITÉ RESPONSIVE :
+   En dessous de 768px (Tablette), afficher 5 boutons de 16px sur une ligne 
+   crée un chevauchement inévitable. Les textes sont donc masqués visuellement 
+   (mais lisibles par les lecteurs d'écran), laissant les icônes parfaitement alignées.
+*/
+@media (max-width: 767px) {
+    .control-text {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+    }
+    .control-btn { min-height: 70px; }
 }
 
-body.theme-black-on-white,
-body.theme-black-on-white main,
-body.theme-black-on-white header,
-body.theme-black-on-white nav,
-body.theme-black-on-white div,
-body.theme-black-on-white section {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    border-color: #000000 !important;
-}
-body.theme-black-on-white .control-btn, 
-body.theme-black-on-white .control-btn-main,
-body.theme-black-on-white .nav-tab,
-body.theme-black-on-white button {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    border: 4px solid #000000 !important;
-}
-body.theme-black-on-white input[type="range"] {
-    accent-color: #000000 !important;
-    background-color: #cccccc !important;
+/* Focus clavier très visible */
+.focus-ring:focus {
+    outline: 4px solid var(--accent) !important;
+    outline-offset: 4px;
 }
 
-body.theme-yellow-on-black,
-body.theme-yellow-on-black main,
-body.theme-yellow-on-black header,
-body.theme-yellow-on-black nav,
-body.theme-yellow-on-black div,
-body.theme-yellow-on-black section,
-body.theme-yellow-on-black h1,
-body.theme-yellow-on-black h2,
-body.theme-yellow-on-black h3 {
-    background-color: #000000 !important;
-    color: #ffff00 !important;
-    border-color: #ffff00 !important;
-}
-body.theme-yellow-on-black .control-btn, 
-body.theme-yellow-on-black .control-btn-main,
-body.theme-yellow-on-black .nav-tab,
-body.theme-yellow-on-black button {
-    background-color: #000000 !important;
-    color: #ffff00 !important;
-    border: 6px solid #ffff00 !important;
-}
-body.theme-yellow-on-black input[type="range"] {
-    accent-color: #ffff00 !important;
-    background-color: #333333 !important;
-}
-body.theme-yellow-on-black span {
-    color: #ffff00 !important;
+/* RÈGLE ABSOLUE : Suppression de la Table des Matières */
+#chapters-container,
+[id*="chapters"] {
+  display: none !important;
 }
