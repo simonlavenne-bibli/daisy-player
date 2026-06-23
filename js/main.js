@@ -4,46 +4,28 @@ import * as ui from './ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const player = new DaisyPlayer();
-    const toggleCleanModeBtn = document.getElementById('toggleCleanMode');
     
     function listen(id, event, callback) {
         const el = document.getElementById(id);
         if (el) el.addEventListener(event, callback);
     }
 
+    // Gestion de la navigation inter-onglets
     listen('nav-home', 'click', () => {
-        ui.showPage(document.getElementById('nav-home'), document.getElementById('view-home'), toggleCleanModeBtn);
+        ui.showPage(document.getElementById('nav-home'), document.getElementById('view-home'));
         loadHistory();
     });
     listen('nav-history', 'click', () => {
-        ui.showPage(document.getElementById('nav-history'), document.getElementById('view-history'), toggleCleanModeBtn);
+        ui.showPage(document.getElementById('nav-history'), document.getElementById('view-history'));
         loadHistory();
     });
     listen('nav-player', 'click', () => {
-        ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'), toggleCleanModeBtn);
+        ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
     });
 
     listen('btn-theme-toggle', 'click', () => ui.cycleThemes());
 
-    let isCleanMode = false;
-    listen('toggleCleanMode', 'click', () => {
-        const normalLayout = document.getElementById('player-normal-layout');
-        const cleanLayout = document.getElementById('player-clean-layout');
-        isCleanMode = !isCleanMode;
-        
-        if (normalLayout && cleanLayout) {
-            if (isCleanMode) {
-                normalLayout.classList.add('hidden');
-                cleanLayout.classList.remove('hidden');
-                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined text-4xl">workspace_premium</span><span class="text-2xl font-black">MODE NORMAL</span>';
-            } else {
-                normalLayout.classList.remove('hidden');
-                cleanLayout.classList.add('hidden');
-                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined text-4xl">buttons_alt</span><span class="text-2xl font-black">MODE ÉPURÉ</span>';
-            }
-        }
-    });
-
+    // Explorateur de fichiers & Glisser-Déposer
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('dropZone');
 
@@ -65,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Fonction de traitement et d'initialisation du livre
     async function handleFileSelection(file) {
         const overlay = document.getElementById('loading-overlay');
         if (overlay) overlay.classList.remove('hidden');
@@ -72,20 +55,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const bookData = await parseDaisyZip(file);
             player.setBook(bookData.zip, bookData.playlist);
             
-            const bTitle = document.getElementById('book-title'); if (bTitle) bTitle.textContent = bookData.title;
-            const bAuthor = document.getElementById('book-author'); if (bAuthor) bAuthor.textContent = bookData.author;
-            const cBookTitle = document.getElementById('cleanBookTitle'); if (cBookTitle) cBookTitle.textContent = bookData.title;
+            const bTitle = document.getElementById('book-title'); 
+            if (bTitle) bTitle.textContent = bookData.title;
 
-            ui.renderChaptersList(player.playlist, async (index) => {
-                player.currentIndex = index;
-                await handleTrackChange(player.loadCurrentTrack());
-                if (!player.isPlaying) playPauseAction();
-            });
-
+            // Charge le premier morceau
             await handleTrackChange(player.loadCurrentTrack());
             addToHistory(bookData.title, bookData.author);
 
-            ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'), toggleCleanModeBtn);
+            // Bascule automatiquement sur l'onglet du lecteur
+            ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
+            
+            // Lancer la lecture automatiquement si souhaité, sinon mettre à jour l'UI
+            if (!player.isPlaying) playPauseAction();
+            
         } catch (error) {
             alert(error.message || "Erreur lors de l'ouverture du livre DAISY.");
         } finally {
@@ -93,38 +75,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- CONTRÔLES AUDIO (LA NOUVELLE GRILLE 2X2) ---
+    
     const playPauseAction = () => {
         const isPlaying = player.toggle();
         ui.updatePlayPauseUI(isPlaying);
     };
-    listen('playPause', 'click', playPauseAction);
     listen('cleanPlayPause', 'click', playPauseAction);
 
-    listen('btn-skip-back-1m', 'click', () => {
-        player.audio.currentTime = Math.max(0, player.audio.currentTime - 60);
+    // Sauts de -1 minute et +1 minute
+    listen('btn-skip-back', 'click', () => {
+        if (player.audio) {
+            player.audio.currentTime = Math.max(0, player.audio.currentTime - 60);
+        }
     });
-    listen('btn-skip-forward-1m', 'click', () => {
-        player.audio.currentTime = Math.min(player.audio.duration, player.audio.currentTime + 60);
+    listen('btn-skip-forward', 'click', () => {
+        if (player.audio) {
+            player.audio.currentTime = Math.min(player.audio.duration || Infinity, player.audio.currentTime + 60);
+        }
     });
 
+    // Changement de piste (Précédent / Suivant)
     async function handleTrackChange(trackPromise) {
         const track = await trackPromise;
         if (track) {
-            const cChapterTitle = document.getElementById('cleanChapterTitle');
-            if (cChapterTitle) cChapterTitle.textContent = track.title;
-            ui.highlightActiveChapter(player.currentIndex);
+            ui.highlightActiveChapter(track.title);
+        } else if (player.currentIndex === player.playlist.length - 1 && !player.isPlaying) {
+            ui.updatePlayPauseUI(false);
         }
     }
 
-    listen('btn-next', 'click', () => handleTrackChange(player.next()));
+    listen('cleanNext', 'click', () => handleTrackChange(player.next()));
     listen('btn-prev', 'click', () => handleTrackChange(player.prev()));
 
+    // Synchronisation de la barre temporelle
     const audioSlider = document.getElementById('audio-slider');
     const timeCurrent = document.getElementById('time-current');
     const timeDuration = document.getElementById('time-duration');
 
     function formatTime(seconds) {
-        if (isNaN(seconds)) return "00:00";
+        if (isNaN(seconds) || !isFinite(seconds)) return "00:00";
         const m = Math.floor(seconds / 60).toString().padStart(2, '0');
         const s = Math.floor(seconds % 60).toString().padStart(2, '0');
         return `${m}:${s}`;
@@ -148,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Passage automatique à la piste suivante en fin de chapitre
     player.audio.addEventListener('ended', () => {
         if (player.currentIndex < player.playlist.length - 1) {
             handleTrackChange(player.next());
@@ -157,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- SAUVEGARDE ET HISTORIQUE ---
     function loadHistory() {
         const container = document.getElementById('history-container');
         if (!container) return;
@@ -164,26 +156,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const history = JSON.parse(localStorage.getItem('daisy_history') || '[]');
         
         if (history.length === 0) {
-            container.innerHTML = `<p class="text-center py-12 text-slate-500 text-3xl font-black">Aucun historique.</p>`;
+            container.innerHTML = `<p class="text-center py-12 text-slate-500 text-2xl md:text-3xl font-black">Aucun historique de lecture.</p>`;
             return;
         }
 
         history.forEach(item => {
             const card = document.createElement('div');
-            // Cartes d'historique XXL
-            card.className = "p-8 bg-white rounded-3xl border-4 border-slate-200 flex justify-between items-center gap-6 shadow-md";
-            card.innerHTML = `<div><h4 class="font-black text-3xl text-slate-800">${item.title}</h4><p class="text-2xl font-bold text-slate-500 mt-2">${item.author} — ${item.date}</p></div><span class="material-symbols-outlined text-6xl text-amber-600">book</span>`;
+            card.className = "p-6 md:p-8 bg-white rounded-3xl border-4 border-slate-200 flex justify-between items-center gap-6 shadow-md";
+            card.innerHTML = `<div class="overflow-hidden"><h4 class="font-black text-2xl md:text-3xl text-slate-800 truncate">${item.title}</h4><p class="text-xl md:text-2xl font-bold text-slate-500 mt-2 truncate">${item.author} — Lu le ${item.date}</p></div><span class="material-symbols-outlined text-[50px] md:text-[60px] text-amber-600 flex-shrink-0">book</span>`;
             container.appendChild(card);
         });
     }
 
     function addToHistory(title, author) {
         let history = JSON.parse(localStorage.getItem('daisy_history') || '[]');
-        history = history.filter(h => h.title !== title);
+        history = history.filter(h => h.title !== title); // Supprime le doublon s'il existe
         const d = new Date();
         const dateStr = d.toLocaleDateString('fr-FR');
         history.unshift({ title, author, date: dateStr });
-        if (history.length > 5) history.pop();
+        if (history.length > 5) history.pop(); // Ne garder que les 5 derniers
         localStorage.setItem('daisy_history', JSON.stringify(history));
     }
 
