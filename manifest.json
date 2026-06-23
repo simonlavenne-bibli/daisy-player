@@ -1,38 +1,22 @@
 {
-  "name": "Lumière Audio — Lecteur DAISY",
-  "short_name": "Lumière Audio",
-  "description": "Lecteur de livres audio DAISY accessible aux personnes malvoyantes. Simple, inclusif, utilisable hors ligne.",
-  "start_url": "./",
-  "scope": "./",
+  "name": "Lumière Audio",
+  "short_name": "LumiereAudio",
+  "description": "Lecteur de livres audio DAISY simple et accessible",
+  "start_url": "./index.html",
   "display": "standalone",
+  "background_color": "#ffffff",
+  "theme-color": "#d97706",
   "orientation": "portrait-primary",
-  "background_color": "#F8F9FF",
-  "theme_color": "#855300",
-  "lang": "fr",
-  "dir": "ltr",
-  "categories": ["books", "education", "accessibility"],
   "icons": [
     {
-      "src": "./icons/icon-192.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/3201/3201558.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "./icons/icon-512.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/3201/3201558.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
-  ],
-  "shortcuts": [
-    {
-      "name": "Ouvrir un livre DAISY",
-      "short_name": "Ouvrir",
-      "url": "./#home",
-      "description": "Charger un nouveau livre audio DAISY"
-    }
-  ],
-  "screenshots": [],
-  "prefer_related_applications": false
+  ]
 }
