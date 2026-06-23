@@ -7,7 +7,7 @@
     <!-- Intégration PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f59e0b">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link class="apple-touch-icon" href="icons/icon-192.png">
     
     <!-- Tailwind CSS & Google Material Symbols -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,41 +33,41 @@
         }
     </script>
 </head>
-<body class="bg-slate-50 text-slate-900 transition-colors duration-200 min-h-screen flex flex-col font-luciole">
+<body class="bg-slate-50 text-slate-900 transition-colors duration-200 min-h-screen flex flex-col font-luciole pb-28">
 
     <!-- EN-TÊTE CONFIGURATION GLOBAL -->
     <header class="p-4 bg-white shadow-sm flex justify-between items-center border-b">
-        <h1 class="text-2xl font-bold flex items-center gap-2 text-amber-700">
-            <span class="material-symbols-outlined text-3xl">lightbulb</span> Lumière Audio
+        <h1 class="text-3xl font-black flex items-center gap-2 text-amber-700">
+            <span class="material-symbols-outlined text-4xl">lightbulb</span> Lumière Audio
         </h1>
-        <div class="flex items-center gap-2">
-            <button id="toggleCleanMode" class="hidden flex items-center gap-2 bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-amber-700 shadow" title="Basculer le mode d'affichage">
-                <span class="material-symbols-outlined">buttons_alt</span>
-                <span class="text-sm font-bold">MODE ÉPURÉ</span>
+        <div class="flex items-center gap-3">
+            <button id="toggleCleanMode" class="hidden flex items-center gap-2 bg-amber-600 text-white px-5 py-3 rounded-2xl font-black hover:bg-amber-700 shadow-md border-2 border-amber-700" title="Basculer le mode d'affichage">
+                <span class="material-symbols-outlined text-2xl">buttons_alt</span>
+                <span class="text-base">MODE ÉPURÉ</span>
             </button>
-            <button id="btn-theme-toggle" class="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-800" title="Changer de thème visuel">
-                <span class="material-symbols-outlined text-2xl">palette</span>
+            <button id="btn-theme-toggle" class="p-4 rounded-2xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-800 border-2 border-slate-300 shadow-sm" title="Changer de thème visuel">
+                <span class="material-symbols-outlined text-3xl">palette</span>
             </button>
         </div>
     </header>
 
     <!-- ZONE DE CONTENU PRINCIPALE (ONGLETS) -->
-    <main class="flex-1 max-w-4xl w-full mx-auto p-4 pb-24">
+    <main class="flex-1 max-w-4xl w-full mx-auto p-4">
         
         <!-- VUE ACCUEIL -->
         <section id="view-home" class="space-y-6 py-4">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border text-center space-y-4">
-                <p class="text-xl leading-relaxed text-slate-700 font-medium">
-                    <strong>Lumière Audio</strong> - Votre lecteur de livres audio DAISY, simple et accessible. <br>
-                    Glissez-déposez l'archive ZIP de votre livre DAISY ou parcourez vos fichiers pour démarrer immédiatement la lecture.
+            <div class="bg-white p-6 rounded-2xl shadow-sm border text-center space-y-6">
+                <p class="text-2xl leading-relaxed text-slate-700 font-bold">
+                    Votre lecteur de livres audio DAISY, simple et accessible. <br>
+                    Glissez-déposez l'archive ZIP de votre livre ou parcourez vos fichiers.
                 </p>
                 
-                <!-- Zone d'importation Drag & Drop -->
-                <div id="dropZone" class="border-4 border-dashed border-slate-300 rounded-2xl p-10 cursor-pointer hover:border-amber-500 hover:bg-amber-50/50 transition-all text-center group">
-                    <span class="material-symbols-outlined text-6xl text-slate-400 group-hover:text-amber-600 transition-colors">cloud_upload</span>
-                    <p class="mt-4 text-lg font-bold text-slate-600">Déposez votre fichier ZIP DAISY ici</p>
-                    <p class="text-sm text-slate-400 mt-1">ou cliquez pour parcourir votre ordinateur</p>
-                    <button id="btn-browse" class="mt-4 bg-amber-600 text-white font-bold px-6 py-3 rounded-xl shadow group-hover:bg-amber-700">Parcourir les fichiers</button>
+                <!-- Zone d'importation Drag & Drop (Agrandie et renforcée) -->
+                <div id="dropZone" class="border-4 border-dashed border-slate-400 rounded-2xl p-14 cursor-pointer hover:border-amber-500 hover:bg-amber-50/50 transition-all text-center group bg-slate-50">
+                    <span class="material-symbols-outlined text-7xl text-slate-400 group-hover:text-amber-600 transition-colors">cloud_upload</span>
+                    <p class="mt-4 text-2xl font-black text-slate-700">Déposez votre fichier ZIP DAISY ici</p>
+                    <p class="text-base text-slate-500 mt-2">ou cliquez sur le bouton géant ci-dessous</p>
+                    <button id="btn-browse" class="mt-6 bg-amber-600 text-white font-black text-xl px-10 py-5 rounded-2xl shadow-lg border-2 border-amber-700 group-hover:bg-amber-700 active:scale-95 transition-transform">Parcourir mes fichiers</button>
                     <input type="file" id="file-input" accept=".zip" class="hidden">
                 </div>
             </div>
@@ -75,8 +75,8 @@
 
         <!-- VUE HISTORIQUE -->
         <section id="view-history" class="hidden space-y-4 py-4">
-            <h2 class="text-xl font-bold flex items-center gap-2"><span class="material-symbols-outlined">history</span> Vos lectures récentes</h2>
-            <div id="history-container" class="space-y-3">
+            <h2 class="text-2xl font-black flex items-center gap-2"><span class="material-symbols-outlined text-3xl">history</span> Vos lectures récentes</h2>
+            <div id="history-container" class="space-y-4">
                 <!-- Injecté dynamiquement par JS -->
             </div>
         </section>
@@ -85,14 +85,14 @@
         <section id="view-player" class="hidden space-y-6 py-2">
             
             <!-- ÉLÉMENT COMMUNS AUX DEUX MODES : BARRE DE TEMPS -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-slate-200 space-y-4">
                 <div class="text-center">
-                    <h3 id="book-title" class="text-xl font-bold text-amber-700 truncate">Titre du livre</h3>
-                    <p id="book-author" class="text-base text-slate-500 truncate">Auteur</p>
+                    <h3 id="book-title" class="text-2xl font-black text-amber-700 truncate">Titre du livre</h3>
+                    <p id="book-author" class="text-lg font-bold text-slate-500 truncate">Auteur</p>
                 </div>
-                <div class="space-y-1">
-                    <input type="range" id="audio-slider" min="0" max="100" value="0" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
-                    <div class="flex justify-between text-base font-bold text-slate-500">
+                <div class="space-y-2">
+                    <input type="range" id="audio-slider" min="0" max="100" value="0" class="w-full h-4 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                    <div class="flex justify-between text-lg font-black text-slate-600">
                         <span id="time-current">00:00</span>
                         <span id="time-duration">00:00</span>
                     </div>
@@ -101,35 +101,35 @@
 
             <!-- STRUCTURE DU LECTEUR COMPLET / NORMAL -->
             <div id="player-normal-layout" class="space-y-6">
-                <!-- Commandes Audio demandées : [-1 min], [-1 chap], [Play/Pause], [+1 chap], [+1 min] -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border flex flex-wrap justify-center items-center gap-4">
-                    <button id="btn-skip-back-1m" class="flex flex-col items-center bg-slate-100 p-4 rounded-xl font-bold text-slate-700 hover:bg-slate-200 border min-w-[70px]" title="Reculer d'une minute">
-                        <span class="material-symbols-outlined text-3xl">replay_60</span>
-                        <span class="text-xs mt-1">- 1 Min</span>
+                <!-- Commandes Audio XXL : [-1 min], [-1 chap], [Play/Pause], [+1 chap], [+1 min] -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-slate-200 flex flex-wrap justify-center items-center gap-4">
+                    <button id="btn-skip-back-1m" class="flex flex-col items-center bg-slate-100 p-5 rounded-2xl font-black text-slate-800 hover:bg-slate-200 border-2 border-slate-300 min-w-[95px] shadow" title="Reculer d'une minute">
+                        <span class="material-symbols-outlined text-4xl">replay_60</span>
+                        <span class="text-xs mt-1.5">- 1 Min</span>
                     </button>
-                    <button id="btn-prev" class="flex flex-col items-center bg-slate-100 p-4 rounded-xl font-bold text-slate-700 hover:bg-slate-200 border min-w-[70px]" title="Chapitre précédent">
-                        <span class="material-symbols-outlined text-3xl">skip_previous</span>
-                        <span class="text-xs mt-1">Précédent</span>
+                    <button id="btn-prev" class="flex flex-col items-center bg-slate-100 p-5 rounded-2xl font-black text-slate-800 hover:bg-slate-200 border-2 border-slate-300 min-w-[95px] shadow" title="Chapitre précédent">
+                        <span class="material-symbols-outlined text-4xl">skip_previous</span>
+                        <span class="text-xs mt-1.5">Précédent</span>
                     </button>
-                    <button id="playPause" class="bg-amber-600 text-white w-20 h-20 rounded-full flex items-center justify-center shadow-lg hover:bg-amber-700 transition-transform active:scale-95" title="Lecture / Pause">
-                        <span id="playPauseIcon" class="material-symbols-outlined text-5xl">play_arrow</span>
+                    <button id="playPause" class="bg-amber-600 text-white w-24 h-24 rounded-full flex items-center justify-center shadow-xl hover:bg-amber-700 border-4 border-white transition-transform active:scale-95" title="Lecture / Pause">
+                        <span id="playPauseIcon" class="material-symbols-outlined text-6xl">play_arrow</span>
                     </button>
-                    <button id="btn-next" class="flex flex-col items-center bg-slate-100 p-4 rounded-xl font-bold text-slate-700 hover:bg-slate-200 border min-w-[70px]" title="Chapitre suivant">
-                        <span class="material-symbols-outlined text-3xl">skip_next</span>
-                        <span class="text-xs mt-1">Suivant</span>
+                    <button id="btn-next" class="flex flex-col items-center bg-slate-100 p-5 rounded-2xl font-black text-slate-800 hover:bg-slate-200 border-2 border-slate-300 min-w-[95px] shadow" title="Chapitre suivant">
+                        <span class="material-symbols-outlined text-4xl">skip_next</span>
+                        <span class="text-xs mt-1.5">Suivant</span>
                     </button>
-                    <button id="btn-skip-forward-1m" class="flex flex-col items-center bg-slate-100 p-4 rounded-xl font-bold text-slate-700 hover:bg-slate-200 border min-w-[70px]" title="Avancer d'une minute">
-                        <span class="material-symbols-outlined text-3xl">forward_60</span>
-                        <span class="text-xs mt-1">+ 1 Min</span>
+                    <button id="btn-skip-forward-1m" class="flex flex-col items-center bg-slate-100 p-5 rounded-2xl font-black text-slate-800 hover:bg-slate-200 border-2 border-slate-300 min-w-[95px] shadow" title="Avancer d'une minute">
+                        <span class="material-symbols-outlined text-4xl">forward_60</span>
+                        <span class="text-xs mt-1.5">+ 1 Min</span>
                     </button>
                 </div>
 
-                <!-- L'index complet de navigation n'apparaît que dans ce mode -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border space-y-3">
-                    <h4 class="text-lg font-bold text-slate-800 border-b pb-2 flex items-center gap-2">
-                        <span class="material-symbols-outlined">toc</span> Table des matières (Index)
+                <!-- Index complet de navigation (Table des matières) -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border-2 border-slate-200 space-y-4">
+                    <h4 class="text-xl font-black text-slate-800 border-b pb-2 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-2xl">toc</span> Table des matières
                     </h4>
-                    <div id="chapters-container" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <div id="chapters-container" class="space-y-3 max-h-64 overflow-y-auto pr-1">
                         <!-- Rempli dynamiquement -->
                     </div>
                 </div>
@@ -137,52 +137,42 @@
 
             <!-- STRUCTURE DU LECTEUR ÉPURÉ (Uniquement l'immense bouton Play/Pause) -->
             <div id="player-clean-layout" class="hidden flex flex-col items-center justify-center py-6">
-                <button id="cleanPlayPause" class="w-72 h-72 rounded-full bg-amber-600 text-white shadow-2xl hover:bg-amber-700 flex flex-col items-center justify-center gap-2 border-8 border-white transition-transform active:scale-95">
+                <button id="cleanPlayPause" class="w-80 h-80 rounded-full bg-amber-600 text-white shadow-2xl hover:bg-amber-700 flex flex-col items-center justify-center gap-3 border-8 border-white transition-transform active:scale-95">
                     <span id="cleanPlayIcon" class="material-symbols-outlined text-9xl">play_arrow</span>
-                    <span id="cleanPlayLabel" class="text-2xl font-black tracking-widest">LECTURE</span>
+                    <span id="cleanPlayLabel" class="text-3xl font-black tracking-widest">LECTURE</span>
                 </button>
-                <div class="text-center mt-6">
-                    <span id="cleanBookTitle" class="text-2xl font-black block text-slate-800">Titre</span>
-                    <span id="cleanChapterTitle" class="text-xl font-bold text-amber-600 block mt-1">Chapitre actif</span>
+                <div class="text-center mt-8">
+                    <span id="cleanBookTitle" class="text-3xl font-black block text-slate-800">Titre</span>
+                    <span id="cleanChapterTitle" class="text-2xl font-bold text-amber-600 block mt-2">Chapitre actif</span>
                 </div>
             </div>
 
         </section>
     </main>
 
-    <!-- BARRE DE NAVIGATION INFÉRIEURE -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-2 flex justify-around items-center z-40">
-        <button id="nav-home" class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-5 py-2 shadow-sm min-w-[80px]">
-            <span class="material-symbols-outlined text-2xl">home</span>
-            <span class="text-xs font-bold mt-0.5">Accueil</span>
+    <!-- BARRE DE NAVIGATION INFÉRIEURE (Boutons d'onglets XXL) -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-slate-200 shadow-2xl p-3 flex justify-around items-center z-40 min-h-[95px]">
+        <button id="nav-home" class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-2xl px-6 py-3 shadow-md min-w-[120px]">
+            <span class="material-symbols-outlined text-4xl">home</span>
+            <span class="text-sm font-black mt-1">Accueil</span>
         </button>
-        <button id="nav-player" class="flex flex-col items-center justify-center text-slate-600 p-2 hover:bg-slate-100 transition-all rounded-xl min-w-[80px]">
-            <span class="material-symbols-outlined text-2xl">radio</span>
-            <span class="text-xs font-bold mt-0.5">Lecteur</span>
+        <button id="nav-player" class="flex flex-col items-center justify-center text-slate-600 p-3 hover:bg-slate-100 transition-all rounded-2xl min-w-[120px]">
+            <span class="material-symbols-outlined text-4xl">radio</span>
+            <span class="text-sm font-black mt-1">Lecteur</span>
         </button>
-        <button id="nav-history" class="flex flex-col items-center justify-center text-slate-600 p-2 hover:bg-slate-100 transition-all rounded-xl min-w-[80px]">
-            <span class="material-symbols-outlined text-2xl">history</span>
-            <span class="text-xs font-bold mt-0.5">Historique</span>
+        <button id="nav-history" class="flex flex-col items-center justify-center text-slate-600 p-3 hover:bg-slate-100 transition-all rounded-2xl min-w-[120px]">
+            <span class="material-symbols-outlined text-4xl">history</span>
+            <span class="text-sm font-black mt-1">Historique</span>
         </button>
     </nav>
 
     <!-- ÉCRAN DE CHARGEMENT GÉNÉRAL -->
     <div id="loading-overlay" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-white z-50">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-amber-500 mb-4"></div>
-        <p class="text-xl font-bold">Analyse de l'archive DAISY en cours...</p>
-        <p class="text-sm text-slate-300 mt-1">Veuillez patienter.</p>
+        <p class="text-2xl font-black">Analyse de l'archive DAISY en cours...</p>
     </div>
 
     <!-- Script de démarrage de l'application & PWA Service Worker -->
     <script type="module" src="js/main.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker enregistré !', reg.scope))
-                    .catch(err => console.warn('Échec enregistrement SW:', err));
-            });
-        }
-    </script>
 </body>
 </html>
