@@ -14,7 +14,7 @@ export function updatePlayPauseUI(isPlaying) {
     if (cLabel) cLabel.textContent = isPlaying ? 'PAUSE' : 'LECTURE';
 }
 
-// Routage d'affichage des écrans par onglet
+// Routage d'affichage des écrans par onglet avec classes de tailles harmonisées XXL
 export function showPage(activeButton, activeSection, toggleCleanModeBtn) {
     const views = [
         document.getElementById('view-home'), 
@@ -30,13 +30,16 @@ export function showPage(activeButton, activeSection, toggleCleanModeBtn) {
     views.forEach(sec => { if (sec) sec.classList.add('hidden'); });
     if (activeSection) activeSection.classList.remove('hidden');
 
+    // Application du style XXL inactif uniforme
     navs.forEach(btn => {
         if (btn) {
-            btn.className = "flex flex-col items-center justify-center text-slate-600 p-2 hover:bg-slate-100 transition-all rounded-xl min-w-[80px]";
+            btn.className = "flex flex-col items-center justify-center text-slate-600 p-3 hover:bg-slate-100 transition-all rounded-2xl min-w-[120px]";
         }
     });
+    
+    // Application du style XXL actif uniforme
     if (activeButton) {
-        activeButton.className = "flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-5 py-2 shadow-sm min-w-[80px]";
+        activeButton.className = "flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-2xl px-6 py-3 shadow-md min-w-[120px]";
     }
     
     if (activeSection && toggleCleanModeBtn) {
@@ -45,15 +48,15 @@ export function showPage(activeButton, activeSection, toggleCleanModeBtn) {
     }
 }
 
-// Rendu de la table des matières (Uniquement pour le mode classique)
+// Rendu de la table des matières (Gros éléments de liste)
 export function renderChaptersList(playlist, onChapterClick) {
     const container = document.getElementById('chapters-container');
     if (!container) return;
     container.innerHTML = "";
     playlist.forEach((track, index) => {
         const btn = document.createElement('button');
-        btn.className = "w-full text-left px-4 py-3 rounded-lg hover:bg-slate-100 flex items-center gap-3 text-base transition-colors border text-slate-800 bg-transparent";
-        btn.innerHTML = `<span class="material-symbols-outlined">radio_button_unchecked</span><span>${track.title}</span>`;
+        btn.className = "w-full text-left px-5 py-4 rounded-xl hover:bg-slate-100 flex items-center gap-4 text-lg font-bold transition-colors border-2 border-slate-200 bg-transparent text-slate-800";
+        btn.innerHTML = `<span class="material-symbols-outlined text-2xl">radio_button_unchecked</span><span>${track.title}</span>`;
         btn.addEventListener('click', () => onChapterClick(index));
         container.appendChild(btn);
     });
@@ -67,16 +70,16 @@ export function highlightActiveChapter(activeIndex) {
     buttons.forEach((btn, index) => {
         const icon = btn.querySelector('.material-symbols-outlined');
         if (index === activeIndex) {
-            btn.className = "w-full text-left px-4 py-3 rounded-lg bg-amber-100 border-l-4 border-amber-600 text-amber-900 font-bold flex items-center gap-3 text-base shadow-inner";
+            btn.className = "w-full text-left px-5 py-4 rounded-xl bg-amber-100 border-l-8 border-amber-600 text-amber-900 font-black flex items-center gap-4 text-lg shadow-inner";
             if (icon) icon.textContent = "play_circle";
         } else {
-            btn.className = "w-full text-left px-4 py-3 rounded-lg hover:bg-slate-100 transition-colors flex items-center gap-3 text-base text-slate-700 bg-transparent border-transparent";
+            btn.className = "w-full text-left px-5 py-4 rounded-xl hover:bg-slate-100 transition-colors flex items-center gap-4 text-lg text-slate-700 bg-transparent border-2 border-slate-200";
             if (icon) icon.textContent = "radio_button_unchecked";
         }
     });
 }
 
-// CYCLAGE DES 4 THÈMES DEMANDÉS
+// CYCLAGE DES 4 THÈMES DEMANDÉS (Cohérence visuelle maintenue sur les bordures)
 export function cycleThemes() {
     const body = document.body;
     if (!body) return;
@@ -84,19 +87,14 @@ export function cycleThemes() {
     if (!body.classList.contains('theme-white-on-black') && 
         !body.classList.contains('theme-black-on-white') && 
         !body.classList.contains('theme-yellow-on-black')) {
-        
-        // Vers Thème 2 : Blanc sur Noir
         body.classList.add('theme-white-on-black');
     } else if (body.classList.contains('theme-white-on-black')) {
-        // Vers Thème 3 : Noir sur Blanc
         body.classList.remove('theme-white-on-black');
         body.classList.add('theme-black-on-white');
     } else if (body.classList.contains('theme-black-on-white')) {
-        // Vers Thème 4 : Jaune sur Noir
         body.classList.remove('theme-black-on-white');
         body.classList.add('theme-yellow-on-black');
     } else {
-        // Retour au Thème 1 : Classique (Par défaut)
         body.classList.remove('theme-yellow-on-black');
     }
 }
