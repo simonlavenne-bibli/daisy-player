@@ -1,355 +1,198 @@
-// ================================================================
-// LUMIÈRE AUDIO v2 — main.js
-// Point d'entrée principal : liaison HTML ↔ Player ↔ UI
-// ================================================================
-
 import { parseDaisyZip } from './parser.js';
-import { DaisyPlayer }   from './player.js';
-import * as ui           from './ui.js';
+import { DaisyPlayer } from './player.js';
+import * as ui from './ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-
-    // ── Initialisation ──────────────────────────────────────────
-    ui.restoreTheme();
     const player = new DaisyPlayer();
-
-    // Raccourci : attacher un listener sur un élément par son ID
+    const toggleCleanModeBtn = document.getElementById('toggleCleanMode');
+    
     function listen(id, event, callback) {
         const el = document.getElementById(id);
         if (el) el.addEventListener(event, callback);
     }
 
-    // ── Références aux éléments de navigation ──────────────────
-    const toggleCleanModeBtn = document.getElementById('toggleCleanMode');
-
-    // ── Navigation principale ───────────────────────────────────
+    // Routage de la navigation
     listen('nav-home', 'click', () => {
-        ui.showPage(
-            document.getElementById('nav-home'),
-            document.getElementById('view-home'),
-            toggleCleanModeBtn
-        );
+        ui.showPage(document.getElementById('nav-home'), document.getElementById('view-home'), toggleCleanModeBtn);
         loadHistory();
     });
-
     listen('nav-history', 'click', () => {
-        ui.showPage(
-            document.getElementById('nav-history'),
-            document.getElementById('view-history'),
-            toggleCleanModeBtn
-        );
+        ui.showPage(document.getElementById('nav-history'), document.getElementById('view-history'), toggleCleanModeBtn);
         loadHistory();
     });
-
     listen('nav-player', 'click', () => {
-        ui.showPage(
-            document.getElementById('nav-player'),
-            document.getElementById('view-player'),
-            toggleCleanModeBtn
-        );
+        ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'), toggleCleanModeBtn);
     });
 
-    // ── Changement de thème ─────────────────────────────────────
     listen('btn-theme-toggle', 'click', () => ui.cycleThemes());
 
-    // ── Mode Épuré / Mode Complet ───────────────────────────────
+    // Interconnexion et Synchronisation des deux structures d'affichage
     let isCleanMode = false;
-    const cleanModeOverlay = document.getElementById('cleanModeOverlay');
-
     listen('toggleCleanMode', 'click', () => {
+        const normalLayout = document.getElementById('player-normal-layout');
+        const cleanLayout = document.getElementById('player-clean-layout');
         isCleanMode = !isCleanMode;
-        if (!cleanModeOverlay) return;
-
-        if (isCleanMode) {
-            // Afficher l'overlay Mode Épuré
-            cleanModeOverlay.classList.remove('hidden');
-            cleanModeOverlay.classList.add('flex');
-            toggleCleanModeBtn.innerHTML =
-                '<span class="material-symbols-outlined" aria-hidden="true">dashboard</span>' +
-                '<span>Mode complet</span>';
-            toggleCleanModeBtn.setAttribute('aria-label', 'Quitter le mode épuré');
-        } else {
-            // Retour au Mode Complet
-            cleanModeOverlay.classList.add('hidden');
-            cleanModeOverlay.classList.remove('flex');
-            toggleCleanModeBtn.innerHTML =
-                '<span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>' +
-                '<span>Mode épuré</span>';
-            toggleCleanModeBtn.setAttribute('aria-label', 'Activer le mode épuré');
+        
+        if (normalLayout && cleanLayout) {
+            if (isCleanMode) {
+                normalLayout.classList.add('hidden');
+                cleanLayout.classList.remove('hidden');
+                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined">workspace_premium</span><span class="text-sm font-bold">MODE NORMAL</span>';
+            } else {
+                normalLayout.classList.remove('hidden');
+                cleanLayout.classList.add('hidden');
+                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined">buttons_alt</span><span class="text-sm font-bold">MODE ÉPURÉ</span>';
+            }
         }
     });
 
-    listen('exitCleanMode', 'click', () => {
-        isCleanMode = false;
-        if (cleanModeOverlay) {
-            cleanModeOverlay.classList.add('hidden');
-            cleanModeOverlay.classList.remove('flex');
-        }
-        if (toggleCleanModeBtn) {
-            toggleCleanModeBtn.innerHTML =
-                '<span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>' +
-                '<span>Mode épuré</span>';
-            toggleCleanModeBtn.setAttribute('aria-label', 'Activer le mode épuré');
-        }
-    });
-
-    // ── Drag & Drop et sélection de fichier ────────────────────
+    // Gestion Drag & Drop / Explorateur local
     const fileInput = document.getElementById('file-input');
-    const dropZone  = document.getElementById('dropZone');
+    const dropZone = document.getElementById('dropZone');
 
-    listen('btn-browse', 'click', (e) => {
-        e.stopPropagation();
-        if (fileInput) fileInput.click();
-    });
-
+    listen('btn-browse', 'click', (e) => { e.stopPropagation(); if (fileInput) fileInput.click(); });
     if (dropZone) {
-        dropZone.addEventListener('click', () => {
-            if (fileInput) fileInput.click();
-        });
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drop-zone-active');
-        });
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('drop-zone-active');
-        });
+        dropZone.addEventListener('click', () => { if (fileInput) fileInput.click(); });
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-amber-500'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-amber-500'));
         dropZone.addEventListener('drop', async (e) => {
             e.preventDefault();
-            dropZone.classList.remove('drop-zone-active');
-            if (e.dataTransfer.files.length > 0) {
-                await handleFileSelection(e.dataTransfer.files[0]);
-            }
+            dropZone.classList.remove('border-amber-500');
+            if (e.dataTransfer.files.length > 0) await handleFileSelection(e.dataTransfer.files[0]);
         });
     }
 
     if (fileInput) {
         fileInput.addEventListener('change', async (e) => {
-            if (e.target.files.length > 0) {
-                await handleFileSelection(e.target.files[0]);
-            }
+            if (e.target.files.length > 0) await handleFileSelection(e.target.files[0]);
         });
     }
 
-    // ── Chargement d'un fichier DAISY ──────────────────────────
     async function handleFileSelection(file) {
         const overlay = document.getElementById('loading-overlay');
         if (overlay) overlay.classList.remove('hidden');
-
         try {
             const bookData = await parseDaisyZip(file);
             player.setBook(bookData.zip, bookData.playlist);
+            
+            // Écriture synchrone des titres
+            const bTitle = document.getElementById('book-title'); if (bTitle) bTitle.textContent = bookData.title;
+            const bAuthor = document.getElementById('book-author'); if (bAuthor) bAuthor.textContent = bookData.author;
+            const cBookTitle = document.getElementById('cleanBookTitle'); if (cBookTitle) cBookTitle.textContent = bookData.title;
 
-            // ── Mise à jour des métadonnées dans les deux modes ─
-            const bookTitleEl      = document.getElementById('book-title');
-            const bookAuthorEl     = document.getElementById('book-author');
-            const cleanBookTitleEl = document.getElementById('cleanBookTitle');
-
-            if (bookTitleEl)      bookTitleEl.textContent      = bookData.title;
-            if (bookAuthorEl)     bookAuthorEl.textContent     = bookData.author;
-            if (cleanBookTitleEl) cleanBookTitleEl.textContent = bookData.title;
-
-            // ── Rendu de la liste des chapitres ────────────────
-            ui.renderChaptersList(bookData.playlist, async (index) => {
+            ui.renderChaptersList(player.playlist, async (index) => {
                 player.currentIndex = index;
-                const track = await player.loadCurrentTrack();
-                handleTrackUpdate(track);
-                if (!player.isPlaying) {
-                    const isNowPlaying = player.toggle();
-                    ui.updatePlayPauseUI(isNowPlaying);
-                }
+                await handleTrackChange(player.loadCurrentTrack());
+                if (!player.isPlaying) playPauseAction();
             });
 
-            // ── Chargement de la première piste ────────────────
-            const firstTrack = await player.loadCurrentTrack();
-            handleTrackUpdate(firstTrack);
-
-            // ── Enregistrement dans l'historique ────────────────
+            await handleTrackChange(player.loadCurrentTrack());
             addToHistory(bookData.title, bookData.author);
 
-            // ── Redirection vers la vue lecteur ─────────────────
-            ui.showPage(
-                document.getElementById('nav-player'),
-                document.getElementById('view-player'),
-                toggleCleanModeBtn
-            );
-
+            ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'), toggleCleanModeBtn);
         } catch (error) {
-            alert(error.message || 'Erreur de chargement du fichier DAISY.');
-            console.error('[Main] handleFileSelection error:', error);
+            alert(error.message || "Erreur lors de l'ouverture du livre DAISY.");
         } finally {
             if (overlay) overlay.classList.add('hidden');
         }
     }
 
-    // ── Mise à jour de l'interface après changement de piste ───
-    function handleTrackUpdate(track) {
-        if (track) {
-            const cleanChapterTitleEl = document.getElementById('cleanChapterTitle');
-            if (cleanChapterTitleEl) cleanChapterTitleEl.textContent = track.title;
-            ui.highlightActiveChapter(player.currentIndex);
-            ui.updatePlayPauseUI(player.isPlaying);
-        } else {
-            // Fin du livre ou erreur
-            player.isPlaying = false;
-            ui.updatePlayPauseUI(false);
-        }
-    }
-
-    // ── Action Play / Pause (partagée entre les deux modes) ────
+    // Actions Multimédias Synchrones
     const playPauseAction = () => {
-        const isNowPlaying = player.toggle();
-        ui.updatePlayPauseUI(isNowPlaying);
+        const isPlaying = player.toggle();
+        ui.updatePlayPauseUI(isPlaying);
     };
-
-    listen('playPause',      'click', playPauseAction);
+    listen('playPause', 'click', playPauseAction);
     listen('cleanPlayPause', 'click', playPauseAction);
 
-    // ── Navigation Chapitre (Mode Complet uniquement) ──────────
-    listen('btn-prev', 'click', async () => {
-        const track = await player.previousChapter();
-        handleTrackUpdate(track);
+    // Commandes Spécifiques demandées : sauts d'une minute (60 secondes)
+    listen('btn-skip-back-1m', 'click', () => {
+        player.audio.currentTime = Math.max(0, player.audio.currentTime - 60);
+    });
+    listen('btn-skip-forward-1m', 'click', () => {
+        player.audio.currentTime = Math.min(player.audio.duration, player.audio.currentTime + 60);
     });
 
-    listen('btn-next', 'click', async () => {
-        const track = await player.nextChapter();
-        handleTrackUpdate(track);
-    });
-
-    // ── Sauts temporels ±60 s (Mode Complet uniquement) ────────
-    listen('btn-backward60', 'click', () => player.skipBackward60());
-    listen('btn-forward60',  'click', () => player.skipForward60());
-
-    // ── Vitesse de lecture ─────────────────────────────────────
-    const speedContainer = document.getElementById('speed-buttons-container');
-    if (speedContainer) {
-        speedContainer.addEventListener('click', (e) => {
-            const btn = e.target.closest('[data-speed]');
-            if (!btn) return;
-            const speed = parseFloat(btn.dataset.speed);
-            if (!isNaN(speed)) {
-                player.setSpeed(speed);
-                // Mise à jour visuelle
-                speedContainer.querySelectorAll('[data-speed]').forEach(b => {
-                    b.classList.remove('speed-btn--active');
-                });
-                btn.classList.add('speed-btn--active');
-            }
-        });
+    async function handleTrackChange(trackPromise) {
+        const track = await trackPromise;
+        if (track) {
+            const cChapterTitle = document.getElementById('cleanChapterTitle');
+            if (cChapterTitle) cChapterTitle.textContent = track.title;
+            ui.highlightActiveChapter(player.currentIndex);
+        }
     }
 
-    // ── Barre de progression ───────────────────────────────────
-    const progressRange = document.getElementById('progress-range');
+    listen('btn-next', 'click', () => handleTrackChange(player.next()));
+    listen('btn-prev', 'click', () => handleTrackChange(player.prev()));
+
+    // Synchronisation de la barre temporelle standard
+    const audioSlider = document.getElementById('audio-slider');
+    const timeCurrent = document.getElementById('time-current');
+    const timeDuration = document.getElementById('time-duration');
+
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return "00:00";
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    player.audio.addEventListener('loadedmetadata', () => {
+        if (audioSlider) { audioSlider.max = Math.floor(player.audio.duration); audioSlider.value = 0; }
+        if (timeDuration) timeDuration.textContent = formatTime(player.audio.duration);
+    });
 
     player.audio.addEventListener('timeupdate', () => {
-        if (!progressRange || isNaN(player.audio.duration)) return;
-        const pct = (player.audio.currentTime / player.audio.duration) * 100;
-        progressRange.value = pct;
-
-        const timeCurrent = document.getElementById('time-current');
-        const timeTotal   = document.getElementById('time-total');
+        if (audioSlider && !audioSlider.seeking) audioSlider.value = Math.floor(player.audio.currentTime);
         if (timeCurrent) timeCurrent.textContent = formatTime(player.audio.currentTime);
-        if (timeTotal)   timeTotal.textContent   = formatTime(player.audio.duration);
     });
 
-    if (progressRange) {
-        progressRange.addEventListener('input', () => {
-            if (!isNaN(player.audio.duration)) {
-                player.audio.currentTime = (progressRange.value / 100) * player.audio.duration;
-            }
+    if (audioSlider) {
+        audioSlider.addEventListener('input', () => audioSlider.seeking = true);
+        audioSlider.addEventListener('change', () => {
+            player.audio.currentTime = parseFloat(audioSlider.value);
+            audioSlider.seeking = false;
         });
     }
 
-    // ── Enchaînement automatique à la fin d'un chapitre ────────
-    player.audio.addEventListener('ended', async () => {
+    player.audio.addEventListener('ended', () => {
         if (player.currentIndex < player.playlist.length - 1) {
-            const track = await player.nextChapter();
-            handleTrackUpdate(track);
+            handleTrackChange(player.next());
         } else {
-            // Fin du livre
             player.isPlaying = false;
             ui.updatePlayPauseUI(false);
         }
     });
 
-    // ── Formatage du temps mm:ss ───────────────────────────────
-    function formatTime(seconds) {
-        if (isNaN(seconds) || seconds < 0) return '00:00';
-        const m = Math.floor(seconds / 60);
-        const s = Math.floor(seconds % 60);
-        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-    }
-
-    // ── Historique LocalStorage ────────────────────────────────
+    // Stockage persistant de l'historique
     function loadHistory() {
         const container = document.getElementById('history-container');
         if (!container) return;
-        container.innerHTML = '';
-
+        container.innerHTML = "";
         const history = JSON.parse(localStorage.getItem('daisy_history') || '[]');
-
+        
         if (history.length === 0) {
-            container.innerHTML = `
-                <div class="history-empty">
-                    <span class="material-symbols-outlined history-empty__icon" aria-hidden="true">history</span>
-                    <p>Aucun livre lu récemment</p>
-                </div>`;
+            container.innerHTML = `<p class="text-center py-6 text-slate-500 font-bold">Aucun historique de lecture.</p>`;
             return;
         }
 
         history.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'history-item';
-            div.innerHTML = `
-                <div class="history-item__text">
-                    <h4 class="history-item__title">${item.title}</h4>
-                    <p  class="history-item__author">${item.author}</p>
-                    <span class="history-item__date">${item.date}</span>
-                </div>
-                <span class="material-symbols-outlined history-item__icon" aria-hidden="true">menu_book</span>
-            `;
-            container.appendChild(div);
+            const card = document.createElement('div');
+            card.className = "p-4 bg-white rounded-xl border flex justify-between items-center gap-4";
+            card.innerHTML = `<div><h4 class="font-bold text-base text-slate-800">${item.title}</h4><p class="text-xs text-slate-400 mt-0.5">${item.author} — Le ${item.date}</p></div><span class="material-symbols-outlined text-amber-600">book</span>`;
+            container.appendChild(card);
         });
-
-        const clearBtn = document.createElement('button');
-        clearBtn.className = 'btn-clear-history';
-        clearBtn.innerHTML =
-            '<span class="material-symbols-outlined" aria-hidden="true">delete</span> Effacer l\'historique';
-        clearBtn.addEventListener('click', () => {
-            localStorage.removeItem('daisy_history');
-            loadHistory();
-        });
-        container.appendChild(clearBtn);
     }
 
     function addToHistory(title, author) {
         let history = JSON.parse(localStorage.getItem('daisy_history') || '[]');
-        // Éviter les doublons
-        history = history.filter(item => item.title !== title);
-
-        const now = new Date();
-        const formattedDate = now.toLocaleDateString('fr-FR', {
-            day:    '2-digit',
-            month:  '2-digit',
-            year:   'numeric',
-            hour:   '2-digit',
-            minute: '2-digit',
-        });
-
-        history.unshift({ title, author, date: formattedDate });
+        history = history.filter(h => h.title !== title);
+        const d = new Date();
+        const dateStr = d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+        history.unshift({ title, author, date: dateStr });
         if (history.length > 5) history.pop();
-
         localStorage.setItem('daisy_history', JSON.stringify(history));
     }
 
-    // ── Chargement initial de l'historique ─────────────────────
     loadHistory();
-
-    // ── Enregistrement du Service Worker (PWA) ─────────────────
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./service-worker.js')
-                .then(reg  => console.log('[PWA] Service Worker enregistré :', reg.scope))
-                .catch(err => console.warn('[PWA] Échec enregistrement SW :', err));
-        });
-    }
 });
