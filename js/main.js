@@ -4,13 +4,14 @@ import * as ui from './ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const player = new DaisyPlayer();
+    const toggleCleanModeBtn = document.getElementById('toggleCleanMode');
     
     function listen(id, event, callback) {
         const el = document.getElementById(id);
         if (el) el.addEventListener(event, callback);
     }
 
-    // Gestion de la navigation inter-onglets
+    // Gestion de la navigation
     listen('nav-home', 'click', () => {
         ui.showPage(document.getElementById('nav-home'), document.getElementById('view-home'));
         loadHistory();
@@ -21,22 +22,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     listen('nav-player', 'click', () => {
         ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
+        if (toggleCleanModeBtn) toggleCleanModeBtn.classList.remove('hidden');
     });
 
     listen('btn-theme-toggle', 'click', () => ui.cycleThemes());
 
-    // Explorateur de fichiers & Glisser-Déposer
+    // Basculement Mode Complet <-> Mode Simple
+    let isCleanMode = false;
+    listen('toggleCleanMode', 'click', () => {
+        const normalLayout = document.getElementById('player-normal-layout');
+        const cleanLayout = document.getElementById('player-clean-layout');
+        isCleanMode = !isCleanMode;
+        
+        if (normalLayout && cleanLayout) {
+            if (isCleanMode) {
+                normalLayout.classList.add('hidden');
+                cleanLayout.classList.remove('hidden');
+                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined text-3xl">view_module</span><span class="text-lg md:text-xl font-black">MODE COMPLET</span>';
+            } else {
+                normalLayout.classList.remove('hidden');
+                cleanLayout.classList.add('hidden');
+                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined text-3xl">check_box_outline_blank</span><span class="text-lg md:text-xl font-black">MODE SIMPLE</span>';
+            }
+        }
+    });
+
+    // Explorateur de fichiers & Drag & Drop
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('dropZone');
 
     listen('btn-browse', 'click', (e) => { e.stopPropagation(); if (fileInput) fileInput.click(); });
     if (dropZone) {
         dropZone.addEventListener('click', () => { if (fileInput) fileInput.click(); });
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-amber-500'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-amber-500'));
+        dropZone.addEventListener('keydown', (e) => { if(e.key === 'Enter') fileInput.click(); });
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.backgroundColor = 'var(--surface-hover)'; });
+        dropZone.addEventListener('dragleave', () => dropZone.style.backgroundColor = '');
         dropZone.addEventListener('drop', async (e) => {
             e.preventDefault();
-            dropZone.classList.remove('border-amber-500');
+            dropZone.style.backgroundColor = '';
             if (e.dataTransfer.files.length > 0) await handleFileSelection(e.dataTransfer.files[0]);
         });
     }
@@ -47,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Fonction de traitement et d'initialisation du livre
     async function handleFileSelection(file) {
         const overlay = document.getElementById('loading-overlay');
         if (overlay) overlay.classList.remove('hidden');
@@ -58,44 +80,36 @@ document.addEventListener('DOMContentLoaded', () => {
             const bTitle = document.getElementById('book-title'); 
             if (bTitle) bTitle.textContent = bookData.title;
 
-            // Charge le premier morceau
             await handleTrackChange(player.loadCurrentTrack());
             addToHistory(bookData.title, bookData.author);
 
-            // Bascule automatiquement sur l'onglet du lecteur
             ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
+            if (toggleCleanModeBtn) toggleCleanModeBtn.classList.remove('hidden');
             
-            // Lancer la lecture automatiquement si souhaité, sinon mettre à jour l'UI
             if (!player.isPlaying) playPauseAction();
             
         } catch (error) {
-            alert(error.message || "Erreur lors de l'ouverture du livre DAISY.");
+            alert(error.message || "Erreur lors de l'ouverture du livre.");
         } finally {
             if (overlay) overlay.classList.add('hidden');
         }
     }
 
-    // --- CONTRÔLES AUDIO (LA NOUVELLE GRILLE 2X2) ---
-    
+    // Commandes Audio (Mappées sur les 2 modes)
     const playPauseAction = () => {
         const isPlaying = player.toggle();
         ui.updatePlayPauseUI(isPlaying);
     };
+    listen('playPause', 'click', playPauseAction);
     listen('cleanPlayPause', 'click', playPauseAction);
 
-    // Sauts de -1 minute et +1 minute
     listen('btn-skip-back', 'click', () => {
-        if (player.audio) {
-            player.audio.currentTime = Math.max(0, player.audio.currentTime - 60);
-        }
+        if (player.audio) player.audio.currentTime = Math.max(0, player.audio.currentTime - 60);
     });
     listen('btn-skip-forward', 'click', () => {
-        if (player.audio) {
-            player.audio.currentTime = Math.min(player.audio.duration || Infinity, player.audio.currentTime + 60);
-        }
+        if (player.audio) player.audio.currentTime = Math.min(player.audio.duration || Infinity, player.audio.currentTime + 60);
     });
 
-    // Changement de piste (Précédent / Suivant)
     async function handleTrackChange(trackPromise) {
         const track = await trackPromise;
         if (track) {
@@ -105,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    listen('cleanNext', 'click', () => handleTrackChange(player.next()));
+    listen('btn-next', 'click', () => handleTrackChange(player.next()));
     listen('btn-prev', 'click', () => handleTrackChange(player.prev()));
 
     // Synchronisation de la barre temporelle
@@ -138,7 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Passage automatique à la piste suivante en fin de chapitre
     player.audio.addEventListener('ended', () => {
         if (player.currentIndex < player.playlist.length - 1) {
             handleTrackChange(player.next());
@@ -148,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- SAUVEGARDE ET HISTORIQUE ---
+    // Sauvegarde et Historique
     function loadHistory() {
         const container = document.getElementById('history-container');
         if (!container) return;
@@ -156,25 +169,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const history = JSON.parse(localStorage.getItem('daisy_history') || '[]');
         
         if (history.length === 0) {
-            container.innerHTML = `<p class="text-center py-12 text-slate-500 text-2xl md:text-3xl font-black">Aucun historique de lecture.</p>`;
+            container.innerHTML = `<p class="text-center py-12 text-textSecondary text-2xl font-black">Aucun historique de lecture.</p>`;
             return;
         }
 
         history.forEach(item => {
             const card = document.createElement('div');
-            card.className = "p-6 md:p-8 bg-white rounded-3xl border-4 border-slate-200 flex justify-between items-center gap-6 shadow-md";
-            card.innerHTML = `<div class="overflow-hidden"><h4 class="font-black text-2xl md:text-3xl text-slate-800 truncate">${item.title}</h4><p class="text-xl md:text-2xl font-bold text-slate-500 mt-2 truncate">${item.author} — Lu le ${item.date}</p></div><span class="material-symbols-outlined text-[50px] md:text-[60px] text-amber-600 flex-shrink-0">book</span>`;
+            card.className = "p-6 md:p-8 bg-surface rounded-3xl border-4 border-borderCustom flex justify-between items-center gap-6 shadow-md text-textPrimary";
+            card.innerHTML = `<div class="overflow-hidden"><h4 class="font-black text-2xl md:text-3xl truncate">${item.title}</h4><p class="text-xl md:text-2xl font-bold text-textSecondary mt-2 truncate">${item.author} — Lu le ${item.date}</p></div><span class="material-symbols-outlined text-[50px] text-accent flex-shrink-0">book</span>`;
             container.appendChild(card);
         });
     }
 
     function addToHistory(title, author) {
         let history = JSON.parse(localStorage.getItem('daisy_history') || '[]');
-        history = history.filter(h => h.title !== title); // Supprime le doublon s'il existe
+        history = history.filter(h => h.title !== title);
         const d = new Date();
         const dateStr = d.toLocaleDateString('fr-FR');
         history.unshift({ title, author, date: dateStr });
-        if (history.length > 5) history.pop(); // Ne garder que les 5 derniers
+        if (history.length > 5) history.pop();
         localStorage.setItem('daisy_history', JSON.stringify(history));
     }
 
