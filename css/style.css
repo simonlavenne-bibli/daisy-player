@@ -6,14 +6,94 @@
 
 body {
     font-family: var(--font-luciole) !important;
-    font-size: 1.8rem !important; /* Taille de base extrêmement grande */
+    font-size: 1.8rem !important;
 }
 
 button, input, select, textarea {
     font-family: var(--font-luciole) !important;
 }
 
-/* THÈMES FORCÉS */
+/* =========================================================================
+   REFONTE DE LA ZONE DE CONTRÔLE (GRILLE PARFAITE ET RESPONSIVE)
+   ========================================================================= */
+
+/* Les 4 boutons périphériques (-1m, Précédent, Suivant, +1m) */
+.control-btn {
+    height: clamp(6rem, 14vh, 9rem) !important;
+    border: 4px solid var(--border-color, #cbd5e1) !important; /* Gris clair par défaut */
+    border-radius: 24px !important;
+    background-color: var(--bg-card, #f8fafc) !important;
+    color: var(--text-main, #1e293b) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+    transition: transform 0.1s ease, background-color 0.2s ease !important;
+}
+
+/* Bouton Central GÉANT (Lecture/Pause) */
+.control-btn-main {
+    height: clamp(8rem, 18vh, 12rem) !important;
+    border: 6px solid var(--border-color, #d97706) !important;
+    border-radius: 32px !important;
+    background-color: var(--bg-main-btn, #d97706) !important;
+    color: var(--text-main-btn, #ffffff) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
+    transition: transform 0.1s ease !important;
+}
+
+/* Effet de clic universel */
+.control-btn:active, .control-btn-main:active {
+    transform: scale(0.95) !important;
+}
+
+/* Typographie standardisée des icônes et textes */
+.control-icon {
+    font-size: clamp(2.5rem, 6vw, 4rem) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    pointer-events: none;
+}
+.control-icon-main {
+    font-size: clamp(4rem, 10vw, 6rem) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    pointer-events: none;
+}
+.control-text {
+    font-size: clamp(1rem, 2.5vw, 1.5rem) !important;
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    pointer-events: none;
+}
+.control-text-main {
+    font-size: clamp(1.5rem, 4vw, 2.5rem) !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    pointer-events: none;
+}
+
+/* =========================================================================
+   THÈMES D'ACCESSIBILITÉ FORCÉS (WCAG AA)
+   ========================================================================= */
+
 body.theme-white-on-black,
 body.theme-white-on-black main,
 body.theme-white-on-black header,
@@ -24,6 +104,9 @@ body.theme-white-on-black section {
     color: #ffffff !important;
     border-color: #ffffff !important;
 }
+body.theme-white-on-black .control-btn, 
+body.theme-white-on-black .control-btn-main,
+body.theme-white-on-black .nav-tab,
 body.theme-white-on-black button {
     background-color: #1a1a1a !important;
     color: #ffffff !important;
@@ -44,6 +127,9 @@ body.theme-black-on-white section {
     color: #000000 !important;
     border-color: #000000 !important;
 }
+body.theme-black-on-white .control-btn, 
+body.theme-black-on-white .control-btn-main,
+body.theme-black-on-white .nav-tab,
 body.theme-black-on-white button {
     background-color: #ffffff !important;
     color: #000000 !important;
@@ -62,12 +148,14 @@ body.theme-yellow-on-black div,
 body.theme-yellow-on-black section,
 body.theme-yellow-on-black h1,
 body.theme-yellow-on-black h2,
-body.theme-yellow-on-black h3,
-body.theme-yellow-on-black h4 {
+body.theme-yellow-on-black h3 {
     background-color: #000000 !important;
     color: #ffff00 !important;
     border-color: #ffff00 !important;
 }
+body.theme-yellow-on-black .control-btn, 
+body.theme-yellow-on-black .control-btn-main,
+body.theme-yellow-on-black .nav-tab,
 body.theme-yellow-on-black button {
     background-color: #000000 !important;
     color: #ffff00 !important;
@@ -80,9 +168,3 @@ body.theme-yellow-on-black input[type="range"] {
 body.theme-yellow-on-black span {
     color: #ffff00 !important;
 }
-
-/* Redimensionnements sémantiques XXL */
-h1 { font-size: 3rem !important; font-weight: 900 !important; }
-h2 { font-size: 2.5rem !important; font-weight: 900 !important; }
-h3 { font-size: 2rem !important; font-weight: 900 !important; }
-p, button, span { font-size: 1.8rem !important; }
