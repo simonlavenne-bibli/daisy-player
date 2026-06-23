@@ -1,9 +1,18 @@
 export function updatePlayPauseUI(isPlaying) {
     const iconName = isPlaying ? 'pause' : 'play_arrow';
+    const labelName = isPlaying ? 'PAUSE' : 'LECTURE';
+    
+    // Normal Mode
+    const pIcon = document.getElementById('playPauseIcon'); 
+    if (pIcon) pIcon.textContent = iconName;
+    const pLabel = document.getElementById('playLabel');
+    if (pLabel) pLabel.textContent = labelName;
+
+    // Simple Mode
     const cIcon = document.getElementById('cleanPlayIcon'); 
     if (cIcon) cIcon.textContent = iconName;
     const cLabel = document.getElementById('cleanPlayLabel'); 
-    if (cLabel) cLabel.textContent = isPlaying ? 'PAUSE' : 'LECTURE';
+    if (cLabel) cLabel.textContent = labelName;
 }
 
 export function showPage(activeButton, activeSection) {
@@ -13,20 +22,19 @@ export function showPage(activeButton, activeSection) {
     views.forEach(sec => { if (sec) sec.classList.add('hidden'); });
     if (activeSection) activeSection.classList.remove('hidden');
 
-    // Style unifié et accessible pour les onglets inactifs
+    // Apparence Inactive (Variables Sémantiques)
     navs.forEach(btn => {
         if (btn) {
-            btn.className = "nav-tab flex flex-col items-center justify-center text-slate-600 px-4 md:px-10 py-4 md:py-6 hover:bg-slate-100 transition-all rounded-3xl min-w-[100px] md:min-w-[200px]";
+            btn.className = "nav-tab flex flex-col items-center justify-center bg-surface text-textSecondary px-4 md:px-10 py-4 md:py-6 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent min-w-[100px] md:min-w-[180px] focus-ring";
         }
     });
     
-    // Style pour l'onglet actif (mise en évidence)
+    // Apparence Active (Mise en évidence stricte)
     if (activeButton) {
-        activeButton.className = "nav-tab flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-3xl px-4 md:px-10 py-4 md:py-6 shadow-xl border-4 border-amber-300 min-w-[100px] md:min-w-[200px]";
+        activeButton.className = "nav-tab flex flex-col items-center justify-center bg-bgSecondary text-textPrimary px-4 md:px-10 py-4 md:py-6 shadow-md rounded-3xl border-4 border-accent min-w-[100px] md:min-w-[180px] focus-ring";
     }
 }
 
-// Gère l'affichage du chapitre dans la zone unifiée
 export function highlightActiveChapter(title) {
     const chapterDisplay = document.getElementById('cleanChapterTitle');
     if (chapterDisplay && title) {
@@ -38,15 +46,19 @@ export function cycleThemes() {
     const body = document.body;
     if (!body) return;
     
-    if (!body.classList.contains('theme-white-on-black') && !body.classList.contains('theme-black-on-white') && !body.classList.contains('theme-yellow-on-black')) {
-        body.classList.add('theme-white-on-black');
-    } else if (body.classList.contains('theme-white-on-black')) {
-        body.classList.remove('theme-white-on-black');
-        body.classList.add('theme-black-on-white');
-    } else if (body.classList.contains('theme-black-on-white')) {
-        body.classList.remove('theme-black-on-white');
-        body.classList.add('theme-yellow-on-black');
+    body.classList.remove('theme-dark', 'theme-hc', 'theme-sepia');
+    let currentTheme = body.getAttribute('data-theme') || 'light';
+
+    if (currentTheme === 'light') {
+        body.setAttribute('data-theme', 'dark');
+        body.classList.add('theme-dark');
+    } else if (currentTheme === 'dark') {
+        body.setAttribute('data-theme', 'hc');
+        body.classList.add('theme-hc');
+    } else if (currentTheme === 'hc') {
+        body.setAttribute('data-theme', 'sepia');
+        body.classList.add('theme-sepia');
     } else {
-        body.classList.remove('theme-yellow-on-black');
+        body.setAttribute('data-theme', 'light');
     }
 }
