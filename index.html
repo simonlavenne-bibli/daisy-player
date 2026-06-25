@@ -17,6 +17,10 @@
     <script>
         tailwind.config = {
             theme: {
+                // MODIFICATION : Définition de Luciole comme police par défaut pour Tailwind
+                fontFamily: {
+                    sans: ['Luciole', 'Arial', 'sans-serif'],
+                },
                 extend: {
                     colors: {
                         bgPrimary: 'var(--bg-primary)',
@@ -72,15 +76,15 @@
         <section id="view-history" class="hidden space-y-6 py-6">
             <h2 class="text-3xl font-black text-textPrimary flex items-center gap-4"><span class="material-symbols-outlined text-4xl">history</span> Vos lectures récentes</h2>
             <div id="history-container" class="space-y-6">
-                </div>
+            </div>
         </section>
 
         <section id="view-player" class="hidden space-y-8 py-4">
             
             <div class="bg-surface p-6 md:p-8 rounded-3xl shadow-md border-4 border-borderCustom space-y-6">
                 <div class="text-center">
-                    <h3 id="book-title" class="text-3xl md:text-4xl font-black text-textPrimary truncate">Titre du livre</h3>
-                    <p id="cleanChapterTitle" class="text-xl md:text-2xl font-bold text-textSecondary truncate mt-2">Chapitre</p>
+                    <h3 id="book-title" class="text-3xl md:text-4xl font-black text-textPrimary leading-tight">Titre du livre</h3>
+                    <p id="cleanChapterTitle" class="text-xl md:text-2xl font-bold text-textSecondary leading-relaxed mt-2">Chapitre</p>
                 </div>
                 <div class="space-y-4">
                     <input type="range" id="audio-slider" min="0" max="100" value="0" class="w-full h-8 bg-bgSecondary rounded-2xl appearance-none cursor-pointer accent-accent focus-ring" aria-label="Progression de la lecture">
