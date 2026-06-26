@@ -1,249 +1,402 @@
 /**
- * js/diagnostic.js — Moteur de la page de diagnostic
+ * js/library.js — Logique métier de la bibliothèque persistante
  *
- * Ce fichier est chargé UNIQUEMENT par diagnostic.html.
- * Il n'est jamais importé par l'application principale.
+ * Ce module est la couche entre l'interface utilisateur (main.js / ui.js)
+ * et la base de données (db.js). Il ne touche jamais au DOM directement.
  *
  * Responsabilités :
- *   - Initialiser la base via library.js
- *   - Collecter le résumé de diagnostic
- *   - Écrire les tests unitaires en mémoire (add / read / delete)
- *   - Injecter les résultats dans le DOM de diagnostic.html
- *   - Permettre d'ajouter et supprimer des livres de test
+ *   - Importer un livre DAISY (ZIP) avec détection de doublons
+ *   - Ouvrir un livre et restaurer sa progression
+ *   - Sauvegarder la progression automatiquement pendant la lecture
+ *   - Exposer la bibliothèque (tous les livres, livres récents, dernier livre)
+ *   - Supprimer un livre
+ *   - Fournir un résumé de l'état de la bibliothèque (pour le diagnostic)
  *
- * @module diagnostic
+ * Dépendances :
+ *   - js/db.js  (couche IndexedDB)
+ *   - js/parser.js est appelé EN AMONT par main.js ; library.js reçoit
+ *     le résultat déjà parsé (bookData) plutôt que le fichier brut.
+ *
+ * @module library
  */
 
-import { initLibrary, getDiagnosticSummary, importBook, removeBook, getResumeData } from './library.js';
+import {
+  initDB,
+  addBook,
+  updateBook,
+  getBook,
+  getAllBooks,
+  getRecentBooks,
+  getLastOpenedBook,
+  touchBook,
+  deleteBook,
+  computeHash,
+  findBookByHash,
+  findBookByNccId,
+  setBookHash,
+  saveBookFile,
+  getBookFile,
+  hasBookFile,
+  deleteBookFile,
+  saveProgress,
+  getProgress,
+  resetProgress,
+  getDefaultPlaybackRate,
+  setDefaultPlaybackRate,
+  getSettingValue,
+  setSettingValue,
+  initDefaultSettings,
+} from './db.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// UTILITAIRES DOM
+// SECTION 1 — INITIALISATION
 // ─────────────────────────────────────────────────────────────────────────────
 
-const $ = (id) => document.getElementById(id);
-
-function setStatus(id, value, isOk) {
-  const el = $(id);
-  if (!el) return;
-  el.textContent = value;
-  el.className = 'diag-value ' + (isOk ? 'ok' : 'error');
-}
-
-function setText(id, value) {
-  const el = $(id);
-  if (el) el.textContent = value;
-}
-
-function formatBytes(bytes) {
-  if (!bytes || bytes === 0) return '0 Mo';
-  const mb = bytes / 1024 / 1024;
-  if (mb < 1) return `${Math.round(bytes / 1024)} Ko`;
-  if (mb < 1024) return `${mb.toFixed(1)} Mo`;
-  return `${(mb / 1024).toFixed(2)} Go`;
-}
-
-function formatDate(ts) {
-  if (!ts) return '—';
-  return new Date(ts).toLocaleString('fr-FR', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  });
-}
-
-function log(message, type = 'info') {
-  const container = $('test-log');
-  if (!container) return;
-  const line = document.createElement('div');
-  line.className = `log-line log-${type}`;
-  const time = new Date().toLocaleTimeString('fr-FR');
-  line.textContent = `[${time}] ${message}`;
-  container.prepend(line);
+/**
+ * Initialise la bibliothèque.
+ * Doit être appelée une fois au démarrage, avant toute autre fonction.
+ *
+ * @returns {Promise<{ persisted: boolean }>}
+ */
+export async function initLibrary() {
+  const result = await initDB();
+  return result;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CHARGEMENT DU DIAGNOSTIC PRINCIPAL
+// SECTION 2 — IMPORT D'UN LIVRE
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function runDiagnostic() {
-  setText('diag-status-label', 'Analyse en cours…');
-
-  try {
-    await initLibrary();
-    log('Base IndexedDB initialisée.', 'ok');
-  } catch (err) {
-    log(`Échec d'initialisation : ${err.message}`, 'error');
-    setStatus('db-status', 'ERREUR', false);
-    setText('diag-status-label', 'Erreur critique — voir le journal');
-    return;
-  }
-
-  let summary;
-  try {
-    summary = await getDiagnosticSummary();
-  } catch (err) {
-    log(`Échec du diagnostic : ${err.message}`, 'error');
-    return;
-  }
-
-  // ── Indicateurs principaux ─────────────────────────────────────────────────
-  setStatus('db-status',     summary.dbStatus,                  summary.dbStatus === 'OK');
-  setStatus('book-count',    summary.bookCount,                  true);
-  setStatus('progress-count', summary.progressCount,             true);
-  setStatus('persisted',     summary.persisted ? 'OUI' : 'NON', summary.persisted);
-  setStatus('storage-used',  formatBytes(summary.storageUsedBytes), !summary.storageIsLow);
-  setStatus('storage-quota', formatBytes(summary.storageQuotaBytes), true);
-  setStatus('default-rate',  `×${summary.defaultPlaybackRate}`,  true);
-  setText('device-id', summary.deviceId ? summary.deviceId.slice(0, 8) + '…' : '—');
-
-  // ── Avertissement espace bas ───────────────────────────────────────────────
-  const warn = $('storage-warning');
-  if (warn) warn.hidden = !summary.storageIsLow;
-
-  // ── Dernier livre ──────────────────────────────────────────────────────────
-  const resume = await getResumeData();
-  const resumeBox = $('resume-box');
-  if (resumeBox) {
-    if (resume) {
-      resumeBox.hidden = false;
-      setText('resume-title',    resume.book.title);
-      setText('resume-author',   resume.book.author);
-      setText('resume-chapter',  resume.progress ? `Chapitre ${resume.progress.chapterIndex + 1}` : '—');
-      setText('resume-percent',  resume.progress ? `${resume.progress.percentage} %` : '—');
-      setText('resume-rate',     resume.progress ? `×${resume.progress.playbackRate}` : '—');
-      setText('resume-date',     formatDate(resume.book.lastOpenedAt));
-      setStatus('resume-file',   resume.hasFile ? 'Disponible' : 'Absent (réimport requis)', resume.hasFile);
-    } else {
-      resumeBox.hidden = true;
+/**
+ * Importe un livre DAISY depuis un fichier ZIP.
+ *
+ * Séquence :
+ *   1. Détection rapide de doublon via nccId (instantané)
+ *   2. Création de l'entrée dans IndexedDB (bookId attribué sans attendre le hash)
+ *   3. Sauvegarde du blob ZIP
+ *   4. Calcul du SHA-256 en arrière-plan (non bloquant)
+ *   5. Initialisation de la progression à zéro
+ *
+ * Résultat possible :
+ *   { status: 'imported',  bookId, book, progress: null }
+ *   { status: 'duplicate', bookId, book, progress }
+ *
+ * @param {File}   zipFile  — fichier ZIP sélectionné par l'utilisateur
+ * @param {object} bookData — résultat de parseDaisyZip() (déjà appelé dans main.js)
+ * @returns {Promise<ImportResult>}
+ */
+export async function importBook(zipFile, bookData) {
+  // Étape 1 : détection rapide par nccId
+  if (bookData.nccId) {
+    const existing = await findBookByNccId(bookData.nccId);
+    if (existing) {
+      return _buildDuplicateResult(existing);
     }
   }
 
-  // ── Liste des livres ───────────────────────────────────────────────────────
-  renderBooksList(summary.books);
+  // Étape 2 : création du livre
+  const bookId = await addBook({
+    title:         bookData.title         || 'Titre inconnu',
+    author:        bookData.author        || 'Auteur inconnu',
+    narrator:      bookData.narrator      ?? null,
+    nccId:         bookData.nccId         ?? null,
+    coverBlob:     bookData.coverBlob     ?? null,
+    totalChapters: bookData.totalChapters ?? bookData.playlist?.length ?? 0,
+    contentHash:   null,
+  });
 
-  setText('diag-status-label', `Diagnostic terminé — ${new Date().toLocaleTimeString('fr-FR')}`);
-  log(`Diagnostic complet. ${summary.bookCount} livre(s), ${summary.progressCount} progression(s).`, 'ok');
+  // Étape 3 : sauvegarde du blob ZIP
+  await saveBookFile(bookId, zipFile);
+
+  // Étape 4 : hash en arrière-plan
+  _computeAndStoreHash(bookId, zipFile);
+
+  // Étape 5 : progression initiale
+  const defaultRate = await getDefaultPlaybackRate();
+  await resetProgressWithRate(bookId, defaultRate);
+
+  const book = await getBook(bookId);
+  return { status: 'imported', bookId, book, progress: null };
 }
 
-function renderBooksList(books) {
-  const container = $('books-list');
-  if (!container) return;
-  container.innerHTML = '';
-
-  if (books.length === 0) {
-    container.innerHTML = '<p class="empty-state">Aucun livre dans la bibliothèque.</p>';
-    return;
+/**
+ * Calcule et stocke le hash SHA-256 en arrière-plan.
+ * Si un doublon est découvert tardivement, l'entrée redondante est supprimée.
+ */
+async function _computeAndStoreHash(bookId, zipBlob) {
+  try {
+    const hash = await computeHash(zipBlob);
+    const existingByHash = await findBookByHash(hash);
+    if (existingByHash && existingByHash.bookId !== bookId) {
+      console.warn(
+        `[Library] Doublon tardif détecté par hash. ` +
+        `Conservation de ${existingByHash.bookId}, suppression de ${bookId}.`
+      );
+      await deleteBook(bookId);
+      return;
+    }
+    await setBookHash(bookId, hash);
+  } catch (err) {
+    console.warn('[Library] Calcul du hash échoué (non bloquant) :', err);
   }
+}
 
-  books.forEach((b) => {
-    const card = document.createElement('div');
-    card.className = 'book-card';
-    card.setAttribute('role', 'listitem');
+/**
+ * Construit un résultat "doublon" avec la progression existante.
+ */
+async function _buildDuplicateResult(existingBook) {
+  const progress = await getProgress(existingBook.bookId);
+  return {
+    status:   'duplicate',
+    bookId:   existingBook.bookId,
+    book:     existingBook,
+    progress,
+  };
+}
 
-    card.innerHTML = `
-      <div class="book-card-header">
-        <span class="book-icon" aria-hidden="true">📖</span>
-        <div class="book-card-meta">
-          <strong class="book-title">${escapeHtml(b.title)}</strong>
-          <span class="book-author">${escapeHtml(b.author)}</span>
-        </div>
-        <button
-          class="btn-delete"
-          data-id="${escapeHtml(b.bookId)}"
-          aria-label="Supprimer le livre ${escapeHtml(b.title)}"
-        >Supprimer</button>
-      </div>
-      <dl class="book-details">
-        <dt>Chapitres</dt>   <dd>${b.totalChapters}</dd>
-        <dt>Progression</dt> <dd>${b.hasProgress ? `${b.percentage} % (ch. ${b.chapterIndex + 1})` : 'Aucune'}</dd>
-        <dt>Vitesse</dt>     <dd>${b.playbackRate ? `×${b.playbackRate}` : '—'}</dd>
-        <dt>Couverture</dt>  <dd>${b.hasCover ? 'Oui' : 'Non'}</dd>
-        <dt>Importé le</dt>  <dd>${formatDate(b.importedAt)}</dd>
-        <dt>Ouvert le</dt>   <dd>${formatDate(b.lastOpenedAt)}</dd>
-        <dt>ID</dt>          <dd class="book-id">${b.bookId.slice(0, 18)}…</dd>
-      </dl>
-    `;
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 3 — OUVERTURE ET REPRISE D'UN LIVRE
+// ─────────────────────────────────────────────────────────────────────────────
 
-    card.querySelector('.btn-delete').addEventListener('click', async () => {
-      if (!confirm(`Supprimer « ${b.title} » ? Cette action est irréversible.`)) return;
-      try {
-        await removeBook(b.bookId);
-        log(`Livre supprimé : « ${b.title} »`, 'ok');
-        await runDiagnostic();
-      } catch (err) {
-        log(`Erreur suppression : ${err.message}`, 'error');
-      }
-    });
+/**
+ * Ouvre un livre pour la lecture et restaure sa progression.
+ * Met à jour lastOpenedAt dans la base.
+ *
+ * @param {string} bookId
+ * @returns {Promise<{ book, progress, zipBlob }>}
+ */
+export async function openBook(bookId) {
+  const book = await getBook(bookId);
+  if (!book) throw new Error(`[Library] Livre introuvable : ${bookId}`);
 
-    container.appendChild(card);
+  await touchBook(bookId);
+
+  const [progress, zipBlob] = await Promise.all([
+    getProgress(bookId),
+    getBookFile(bookId),
+  ]);
+
+  return { book, progress, zipBlob };
+}
+
+/**
+ * Retourne le dernier livre ouvert avec sa progression et la disponibilité du fichier.
+ * Utilisé pour la section "Reprendre ma lecture".
+ *
+ * @returns {Promise<{ book, progress, hasFile }|null>}
+ */
+export async function getResumeData() {
+  const book = await getLastOpenedBook();
+  if (!book) return null;
+
+  const [progress, fileAvailable] = await Promise.all([
+    getProgress(book.bookId),
+    hasBookFile(book.bookId),
+  ]);
+
+  return { book, progress, hasFile: fileAvailable };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 4 — SAUVEGARDE DE LA PROGRESSION
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Sauvegarde la progression de lecture.
+ * Appelée depuis le player toutes les 5 secondes via setInterval.
+ *
+ * @param {string} bookId
+ * @param {object} state
+ * @param {number}  state.chapterIndex
+ * @param {number}  state.positionSeconds
+ * @param {number}  state.totalChapters
+ * @param {number}  state.playbackRate
+ * @param {number}  [state.totalListenedSec]
+ * @returns {Promise<void>}
+ */
+export async function saveReadingProgress(bookId, state) {
+  const percentage = state.totalChapters > 0
+    ? Math.round((state.chapterIndex / state.totalChapters) * 100)
+    : 0;
+
+  await saveProgress(bookId, {
+    chapterIndex:     state.chapterIndex,
+    positionSeconds:  state.positionSeconds,
+    percentage,
+    playbackRate:     state.playbackRate ?? 1.0,
+    totalListenedSec: state.totalListenedSec ?? undefined,
   });
 }
 
-function escapeHtml(str) {
-  return String(str ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+/**
+ * Réinitialise la progression (lecture depuis le début).
+ *
+ * @param {string} bookId
+ * @param {number} [rate]
+ * @returns {Promise<void>}
+ */
+export async function resetProgressWithRate(bookId, rate) {
+  const effectiveRate = rate ?? await getDefaultPlaybackRate();
+  await saveProgress(bookId, {
+    chapterIndex:     0,
+    positionSeconds:  0,
+    percentage:       0,
+    playbackRate:     effectiveRate,
+    totalListenedSec: 0,
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TEST AUTOMATIQUE — AJOUTER UN LIVRE FICTIF
+// SECTION 5 — BIBLIOTHÈQUE
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function runAddTest() {
-  log('Démarrage du test d\'ajout…');
-  try {
-    // Création d'un faux fichier ZIP (contenu vide — on teste le stockage, pas le parser)
-    const fakeZip  = new Blob(['PK\x03\x04'], { type: 'application/zip' });
-    const fakeFile = new File([fakeZip], 'test-livre.zip', { type: 'application/zip' });
+/**
+ * Retourne tous les livres avec leur progression.
+ *
+ * @returns {Promise<Array<{ book, progress }>>}
+ */
+export async function getLibrary() {
+  const books = await getAllBooks();
+  const progressList = await Promise.all(books.map((b) => getProgress(b.bookId)));
+  return books.map((book, i) => ({ book, progress: progressList[i] }));
+}
 
-    const fakeBookData = {
-      title:         'Livre de test — ' + new Date().toLocaleTimeString('fr-FR'),
-      author:        'Auteur Fictif',
-      narrator:      null,
-      nccId:         null, // pas de nccId = pas de déduplication par nccId
-      coverBlob:     null,
-      totalChapters: 12,
-      playlist:      new Array(12).fill(null),
+/**
+ * Retourne les N livres les plus récents avec leur progression.
+ *
+ * @param {number} [limit=5]
+ * @returns {Promise<Array<{ book, progress }>>}
+ */
+export async function getRecentLibrary(limit = 5) {
+  const books = await getRecentBooks(limit);
+  const progressList = await Promise.all(books.map((b) => getProgress(b.bookId)));
+  return books.map((book, i) => ({ book, progress: progressList[i] }));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 6 — SUPPRESSION
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Supprime un livre complètement (métadonnées + fichier + progression + marque-pages).
+ *
+ * @param {string} bookId
+ * @returns {Promise<void>}
+ */
+export async function removeBook(bookId) {
+  await deleteBook(bookId);
+}
+
+/**
+ * Supprime uniquement le fichier ZIP pour libérer de l'espace.
+ * Conserve métadonnées, progression et marque-pages.
+ *
+ * @param {string} bookId
+ * @returns {Promise<void>}
+ */
+export async function removeBookFile(bookId) {
+  await deleteBookFile(bookId);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 7 — PRÉFÉRENCES DE LECTURE
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Retourne la vitesse de lecture pour un livre.
+ * Priorité : valeur par livre > valeur globale par défaut.
+ *
+ * @param {string} bookId
+ * @returns {Promise<number>}
+ */
+export async function getPlaybackRate(bookId) {
+  const progress = await getProgress(bookId);
+  if (progress?.playbackRate) return progress.playbackRate;
+  return getDefaultPlaybackRate();
+}
+
+export { setDefaultPlaybackRate };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 8 — DIAGNOSTIC
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Retourne un résumé complet de l'état de la bibliothèque.
+ * Utilisé exclusivement par diagnostic.js.
+ *
+ * @returns {Promise<DiagnosticSummary>}
+ */
+export async function getDiagnosticSummary() {
+  let dbStatus = 'OK';
+  let books    = [];
+  let progList = [];
+
+  try {
+    books    = await getAllBooks();
+    progList = await Promise.all(books.map((b) => getProgress(b.bookId)));
+  } catch (err) {
+    dbStatus = `ERREUR : ${err.message}`;
+  }
+
+  let storageInfo = { usage: 0, quota: 0, available: 0, isLow: false };
+  try {
+    if (navigator.storage?.estimate) {
+      const est   = await navigator.storage.estimate();
+      const usage = est.usage ?? 0;
+      const quota = est.quota ?? 0;
+      storageInfo = {
+        usage,
+        quota,
+        available: quota - usage,
+        isLow: (quota - usage) < 300 * 1024 * 1024,
+      };
+    }
+  } catch (_) {}
+
+  let persisted = false;
+  try {
+    if (navigator.storage?.persisted) {
+      persisted = await navigator.storage.persisted();
+    }
+  } catch (_) {}
+
+  const defaultRate = await getDefaultPlaybackRate();
+  const deviceId    = await getSettingValue('deviceId');
+
+  const booksSummary = books.map((book, i) => {
+    const prog = progList[i];
+    return {
+      bookId:        book.bookId,
+      title:         book.title,
+      author:        book.author,
+      importedAt:    book.importedAt,
+      lastOpenedAt:  book.lastOpenedAt,
+      totalChapters: book.totalChapters,
+      hasCover:      !!book.coverBlob,
+      hasProgress:   !!prog,
+      chapterIndex:  prog?.chapterIndex  ?? null,
+      percentage:    prog?.percentage    ?? null,
+      playbackRate:  prog?.playbackRate  ?? null,
     };
+  });
 
-    const result = await importBook(fakeFile, fakeBookData);
-
-    if (result.status === 'imported') {
-      log(`✓ Livre ajouté : « ${result.book.title} » (ID: ${result.bookId.slice(0,8)}…)`, 'ok');
-    } else {
-      log(`→ Doublon détecté pour « ${result.book.title} »`, 'warn');
-    }
-
-    await runDiagnostic();
-  } catch (err) {
-    log(`✗ Erreur lors du test d'ajout : ${err.message}`, 'error');
-  }
+  return {
+    dbStatus,
+    bookCount:           books.length,
+    progressCount:       progList.filter(Boolean).length,
+    persisted,
+    storageUsedBytes:    storageInfo.usage,
+    storageQuotaBytes:   storageInfo.quota,
+    storageIsLow:        storageInfo.isLow,
+    defaultPlaybackRate: defaultRate,
+    deviceId,
+    books:               booksSummary,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TEST DE PERSISTANCE
+// SECTION 9 — RÉ-EXPORTS UTILES
 // ─────────────────────────────────────────────────────────────────────────────
 
-function runPersistenceNote() {
-  log('Pour tester la persistance : fermez cet onglet, rouvrez-le, cliquez sur « Rafraîchir ».', 'info');
-  log('Si le nombre de livres est identique après fermeture, la persistance est confirmée.', 'info');
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// INITIALISATION DE LA PAGE
-// ─────────────────────────────────────────────────────────────────────────────
-
-document.addEventListener('DOMContentLoaded', () => {
-  // Boutons d'action
-  const btnRefresh = $('btn-refresh');
-  const btnAddTest = $('btn-add-test');
-  const btnPersist = $('btn-test-persist');
-
-  if (btnRefresh) btnRefresh.addEventListener('click', runDiagnostic);
-  if (btnAddTest) btnAddTest.addEventListener('click', runAddTest);
-  if (btnPersist) btnPersist.addEventListener('click', runPersistenceNote);
-
-  // Lancement automatique
-  runDiagnostic();
-});
+export { getProgress, getBook, hasBookFile };
