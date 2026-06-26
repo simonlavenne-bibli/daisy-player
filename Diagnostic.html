@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lumière Audio — Diagnostic</title>
+  <style>
+    :root {
+      --bg:          #0f0f11;
+      --surface:     #1c1c21;
+      --surface-2:   #26262e;
+      --border:      #35353f;
+      --text:        #f0eff4;
+      --text-muted:  #8b8a96;
+      --ok:          #4ade80;
+      --error:       #f87171;
+      --warn:        #fbbf24;
+      --accent:      #d97706;
+      --accent-dim:  #92400e;
+      --btn:         #27272f;
+      --btn-hover:   #35353f;
+      --radius:      14px;
+      --radius-sm:   8px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      min-height: 100dvh;
+      padding: clamp(1rem, 4vw, 2.5rem);
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-icon { font-size: 2rem; line-height: 1; user-select: none; }
+
+    h1 {
+      font-size: clamp(1.25rem, 3vw, 1.75rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .header-sub { font-size: 0.875rem; color: var(--text-muted); margin-top: 0.125rem; }
+
+    #diag-status-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 48px;
+      min-width: 48px;
+      padding: 0.65rem 1.25rem;
+      background: var(--btn);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button:hover { background: var(--btn-hover); }
+
+    button.primary { background: var(--accent-dim); border-color: var(--accent); }
+    button.primary:hover { background: var(--accent); }
+
+    .btn-delete {
+      padding: 0.4rem 0.75rem;
+      min-height: 40px;
+      font-size: 0.8rem;
+      color: var(--error);
+      border-color: var(--error);
+      background: transparent;
+    }
+    .btn-delete:hover { background: #450a0a; }
+
+    .diag-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .diag-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+    }
+
+    .diag-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .diag-value {
+      font-size: 1.6rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .diag-value.ok    { color: var(--ok); }
+    .diag-value.error { color: var(--error); }
+
+    .diag-hint { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem; }
+
+    .storage-warning {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: #451a03;
+      border: 1px solid var(--warn);
+      border-radius: var(--radius-sm);
+      padding: 0.9rem 1.1rem;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+      color: var(--warn);
+    }
+
+    .resume-section {
+      background: var(--surface);
+      border: 2px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .resume-section h2 {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .resume-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.6rem 1.5rem;
+    }
+
+    .resume-item dt {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .resume-item dd { font-size: 1rem; font-weight: 700; }
+
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #books-list { display: grid; gap: 1rem; margin-bottom: 2rem; }
+
+    .book-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+    }
+
+    .book-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .book-icon { font-size: 1.5rem; flex-shrink: 0; }
+
+    .book-card-meta { flex: 1; min-width: 0; }
+
+    .book-title {
+      display: block;
+      font-size: 1rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .book-author { font-size: 0.85rem; color: var(--text-muted); }
+
+    .book-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.35rem 1.5rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .book-details dt { font-weight: 700; }
+    .book-details dd { color: var(--text); }
+    .book-id { font-family: monospace; font-size: 0.72rem; color: var(--text-muted); }
+
+    .log-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+    }
+
+    #test-log {
+      max-height: 260px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      margin-top: 0.75rem;
+    }
+
+    .log-line  { padding: 0.2rem 0.4rem; border-radius: 4px; }
+    .log-ok    { color: var(--ok);        background: #052e16; }
+    .log-error { color: var(--error);     background: #450a0a; }
+    .log-warn  { color: var(--warn);      background: #451a03; }
+    .log-info  { color: var(--text-muted); }
+
+    .empty-state { color: var(--text-muted); font-style: italic; padding: 1rem 0; }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: var(--text); }
+
+    @media (max-width: 480px) {
+      .diag-grid { grid-template-columns: 1fr 1fr; }
+      .btn-row   { flex-direction: column; }
+      button     { width: 100%; justify-content: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+
+<body>
+
+  <a href="index.html" class="back-link" aria-label="Retour à l'application Lumière Audio">
+    ← Retour à l'application
+  </a>
+
+  <header>
+    <span class="header-icon" aria-hidden="true">🔧</span>
+    <div>
+      <h1>Diagnostic — Lumière Audio</h1>
+      <p class="header-sub">État de la base IndexedDB et de la bibliothèque persistante</p>
+      <p id="diag-status-label" aria-live="polite">Initialisation…</p>
+    </div>
+  </header>
+
+  <div class="btn-row" role="toolbar" aria-label="Actions de diagnostic">
+    <button id="btn-refresh" class="primary" aria-label="Rafraîchir le diagnostic">
+      🔄 Rafraîchir
+    </button>
+    <button id="btn-add-test" aria-label="Ajouter un livre de test fictif">
+      ➕ Ajouter un livre de test
+    </button>
+    <button id="btn-test-persist" aria-label="Afficher les instructions de test de persistance">
+      💾 Tester la persistance
+    </button>
+  </div>
+
+  <div
+    id="storage-warning"
+    class="storage-warning"
+    role="alert"
+    aria-live="assertive"
+    hidden
+  >
+    ⚠️ Espace de stockage faible (moins de 300 Mo disponibles).
+    Libérez de l'espace avant d'importer un nouveau livre.
+  </div>
+
+  <p class="section-title">État général</p>
+
+  <div class="diag-grid" role="list" aria-label="Indicateurs de la base de données">
+
+    <div class="diag-card" role="listitem">
+      <p class="diag-label">Base IndexedDB</p>
+      <p class="diag-value" id="db-status">…</p>
+      <p class="diag-hint">lumiere-audio v1</p>
+    </div>
+
+    <div class="diag-card" role="listitem">
+      <p class="diag-label">Nombre de livres</p>
+      <p class="diag-value" id="book-count">…</p>
+      <p class="diag-hint">store books</p>
+    </div>
+
+    <div class="diag-card" role="listitem">
+      <p class="diag-label">Progressions</p>
+      <p class="diag-value" id="progress-count">…</p>
+      <p class="diag-hint">store progress</p>
+    </div>
+
+    <div class="diag-card" role="listitem">
+      <p class="diag-label">Stockage persistant</p>
+      <p class="diag-value" id="persisted">…</p>
+      <p class="diag-hint">navigator.storage.persist()</p>
+    </div>
+
+    <div class="diag-card" role="listitem">
+      <p class="diag-label">Espace utilisé</p>
+      <p class="diag-value" id="storage-used">…</p>
+      <p class="diag-hint">tous types de données</p>
+    </div>
+
+    <div class="diag-card" role="listitem">
+      <p class="diag-label">Quota total</p>
+      <p class="diag-value" id="storage-quota">…</p>
+      <p class="diag-hint">accordé par le navigateur</p>
+    </div>
+
+    <div class="diag-card" role="listitem">
+      <p class="diag-label">Vitesse par défaut</p>
+      <p class="diag-value" id="default-rate">…</p>
+      <p class="diag-hint">settings globaux</p>
+    </div>
+
+    <div class="diag-card" role="listitem">
+      <p class="diag-label">Identifiant appareil</p>
+      <p class="diag-value" style="font-size:0.9rem;font-family:monospace" id="device-id">…</p>
+      <p class="diag-hint">pour sync future</p>
+    </div>
+
+  </div>
+
+  <section
+    id="resume-box"
+    class="resume-section"
+    aria-label="Dernier livre ouvert"
+    hidden
+  >
+    <h2>Reprendre ma lecture</h2>
+    <dl class="resume-grid">
+      <div class="resume-item"><dt>Titre</dt>      <dd id="resume-title">—</dd></div>
+      <div class="resume-item"><dt>Auteur</dt>     <dd id="resume-author">—</dd></div>
+      <div class="resume-item"><dt>Chapitre</dt>   <dd id="resume-chapter">—</dd></div>
+      <div class="resume-item"><dt>Progression</dt><dd id="resume-percent">—</dd></div>
+      <div class="resume-item"><dt>Vitesse</dt>    <dd id="resume-rate">—</dd></div>
+      <div class="resume-item"><dt>Ouvert le</dt>  <dd id="resume-date">—</dd></div>
+      <div class="resume-item"><dt>Fichier ZIP</dt><dd id="resume-file">—</dd></div>
+    </dl>
+  </section>
+
+  <p class="section-title">Bibliothèque complète</p>
+  <div
+    id="books-list"
+    role="list"
+    aria-label="Liste des livres dans la bibliothèque"
+    aria-live="polite"
+  >
+    <p class="empty-state">Chargement…</p>
+  </div>
+
+  <section class="log-section" aria-label="Journal des opérations de test">
+    <p class="section-title" style="border:none;margin-bottom:0">Journal</p>
+    <div
+      id="test-log"
+      role="log"
+      aria-live="polite"
+      aria-label="Journal des opérations"
+    ></div>
+  </section>
+
+  <script type="module" src="js/diagnostic.js"></script>
+
+</body>
+</html>
