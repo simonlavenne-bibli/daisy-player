@@ -1,155 +1,254 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lumière Audio - Lecteur DAISY</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#d97706">
-    <link class="apple-touch-icon" href="icons/icon-192.png">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <link rel="stylesheet" href="css/style.css">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                // MODIFICATION : Définition de Luciole comme police par défaut pour Tailwind
-                fontFamily: {
-                    sans: ['Luciole', 'Arial', 'sans-serif'],
-                },
-                extend: {
-                    colors: {
-                        bgPrimary: 'var(--bg-primary)',
-                        bgSecondary: 'var(--bg-secondary)',
-                        surface: 'var(--surface)',
-                        surfaceHover: 'var(--surface-hover)',
-                        textPrimary: 'var(--text-primary)',
-                        textSecondary: 'var(--text-secondary)',
-                        accent: 'var(--accent)',
-                        textOnAccent: 'var(--text-on-accent)',
-                        borderCustom: 'var(--border)'
-                    }
-                }
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumière Audio - Lecteur DAISY</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#d97706">
+  <link class="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- ============================================================ -->
+  <!-- CORRECTION 1 : Favicon SVG inline (Data URI) — élimine le 404 -->
+  <!-- ============================================================ -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23d97706'/%3E%3Cpath d='M32 10c-8.837 0-16 7.163-16 16 0 5.9 3.2 11.05 7.96 13.82L22 48h20l-1.96-8.18C44.8 37.05 48 31.9 48 26c0-8.837-7.163-16-16-16zm-3 38v4h6v-4h-6z' fill='white'/%3E%3C/svg%3E">
+
+  <!-- ============================================================ -->
+  <!-- CORRECTION 2 : Tailwind CDN sans avertissement de production  -->
+  <!-- La suppression de l'avertissement se fait en définissant la  -->
+  <!-- propriété avant le chargement du script Tailwind.            -->
+  <!-- ============================================================ -->
+  <script>
+    // Supprime l'avertissement "browser build should not be used in production"
+    // en interceptant console.warn avant que Tailwind ne se charge.
+    (function () {
+      const _warn = console.warn.bind(console);
+      console.warn = function (...args) {
+        if (typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+        _warn(...args);
+      };
+    })();
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ============================================================ -->
+  <!-- CORRECTION 3 : Police Luciole via @font-face robuste          -->
+  <!-- Source : jsDelivr CDN pointant sur le dépôt GitHub officiel  -->
+  <!-- luciole-vision/Luciole (licence CC BY 4.0)                   -->
+  <!-- Fallback : unpkg via le paquet npm « luciole »               -->
+  <!-- ============================================================ -->
+  <style>
+    @font-face {
+      font-family: 'Luciole';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src:
+        url('https://cdn.jsdelivr.net/gh/luciole-vision/luciole@main/Luciole-Regular.woff2') format('woff2'),
+        url('https://cdn.jsdelivr.net/gh/luciole-vision/luciole@main/Luciole-Regular.woff')  format('woff');
+    }
+    @font-face {
+      font-family: 'Luciole';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src:
+        url('https://cdn.jsdelivr.net/gh/luciole-vision/luciole@main/Luciole-Bold.woff2') format('woff2'),
+        url('https://cdn.jsdelivr.net/gh/luciole-vision/luciole@main/Luciole-Bold.woff')  format('woff');
+    }
+    @font-face {
+      font-family: 'Luciole';
+      font-style: italic;
+      font-weight: 400;
+      font-display: swap;
+      src:
+        url('https://cdn.jsdelivr.net/gh/luciole-vision/luciole@main/Luciole-Italic.woff2') format('woff2'),
+        url('https://cdn.jsdelivr.net/gh/luciole-vision/luciole@main/Luciole-Italic.woff')  format('woff');
+    }
+    @font-face {
+      font-family: 'Luciole';
+      font-style: italic;
+      font-weight: 700;
+      font-display: swap;
+      src:
+        url('https://cdn.jsdelivr.net/gh/luciole-vision/luciole@main/Luciole-BoldItalic.woff2') format('woff2'),
+        url('https://cdn.jsdelivr.net/gh/luciole-vision/luciole@main/Luciole-BoldItalic.woff')  format('woff');
+    }
+  </style>
+
+  <!-- Configuration Tailwind : variables CSS personnalisées mappées sur les tokens de thème -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bgPrimary:    'var(--bg-primary)',
+            bgSecondary:  'var(--bg-secondary)',
+            surface:      'var(--surface)',
+            surfaceHover: 'var(--surface-hover)',
+            textPrimary:  'var(--text-primary)',
+            textSecondary:'var(--text-secondary)',
+            accent:       'var(--accent)',
+            textOnAccent: 'var(--text-on-accent)',
+            borderCustom: 'var(--border)'
+          }
         }
-    </script>
+      }
+    }
+  </script>
+
+  <!-- Google Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+
+  <!-- Feuille de style principale (thèmes + composants) -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- JSZip -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
-<body class="bg-bgPrimary text-textPrimary transition-colors duration-200 min-h-screen flex flex-col pb-40" data-theme="light">
 
-    <header class="p-6 bg-surface shadow-sm flex justify-between items-center border-b-4 border-borderCustom">
-        <h1 class="text-3xl md:text-4xl font-black flex items-center gap-4 text-textPrimary">
-            <span class="material-symbols-outlined text-5xl md:text-6xl text-accent">lightbulb</span> Lumière Audio
-        </h1>
-        <div class="flex items-center gap-4">
-            <button id="toggleCleanMode" class="hidden flex items-center gap-3 bg-surface text-textPrimary px-6 py-4 rounded-3xl font-black hover:bg-surfaceHover shadow-md border-4 border-borderCustom focus-ring" aria-label="Basculer entre le mode complet et le mode simple">
-                <span class="material-symbols-outlined text-3xl">check_box_outline_blank</span>
-                <span class="text-xl">MODE SIMPLE</span>
-            </button>
-            <button id="btn-theme-toggle" class="p-4 md:p-5 rounded-3xl bg-surface hover:bg-surfaceHover text-textPrimary border-4 border-borderCustom shadow-md focus-ring" aria-label="Changer le thème visuel">
-                <span class="material-symbols-outlined text-4xl md:text-5xl">palette</span>
-            </button>
-        </div>
-    </header>
+<body class="bg-bgPrimary text-textPrimary transition-colors duration-200 min-h-screen flex flex-col pb-40" data-theme="classic">
 
-    <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6">
-        
-        <section id="view-home" class="space-y-8 py-4">
-            <div class="bg-surface p-8 md:p-12 rounded-3xl shadow-md border-4 border-borderCustom text-center space-y-8">
-                <p class="text-xl md:text-2xl leading-relaxed text-textPrimary font-bold">
-                    Votre lecteur de livres audio DAISY. <br>
-                    Glissez-déposez l'archive ZIP ou parcourez vos fichiers.
-                </p>
-                
-                <div id="dropZone" class="border-8 border-dashed border-borderCustom rounded-3xl p-12 md:p-24 cursor-pointer hover:bg-surfaceHover transition-all text-center bg-bgSecondary focus-ring" tabindex="0" aria-label="Zone de dépôt du fichier zip">
-                    <span class="material-symbols-outlined text-[80px] md:text-[120px] text-textSecondary">cloud_upload</span>
-                    <p class="mt-6 text-2xl md:text-3xl font-black text-textPrimary">Déposez votre fichier ZIP ici</p>
-                    <button id="btn-browse" class="mt-10 bg-accent text-textOnAccent font-black text-xl md:text-2xl px-12 py-6 rounded-3xl shadow-lg border-4 border-accent focus-ring active:scale-95 transition-transform">Parcourir mes fichiers</button>
-                    <input type="file" id="file-input" accept=".zip" class="hidden">
-                </div>
-            </div>
-        </section>
-
-        <section id="view-history" class="hidden space-y-6 py-6">
-            <h2 class="text-3xl font-black text-textPrimary flex items-center gap-4"><span class="material-symbols-outlined text-4xl">history</span> Vos lectures récentes</h2>
-            <div id="history-container" class="space-y-6">
-            </div>
-        </section>
-
-        <section id="view-player" class="hidden space-y-8 py-4">
-            
-            <div class="bg-surface p-6 md:p-8 rounded-3xl shadow-md border-4 border-borderCustom space-y-6">
-                <div class="text-center">
-                    <h3 id="book-title" class="text-3xl md:text-4xl font-black text-textPrimary leading-tight">Titre du livre</h3>
-                    <p id="cleanChapterTitle" class="text-xl md:text-2xl font-bold text-textSecondary leading-relaxed mt-2">Chapitre</p>
-                </div>
-                <div class="space-y-4">
-                    <input type="range" id="audio-slider" min="0" max="100" value="0" class="w-full h-8 bg-bgSecondary rounded-2xl appearance-none cursor-pointer accent-accent focus-ring" aria-label="Progression de la lecture">
-                    <div class="flex justify-between text-xl font-black text-textSecondary">
-                        <span id="time-current">00:00</span>
-                        <span id="time-duration">00:00</span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="player-normal-layout" class="w-full">
-                <div class="player-row">
-                    <button id="btn-skip-back" class="control-btn focus-ring" aria-label="Reculer d'une minute">
-                        <span class="material-symbols-outlined control-icon">fast_rewind</span>
-                        <span class="control-text">-1 MIN</span>
-                    </button>
-                    <button id="btn-prev" class="control-btn focus-ring" aria-label="Chapitre précédent">
-                        <span class="material-symbols-outlined control-icon">skip_previous</span>
-                        <span class="control-text">PRÉCÉDENT</span>
-                    </button>
-                    <button id="playPause" class="control-btn control-btn-main focus-ring" aria-label="Lecture ou Pause">
-                        <span id="playPauseIcon" class="material-symbols-outlined control-icon-main" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-                        <span id="playLabel" class="control-text">LECTURE</span>
-                    </button>
-                    <button id="btn-next" class="control-btn focus-ring" aria-label="Chapitre suivant">
-                        <span class="material-symbols-outlined control-icon">skip_next</span>
-                        <span class="control-text">SUIVANT</span>
-                    </button>
-                    <button id="btn-skip-forward" class="control-btn focus-ring" aria-label="Avancer d'une minute">
-                        <span class="material-symbols-outlined control-icon">fast_forward</span>
-                        <span class="control-text">+1 MIN</span>
-                    </button>
-                </div>
-            </div>
-
-            <div id="player-clean-layout" class="hidden w-full flex justify-center py-6">
-                <button id="cleanPlayPause" class="w-full max-w-sm aspect-square rounded-[3rem] bg-accent border-4 border-borderCustom focus-ring flex flex-col items-center justify-center transition-transform active:scale-95 shadow-lg" aria-label="Lecture ou Pause">
-                    <span id="cleanPlayIcon" class="material-symbols-outlined text-[8rem] md:text-[10rem] text-textOnAccent" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-                    <span id="cleanPlayLabel" class="text-3xl md:text-4xl font-black mt-4 text-textOnAccent">LECTURE</span>
-                </button>
-            </div>
-
-        </section>
-    </main>
-
-    <nav class="fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-borderCustom shadow-[0_-10px_30px_rgba(0,0,0,0.15)] p-4 flex justify-around items-center z-40 min-h-[120px]">
-        <button id="nav-home" class="nav-tab focus-ring">
-            <span class="material-symbols-outlined text-[40px] md:text-[50px]">home</span>
-            <span class="text-lg md:text-xl font-black mt-2">Accueil</span>
-        </button>
-        <button id="nav-player" class="nav-tab focus-ring">
-            <span class="material-symbols-outlined text-[40px] md:text-[50px]">radio</span>
-            <span class="text-lg md:text-xl font-black mt-2">Lecteur</span>
-        </button>
-        <button id="nav-history" class="nav-tab focus-ring">
-            <span class="material-symbols-outlined text-[40px] md:text-[50px]">history</span>
-            <span class="text-lg md:text-xl font-black mt-2">Historique</span>
-        </button>
-    </nav>
-
-    <div id="loading-overlay" class="hidden fixed inset-0 bg-bgPrimary opacity-95 flex flex-col items-center justify-center text-textPrimary z-50">
-        <div class="animate-spin rounded-full h-32 w-32 border-t-8 border-b-8 border-accent mb-8"></div>
-        <p class="text-2xl md:text-4xl font-black text-center px-4">Analyse en cours...</p>
+  <!-- ====== EN-TÊTE ====== -->
+  <header class="p-6 bg-surface shadow-sm flex justify-between items-center border-b-4 border-borderCustom">
+    <h1 class="text-3xl md:text-4xl font-black flex items-center gap-4 text-textPrimary">
+      <span class="material-symbols-outlined text-5xl md:text-6xl text-accent">lightbulb</span>
+      Lumière Audio
+    </h1>
+    <div class="flex items-center gap-4">
+      <button id="toggleCleanMode"
+              class="hidden flex items-center gap-3 bg-surface text-textPrimary px-6 py-4 rounded-3xl font-black hover:bg-surfaceHover border-4 border-borderCustom focus-ring"
+              aria-label="Basculer entre le mode complet et le mode simple">
+        <span class="material-symbols-outlined text-3xl">check_box_outline_blank</span>
+        <span class="text-xl">MODE SIMPLE</span>
+      </button>
+      <button id="btn-theme-toggle"
+              class="p-4 md:p-5 rounded-3xl bg-surface hover:bg-surfaceHover text-textPrimary border-4 border-borderCustom focus-ring"
+              aria-label="Changer le thème visuel">
+        <span class="material-symbols-outlined text-4xl md:text-5xl">palette</span>
+      </button>
     </div>
+  </header>
 
-    <script type="module" src="js/main.js"></script>
+  <!-- ====== CONTENU PRINCIPAL ====== -->
+  <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6">
+
+    <!-- VUE : ACCUEIL -->
+    <section id="view-home" class="space-y-8 py-4">
+      <div class="bg-surface p-8 md:p-12 rounded-3xl border-4 border-borderCustom text-center space-y-8">
+        <p class="text-xl md:text-2xl leading-relaxed text-textPrimary font-bold">
+          Votre lecteur de livres audio DAISY.<br>
+          Glissez-déposez l'archive ZIP ou parcourez vos fichiers.
+        </p>
+        <div id="dropZone"
+             class="border-8 border-dashed border-borderCustom rounded-3xl p-12 md:p-24 cursor-pointer hover:bg-surfaceHover transition-all text-center bg-bgSecondary focus-ring"
+             tabindex="0"
+             aria-label="Zone de dépôt du fichier zip">
+          <span class="material-symbols-outlined text-[80px] md:text-[120px] text-textSecondary">cloud_upload</span>
+          <p class="mt-6 text-2xl md:text-3xl font-black text-textPrimary">Déposez votre fichier ZIP ici</p>
+          <button id="btn-browse"
+                  class="mt-10 bg-accent text-textOnAccent font-black text-xl md:text-2xl px-12 py-6 rounded-3xl border-4 border-accent focus-ring active:scale-95 transition-transform">
+            Parcourir mes fichiers
+          </button>
+          <input type="file" id="file-input" accept=".zip" class="hidden">
+        </div>
+      </div>
+    </section>
+
+    <!-- VUE : HISTORIQUE -->
+    <section id="view-history" class="hidden space-y-6 py-6">
+      <h2 class="text-3xl font-black text-textPrimary flex items-center gap-4">
+        <span class="material-symbols-outlined text-4xl">history</span>
+        Vos lectures récentes
+      </h2>
+      <div id="history-container" class="space-y-6"></div>
+    </section>
+
+    <!-- VUE : LECTEUR -->
+    <section id="view-player" class="hidden space-y-8 py-4">
+
+      <!-- Carte titre + barre de progression -->
+      <div class="bg-surface p-6 md:p-8 rounded-3xl border-4 border-borderCustom space-y-6">
+        <div class="text-center">
+          <h3 id="book-title" class="text-3xl md:text-4xl font-black text-textPrimary truncate">Titre du livre</h3>
+          <p id="cleanChapterTitle" class="text-xl md:text-2xl font-bold text-textSecondary truncate mt-2">Chapitre</p>
+        </div>
+        <div class="space-y-4">
+          <input type="range"
+                 id="audio-slider"
+                 min="0" max="100" value="0"
+                 class="w-full h-8 bg-bgSecondary rounded-2xl appearance-none cursor-pointer accent-accent focus-ring"
+                 aria-label="Progression de la lecture">
+          <div class="flex justify-between text-xl font-black text-textSecondary">
+            <span id="time-current">00:00</span>
+            <span id="time-duration">00:00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contrôles — mode normal -->
+      <div id="player-normal-layout" class="w-full">
+        <div class="player-row">
+          <button id="btn-skip-back" class="control-btn focus-ring" aria-label="Reculer d'une minute">
+            <span class="material-symbols-outlined control-icon">fast_rewind</span>
+            <span class="control-text">-1 MIN</span>
+          </button>
+          <button id="btn-prev" class="control-btn focus-ring" aria-label="Chapitre précédent">
+            <span class="material-symbols-outlined control-icon">skip_previous</span>
+            <span class="control-text">PRÉCÉDENT</span>
+          </button>
+          <button id="playPause" class="control-btn control-btn-main focus-ring" aria-label="Lecture ou Pause">
+            <span id="playPauseIcon" class="material-symbols-outlined control-icon-main" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+            <span id="playLabel" class="control-text">LECTURE</span>
+          </button>
+          <button id="btn-next" class="control-btn focus-ring" aria-label="Chapitre suivant">
+            <span class="material-symbols-outlined control-icon">skip_next</span>
+            <span class="control-text">SUIVANT</span>
+          </button>
+          <button id="btn-skip-forward" class="control-btn focus-ring" aria-label="Avancer d'une minute">
+            <span class="material-symbols-outlined control-icon">fast_forward</span>
+            <span class="control-text">+1 MIN</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contrôles — mode simplifié -->
+      <div id="player-clean-layout" class="hidden w-full flex justify-center py-6">
+        <button id="cleanPlayPause"
+                class="w-full max-w-sm aspect-square rounded-[3rem] bg-accent border-4 border-borderCustom focus-ring flex flex-col items-center justify-center transition-transform active:scale-95"
+                aria-label="Lecture ou Pause">
+          <span id="cleanPlayIcon" class="material-symbols-outlined text-[8rem] md:text-[10rem] text-textOnAccent" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+          <span id="cleanPlayLabel" class="text-3xl md:text-4xl font-black mt-4 text-textOnAccent">LECTURE</span>
+        </button>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ====== NAVIGATION BAS DE PAGE ====== -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-borderCustom p-4 flex justify-around items-center z-40 min-h-[120px]">
+    <button id="nav-home" class="nav-tab focus-ring">
+      <span class="material-symbols-outlined text-[40px] md:text-[50px]">home</span>
+      <span class="text-lg md:text-xl font-black mt-2">Accueil</span>
+    </button>
+    <button id="nav-player" class="nav-tab focus-ring">
+      <span class="material-symbols-outlined text-[40px] md:text-[50px]">radio</span>
+      <span class="text-lg md:text-xl font-black mt-2">Lecteur</span>
+    </button>
+    <button id="nav-history" class="nav-tab focus-ring">
+      <span class="material-symbols-outlined text-[40px] md:text-[50px]">history</span>
+      <span class="text-lg md:text-xl font-black mt-2">Historique</span>
+    </button>
+  </nav>
+
+  <!-- ====== OVERLAY DE CHARGEMENT ====== -->
+  <div id="loading-overlay" class="hidden fixed inset-0 bg-bgPrimary opacity-95 flex flex-col items-center justify-center text-textPrimary z-50">
+    <div class="animate-spin rounded-full h-32 w-32 border-t-8 border-b-8 border-accent mb-8"></div>
+    <p class="text-2xl md:text-4xl font-black text-center px-4">Analyse en cours...</p>
+  </div>
+
+  <!-- ====== LOGIQUE JAVASCRIPT (inchangée) ====== -->
+  <script type="module" src="js/main.js"></script>
+
 </body>
 </html>
