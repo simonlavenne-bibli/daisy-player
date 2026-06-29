@@ -1,0 +1,22 @@
+{
+  "name": "Lumière Audio",
+  "short_name": "LumiereAudio",
+  "description": "Lecteur de livres audio DAISY simple et accessible",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f8ff",
+  "theme-color": "#e07b00",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3201/3201558.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3201/3201558.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
