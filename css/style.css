@@ -1,231 +1,303 @@
-/* ================================================================
-   LUMIÈRE AUDIO — css/style.css
-   ================================================================
-   PRINCIPE : Ce fichier ne touche QU'AUX COULEURS via des variables
-   CSS. Aucune propriété de structure (display, position, flex,
-   grid, width, height, margin, padding, font-size) n'est modifiée.
-   
-   Les classes Tailwind de l'HTML (bg-surface, text-textPrimary,
-   border-borderCustom, etc.) sont déjà mappées sur ces variables
-   via tailwind.config dans index.html. Il suffit de redéfinir les
-   variables par thème pour que tout change.
-   ================================================================ */
+/* ============================================================
+   style.css — Lumière Audio DAISY Player
+   Thèmes : light (défaut), dark, high-contrast
+   ============================================================ */
 
+/* ── 1. VARIABLES DE THÈME ─────────────────────────────────── */
 
-/* ================================================================
-   THÈME 1 — CLASSIQUE (défaut)
-   Tons ambrés/ivoire de l'application d'origine.
-   ================================================================ */
+/* Thème clair — défaut : fond blanc/bleu, accents orange */
 :root,
-body[data-theme="light"] {
-  --bg-primary:     #fef9f0;
-  --bg-secondary:   #fef3dc;
-  --surface:        #fffdf7;
-  --surface-hover:  #fef0cc;
-  --text-primary:   #1c1208;
-  --text-secondary: #78501f;
-  --accent:         #d97706;
-  --text-on-accent: #ffffff;
-  --border:         #d97706;
-  --focus-ring:     #b45309;
-}
-
-
-/* ================================================================
-   THÈME 2 — BLANC SUR FOND NOIR
-   Texte, icônes et bordures blancs (#ffffff) sur fond noir (#000000).
-   Ratio WCAG AAA : 21:1.
-   ================================================================ */
-body[data-theme="dark"] {
-  --bg-primary:     #000000;
-  --bg-secondary:   #000000;
-  --surface:        #000000;
-  --surface-hover:  #111111;
-  --text-primary:   #ffffff;
-  --text-secondary: #ffffff;
-  --accent:         #ffffff;
-  --text-on-accent: #000000;
-  --border:         #ffffff;
-  --focus-ring:     #ffffff;
-}
-
-
-/* ================================================================
-   THÈME 3 — NOIR SUR FOND BLANC
-   Texte, icônes et bordures noirs (#000000) sur fond blanc (#ffffff).
-   Ratio WCAG AAA : 21:1.
-   ================================================================ */
-body[data-theme="hc"] {
-  --bg-primary:     #ffffff;
-  --bg-secondary:   #ffffff;
+.theme-light {
+  --bg:             #f0f4f8;
   --surface:        #ffffff;
-  --surface-hover:  #e8e8e8;
-  --text-primary:   #000000;
-  --text-secondary: #000000;
-  --accent:         #000000;
-  --text-on-accent: #ffffff;
-  --border:         #000000;
-  --focus-ring:     #000000;
+  --surface-hover:  #e8edf3;
+  --text-primary:   #1a2744;
+  --text-secondary: #4a5568;
+  --accent:         #d97706;
+  --accent-hover:   #b45309;
+  --border:         #d97706;
+  --border-light:   #cbd5e0;
+  --nav-active-bg:  #fef3c7;
+  --nav-active-border: #d97706;
+  --slider-track:   #cbd5e0;
+  --slider-thumb:   #d97706;
+  --btn-primary-bg: #d97706;
+  --btn-primary-text: #ffffff;
+  --overlay-bg:     rgba(255,255,255,0.85);
 }
 
+/* Thème sombre */
+.theme-dark {
+  --bg:             #0d0d0d;
+  --surface:        #1a1a1a;
+  --surface-hover:  #2a2a2a;
+  --text-primary:   #f5f5f5;
+  --text-secondary: #a0a0a0;
+  --accent:         #f59e0b;
+  --accent-hover:   #d97706;
+  --border:         #f59e0b;
+  --border-light:   #333333;
+  --nav-active-bg:  #2d2000;
+  --nav-active-border: #f59e0b;
+  --slider-track:   #444444;
+  --slider-thumb:   #f59e0b;
+  --btn-primary-bg: #f59e0b;
+  --btn-primary-text: #000000;
+  --overlay-bg:     rgba(0,0,0,0.85);
+}
 
-/* ================================================================
-   THÈME 4 — ORANGE SUR FOND NOIR
-   Texte/icônes/bordures orange (#ff8c00) sur fond noir (#000000).
-   Ratio WCAG AAA : ≈ 9.5:1.
-   ================================================================ */
-body[data-theme="sepia"] {
-  --bg-primary:     #000000;
-  --bg-secondary:   #000000;
+/* Thème haut contraste */
+.theme-hc {
+  --bg:             #000000;
   --surface:        #000000;
-  --surface-hover:  #0f0800;
-  --text-primary:   #ff8c00;
-  --text-secondary: #ff8c00;
-  --accent:         #ff8c00;
-  --text-on-accent: #000000;
-  --border:         #ff8c00;
-  --focus-ring:     #ffaa33;
+  --surface-hover:  #1a1a00;
+  --text-primary:   #ffff00;
+  --text-secondary: #ffffff;
+  --accent:         #ffff00;
+  --accent-hover:   #ffff99;
+  --border:         #ffff00;
+  --border-light:   #ffff00;
+  --nav-active-bg:  #1a1a00;
+  --nav-active-border: #ffff00;
+  --slider-track:   #555555;
+  --slider-thumb:   #ffff00;
+  --btn-primary-bg: #ffff00;
+  --btn-primary-text: #000000;
+  --overlay-bg:     rgba(0,0,0,0.92);
 }
 
+/* ── 2. BASE ────────────────────────────────────────────────── */
 
-/* ================================================================
-   THÈME 5 — JAUNE SUR FOND NOIR
-   Texte/icônes/bordures jaune (#ffdd00) sur fond noir (#000000).
-   Ratio WCAG AAA : ≈ 14.7:1.
-   ================================================================ */
-body[data-theme="yellow"] {
-  --bg-primary:     #000000;
-  --bg-secondary:   #000000;
-  --surface:        #000000;
-  --surface-hover:  #0e0d00;
-  --text-primary:   #ffdd00;
-  --text-secondary: #ffdd00;
-  --accent:         #ffdd00;
-  --text-on-accent: #000000;
-  --border:         #ffdd00;
-  --focus-ring:     #ffe94d;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-
-/* ================================================================
-   POLICES : Luciole chargée via @font-face dans index.html.
-   On l'applique ici sur html et body en fallback.
-   ================================================================ */
-html, body {
-  font-family: 'Luciole', 'Arial', sans-serif;
+html {
+  height: 100%;
+  overflow: hidden; /* Empêche le scroll global sur PC */
 }
 
-
-/* ================================================================
-   FOCUS CLAVIER — WCAG 2.1 SC 2.4.7
-   Contour visible sur tous les éléments interactifs.
-   La couleur vient de la variable --focus-ring du thème actif.
-   ================================================================ */
-.focus-ring:focus,
-.focus-ring:focus-visible {
-  outline: 4px solid var(--focus-ring);
-  outline-offset: 3px;
-}
-
-/* Renforcement dans les thèmes fort-contraste */
-body[data-theme="dark"]   .focus-ring:focus,
-body[data-theme="dark"]   .focus-ring:focus-visible,
-body[data-theme="hc"]     .focus-ring:focus,
-body[data-theme="hc"]     .focus-ring:focus-visible,
-body[data-theme="sepia"]  .focus-ring:focus,
-body[data-theme="sepia"]  .focus-ring:focus-visible,
-body[data-theme="yellow"] .focus-ring:focus,
-body[data-theme="yellow"] .focus-ring:focus-visible {
-  outline: 5px solid var(--focus-ring);
-  outline-offset: 4px;
-}
-
-
-/* ================================================================
-   SUPPRESSION DES OMBRES ET DÉGRADÉS dans les thèmes fort-contraste.
-   On ne supprime QUE box-shadow, text-shadow et background-image —
-   aucune propriété de mise en page.
-   ================================================================ */
-body[data-theme="dark"]   *,
-body[data-theme="hc"]     *,
-body[data-theme="sepia"]  *,
-body[data-theme="yellow"] * {
-  box-shadow:       none !important;
-  text-shadow:      none !important;
-  background-image: none !important;
-}
-
-
-/* ================================================================
-   SCROLLBAR THÉMATISÉE
-   Firefox + WebKit — uniquement des couleurs, pas de dimensions.
-   ================================================================ */
-* {
-  scrollbar-color: var(--border) var(--bg-secondary);
-  scrollbar-width: thin;
-}
-
-::-webkit-scrollbar-track {
-  background-color: var(--bg-secondary);
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: var(--border);
-  border: 2px solid var(--bg-secondary);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: var(--text-secondary);
-}
-
-
-/* ================================================================
-   SÉLECTION DE TEXTE
-   ================================================================ */
-::selection {
-  background-color: var(--text-primary);
-  color:            var(--bg-primary);
-}
-
-
-/* ================================================================
-   ICÔNES MATERIAL SYMBOLS
-   Garantit que les icônes héritent bien de la couleur du texte
-   courant dans tous les thèmes, sans surcharger les tailles.
-   ================================================================ */
-.material-symbols-outlined {
-  color: inherit;
-}
-
-
-/* ================================================================
-   TRANSITIONS DE COULEUR ENTRE THÈMES
-   Uniquement sur les propriétés de couleur — jamais sur le layout.
-   ================================================================ */
 body {
-  transition:
-    background-color 0.2s ease,
-    color            0.2s ease;
+  height: 100%;
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden; /* Empêche le scroll global sur PC */
 }
 
-button,
-a,
-input,
-[role="button"] {
-  transition:
-    background-color 0.15s ease,
-    color            0.15s ease,
-    border-color     0.15s ease;
+/* Permettre le scroll uniquement à l'intérieur des vues */
+#view-home,
+#view-history,
+#view-player {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
+/* ── 3. VARIABLES TAILWIND (bridge) ─────────────────────────── */
 
-/* ================================================================
-   PRÉFÉRENCE prefers-reduced-motion
-   ================================================================ */
+/* Ces classes permettent d'utiliser les variables CSS dans Tailwind */
+.bg-background  { background-color: var(--bg); }
+.bg-surface     { background-color: var(--surface); }
+.text-textPrimary   { color: var(--text-primary); }
+.text-textSecondary { color: var(--text-secondary); }
+.text-accent        { color: var(--accent); }
+.border-borderCustom { border-color: var(--border); }
+.border-borderLight  { border-color: var(--border-light); }
+
+/* ── 4. BARRE DE NAVIGATION INFÉRIEURE ──────────────────────── */
+
+/* Boutons nav — taille mobile : grands, gras, bien lisibles */
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 12px;
+  min-height: 64px;         /* 64px sur mobile pour accessibilité */
+  min-width: 80px;
+  border-radius: 16px;
+  border: 3px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.95rem;       /* Texte lisible sur mobile */
+  font-weight: 700;
+}
+
+.nav-btn .material-symbols-outlined {
+  font-size: 30px;          /* Icône grande sur mobile */
+}
+
+.nav-btn.active {
+  background-color: var(--nav-active-bg);
+  border-color: var(--nav-active-border);
+  color: var(--accent);
+}
+
+/* PC : on réduit la taille pour ne pas déséquilibrer l'interface */
+@media (min-width: 768px) {
+  .nav-btn {
+    min-height: 52px;
+    min-width: 72px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-width: 2px;
+  }
+
+  .nav-btn .material-symbols-outlined {
+    font-size: 24px;
+  }
+}
+
+/* ── 5. BOUTON THÈME ────────────────────────────────────────── */
+
+.btn-theme {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 14px;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  min-height: 56px;
+  min-width: 64px;
+  transition: background 0.15s;
+}
+
+.btn-theme:hover {
+  background-color: var(--surface-hover);
+}
+
+.btn-theme .material-symbols-outlined {
+  font-size: 26px;
+}
+
+/* ── 6. BARRE DE PROGRESSION AUDIO (slider) ─────────────────── */
+/* Forcée visible dans tous les thèmes */
+
+#audio-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--slider-track);
+  outline: none;
+  cursor: pointer;
+}
+
+/* Track — WebKit (Chrome, Safari, Edge) */
+#audio-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--slider-track);
+}
+
+/* Thumb — WebKit */
+#audio-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--slider-thumb);
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 2px var(--slider-thumb);
+  cursor: pointer;
+  margin-top: -7px; /* Centre le thumb sur la track */
+}
+
+/* Track — Firefox */
+#audio-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--slider-track);
+}
+
+/* Thumb — Firefox */
+#audio-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--slider-thumb);
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 2px var(--slider-thumb);
+  cursor: pointer;
+}
+
+/* Progress fill (partie jouée) — WebKit uniquement */
+#audio-slider::-webkit-slider-container {
+  border-radius: 4px;
+}
+
+/* ── 7. OVERLAY DE CHARGEMENT ───────────────────────────────── */
+
+#loading-overlay {
+  background-color: var(--overlay-bg);
+}
+
+/* ── 8. FOCUS ACCESSIBLE ────────────────────────────────────── */
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ── 9. ZONE DE DÉPÔT (DROP ZONE) ──────────────────────────── */
+
+#dropZone {
+  border: 3px dashed var(--border);
+  background-color: var(--surface);
+  transition: background-color 0.15s;
+}
+
+#dropZone:hover {
+  background-color: var(--surface-hover);
+}
+
+/* ── 10. SCROLLBAR DISCRÈTE (pour les vues défilantes) ─────── */
+
+#view-home::-webkit-scrollbar,
+#view-history::-webkit-scrollbar,
+#view-player::-webkit-scrollbar {
+  width: 6px;
+}
+
+#view-home::-webkit-scrollbar-track,
+#view-history::-webkit-scrollbar-track,
+#view-player::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#view-home::-webkit-scrollbar-thumb,
+#view-history::-webkit-scrollbar-thumb,
+#view-player::-webkit-scrollbar-thumb {
+  background-color: var(--border-light);
+  border-radius: 3px;
+}
+
+/* ── 11. PREFERS-REDUCED-MOTION ─────────────────────────────── */
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration:       0.01ms !important;
-    animation-iteration-count: 1     !important;
-    transition-duration:      0.01ms !important;
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
   }
 }
