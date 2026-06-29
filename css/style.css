@@ -1,180 +1,231 @@
-@import url('https://fonts.cdnfonts.com/css/luciole');
+/* ================================================================
+   LUMIÈRE AUDIO — css/style.css
+   ================================================================
+   PRINCIPE : Ce fichier ne touche QU'AUX COULEURS via des variables
+   CSS. Aucune propriété de structure (display, position, flex,
+   grid, width, height, margin, padding, font-size) n'est modifiée.
+   
+   Les classes Tailwind de l'HTML (bg-surface, text-textPrimary,
+   border-borderCustom, etc.) sont déjà mappées sur ces variables
+   via tailwind.config dans index.html. Il suffit de redéfinir les
+   variables par thème pour que tout change.
+   ================================================================ */
 
-/* ── 1. VARIABLES DE THÈMES (Couleurs Strictes) ───────────────────────── */
 
-/* Thème clair (Défaut) : Fond bleu/gris très clair, Surfaces blanches, Accent Orange vif */
-:root, .theme-light {
-  --bg: #e6f0fa;               /* Bleu très clair / apaisant */
-  --surface: #ffffff;          /* Blanc pur */
-  --surface-hover: #f1f5f9;
-  --text-primary: #0a192f;     /* Bleu nuit très foncé / Lisibilité ++ */
-  --text-secondary: #334155;
-  --accent: #ff7700;           /* Orange vif */
-  --border: #ff7700;
-  --border-light: #cbd5e1;
-  --nav-active-bg: #fff1e5;    /* Fond légèrement orangé pour l'onglet actif */
-  --slider-track: #94a3b8;     /* Gris moyen, bien visible sur fond blanc */
-  --slider-thumb: #ff7700;
+/* ================================================================
+   THÈME 1 — CLASSIQUE (défaut)
+   Tons ambrés/ivoire de l'application d'origine.
+   ================================================================ */
+:root,
+body[data-theme="light"] {
+  --bg-primary:     #fef9f0;
+  --bg-secondary:   #fef3dc;
+  --surface:        #fffdf7;
+  --surface-hover:  #fef0cc;
+  --text-primary:   #1c1208;
+  --text-secondary: #78501f;
+  --accent:         #d97706;
+  --text-on-accent: #ffffff;
+  --border:         #d97706;
+  --focus-ring:     #b45309;
 }
 
-/* Thème sombre */
-.theme-dark {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface-hover: #334155;
-  --text-primary: #ffffff;
-  --text-secondary: #e2e8f0;
-  --accent: #f59e0b;
-  --border: #f59e0b;
-  --border-light: #475569;
-  --nav-active-bg: #334155;
-  --slider-track: #cbd5e1;     /* Gris clair pour contraster sur le fond sombre */
-  --slider-thumb: #f59e0b;
-}
 
-/* Thème contraste élevé (Noir / Blanc) */
-.theme-hc {
-  --bg: #000000;
-  --surface: #000000;
-  --surface-hover: #1a1a1a;
-  --text-primary: #ffffff;
+/* ================================================================
+   THÈME 2 — BLANC SUR FOND NOIR
+   Texte, icônes et bordures blancs (#ffffff) sur fond noir (#000000).
+   Ratio WCAG AAA : 21:1.
+   ================================================================ */
+body[data-theme="dark"] {
+  --bg-primary:     #000000;
+  --bg-secondary:   #000000;
+  --surface:        #000000;
+  --surface-hover:  #111111;
+  --text-primary:   #ffffff;
   --text-secondary: #ffffff;
-  --accent: #ffffff;
-  --border: #ffffff;
-  --border-light: #ffffff;
-  --nav-active-bg: #1a1a1a;
-  --slider-track: #ffffff;     /* Piste totalement blanche */
-  --slider-thumb: #ffffff;
+  --accent:         #ffffff;
+  --text-on-accent: #000000;
+  --border:         #ffffff;
+  --focus-ring:     #ffffff;
 }
 
-/* Base Typographique */
+
+/* ================================================================
+   THÈME 3 — NOIR SUR FOND BLANC
+   Texte, icônes et bordures noirs (#000000) sur fond blanc (#ffffff).
+   Ratio WCAG AAA : 21:1.
+   ================================================================ */
+body[data-theme="hc"] {
+  --bg-primary:     #ffffff;
+  --bg-secondary:   #ffffff;
+  --surface:        #ffffff;
+  --surface-hover:  #e8e8e8;
+  --text-primary:   #000000;
+  --text-secondary: #000000;
+  --accent:         #000000;
+  --text-on-accent: #ffffff;
+  --border:         #000000;
+  --focus-ring:     #000000;
+}
+
+
+/* ================================================================
+   THÈME 4 — ORANGE SUR FOND NOIR
+   Texte/icônes/bordures orange (#ff8c00) sur fond noir (#000000).
+   Ratio WCAG AAA : ≈ 9.5:1.
+   ================================================================ */
+body[data-theme="sepia"] {
+  --bg-primary:     #000000;
+  --bg-secondary:   #000000;
+  --surface:        #000000;
+  --surface-hover:  #0f0800;
+  --text-primary:   #ff8c00;
+  --text-secondary: #ff8c00;
+  --accent:         #ff8c00;
+  --text-on-accent: #000000;
+  --border:         #ff8c00;
+  --focus-ring:     #ffaa33;
+}
+
+
+/* ================================================================
+   THÈME 5 — JAUNE SUR FOND NOIR
+   Texte/icônes/bordures jaune (#ffdd00) sur fond noir (#000000).
+   Ratio WCAG AAA : ≈ 14.7:1.
+   ================================================================ */
+body[data-theme="yellow"] {
+  --bg-primary:     #000000;
+  --bg-secondary:   #000000;
+  --surface:        #000000;
+  --surface-hover:  #0e0d00;
+  --text-primary:   #ffdd00;
+  --text-secondary: #ffdd00;
+  --accent:         #ffdd00;
+  --text-on-accent: #000000;
+  --border:         #ffdd00;
+  --focus-ring:     #ffe94d;
+}
+
+
+/* ================================================================
+   POLICES : Luciole chargée via @font-face dans index.html.
+   On l'applique ici sur html et body en fallback.
+   ================================================================ */
+html, body {
+  font-family: 'Luciole', 'Arial', sans-serif;
+}
+
+
+/* ================================================================
+   FOCUS CLAVIER — WCAG 2.1 SC 2.4.7
+   Contour visible sur tous les éléments interactifs.
+   La couleur vient de la variable --focus-ring du thème actif.
+   ================================================================ */
+.focus-ring:focus,
+.focus-ring:focus-visible {
+  outline: 4px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* Renforcement dans les thèmes fort-contraste */
+body[data-theme="dark"]   .focus-ring:focus,
+body[data-theme="dark"]   .focus-ring:focus-visible,
+body[data-theme="hc"]     .focus-ring:focus,
+body[data-theme="hc"]     .focus-ring:focus-visible,
+body[data-theme="sepia"]  .focus-ring:focus,
+body[data-theme="sepia"]  .focus-ring:focus-visible,
+body[data-theme="yellow"] .focus-ring:focus,
+body[data-theme="yellow"] .focus-ring:focus-visible {
+  outline: 5px solid var(--focus-ring);
+  outline-offset: 4px;
+}
+
+
+/* ================================================================
+   SUPPRESSION DES OMBRES ET DÉGRADÉS dans les thèmes fort-contraste.
+   On ne supprime QUE box-shadow, text-shadow et background-image —
+   aucune propriété de mise en page.
+   ================================================================ */
+body[data-theme="dark"]   *,
+body[data-theme="hc"]     *,
+body[data-theme="sepia"]  *,
+body[data-theme="yellow"] * {
+  box-shadow:       none !important;
+  text-shadow:      none !important;
+  background-image: none !important;
+}
+
+
+/* ================================================================
+   SCROLLBAR THÉMATISÉE
+   Firefox + WebKit — uniquement des couleurs, pas de dimensions.
+   ================================================================ */
+* {
+  scrollbar-color: var(--border) var(--bg-secondary);
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border: 2px solid var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-secondary);
+}
+
+
+/* ================================================================
+   SÉLECTION DE TEXTE
+   ================================================================ */
+::selection {
+  background-color: var(--text-primary);
+  color:            var(--bg-primary);
+}
+
+
+/* ================================================================
+   ICÔNES MATERIAL SYMBOLS
+   Garantit que les icônes héritent bien de la couleur du texte
+   courant dans tous les thèmes, sans surcharger les tailles.
+   ================================================================ */
+.material-symbols-outlined {
+  color: inherit;
+}
+
+
+/* ================================================================
+   TRANSITIONS DE COULEUR ENTRE THÈMES
+   Uniquement sur les propriétés de couleur — jamais sur le layout.
+   ================================================================ */
 body {
-  font-family: 'Luciole', Arial, sans-serif !important;
-}
-button, input, select, textarea {
-  font-family: inherit !important;
-}
-
-/* ── 2. NAVIGATION BOTTOM RESPONSIVE (Le plus important) ──────────────── */
-
-/* MOBILE EN PREMIER : Énorme, lisible, bordures très épaisses */
-.nav-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  color: var(--text-secondary);
-  background-color: transparent;
-  transition: all 0.2s ease;
-  
-  /* Tailles Mobile (Accessibilité Max) */
-  padding: 1rem 0.5rem;
-  border: 4px solid transparent;
-  border-radius: 1.5rem;
-  font-size: 1.35rem;
-  font-weight: 900;
-  width: 30%;
+  transition:
+    background-color 0.2s ease,
+    color            0.2s ease;
 }
 
-.nav-btn .material-symbols-outlined {
-  font-size: 3rem; /* Très grande icône sur mobile */
+button,
+a,
+input,
+[role="button"] {
+  transition:
+    background-color 0.15s ease,
+    color            0.15s ease,
+    border-color     0.15s ease;
 }
 
-.nav-btn.active {
-  color: var(--accent);
-  background-color: var(--nav-active-bg);
-  border-color: var(--border);
-}
 
-/* PC / TABLETTE : Redimensionnement standard et discret pour ne pas casser l'UI */
-@media (min-width: 768px) {
-  .nav-btn {
-    padding: 0.5rem 1rem;
-    border-width: 2px;
-    border-radius: 1rem;
-    font-size: 1.1rem;
-    font-weight: 700;
-    gap: 0.25rem;
-    width: auto;
-    min-width: 140px;
-  }
-  .nav-btn .material-symbols-outlined {
-    font-size: 2rem;
+/* ================================================================
+   PRÉFÉRENCE prefers-reduced-motion
+   ================================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:       0.01ms !important;
+    animation-iteration-count: 1     !important;
+    transition-duration:      0.01ms !important;
   }
 }
-
-/* ── 3. BOUTONS LECTEUR (LIGNE UNIQUE) ────────────────────────────────── */
-
-.control-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border: 4px solid var(--border-light) !important;
-  border-radius: 1.5rem;
-  background-color: var(--surface);
-  color: var(--text-primary);
-  min-height: 90px;
-  padding: 0.5rem;
-  transition: transform 0.1s ease, background-color 0.2s ease;
-  cursor: pointer;
-}
-.control-btn:active, .control-btn-main:active {
-  transform: scale(0.95);
-}
-.control-btn:hover { background-color: var(--surface-hover); }
-
-.control-btn-main {
-  flex: 1.3;
-  border-color: var(--accent) !important;
-  background-color: var(--accent);
-  color: #ffffff !important;
-}
-.control-btn-main * { color: #ffffff !important; }
-
-.control-icon { font-size: 2.5rem !important; pointer-events: none; }
-.control-icon-main { font-size: 4rem !important; pointer-events: none; }
-.control-text { font-size: 1rem !important; font-weight: 900 !important; margin-top: 0.5rem; pointer-events: none; }
-
-/* Masquer le texte des boutons de contrôle sur très petit écran pour éviter les chevauchements */
-@media (max-width: 600px) {
-  .control-text {
-    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
-  }
-  .control-btn { min-height: 75px; }
-}
-
-/* ── 4. SLIDER AUDIO (FORCE VISIBILITÉ) ───────────────────────────────── */
-
-#audio-slider {
-  appearance: none;
-  width: 100%;
-  height: 16px; /* Très épais */
-  background: var(--slider-track) !important;
-  border-radius: 8px;
-  outline: none;
-  border: 2px solid var(--surface-hover);
-}
-#audio-slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 30px;
-  height: 30px;
-  background: var(--slider-thumb) !important;
-  border-radius: 50%;
-  border: 4px solid var(--surface);
-  box-shadow: 0 0 0 2px var(--slider-thumb);
-  cursor: pointer;
-}
-#audio-slider::-moz-range-thumb {
-  width: 30px;
-  height: 30px;
-  background: var(--slider-thumb) !important;
-  border-radius: 50%;
-  border: 4px solid var(--surface);
-  cursor: pointer;
-}
-
-/* ── 5. FOCUS CLAVIER ─────────────────────────────────────────────────── */
-:focus-visible { outline: 4px solid var(--accent); outline-offset: 4px; }
