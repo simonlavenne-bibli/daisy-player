@@ -1,126 +1,119 @@
 /* ================================================================
-   LUMIÈRE AUDIO — css/style.css
-   ================================================================
-   PRINCIPE : Ce fichier ne touche QU'AUX COULEURS via des variables
-   CSS. Aucune propriété de structure (display, position, flex,
-   grid, width, height, margin, padding, font-size) n'est modifiée.
-   
-   Les classes Tailwind de l'HTML (bg-surface, text-textPrimary,
-   border-borderCustom, etc.) sont déjà mappées sur ces variables
-   via tailwind.config dans index.html. Il suffit de redéfinir les
-   variables par thème pour que tout change.
-   ================================================================ */
-
+LUMIÈRE AUDIO — css/style.css
+================================================================
+PRINCIPE : Ce fichier ne touche QU'AUX COULEURS via des variables
+CSS. Aucune propriété de structure (display, position, flex,
+grid, width, height, margin, padding, font-size) n'est modifiée.
+Les classes Tailwind de l'HTML (bg-surface, text-textPrimary,
+border-borderCustom, etc.) sont déjà mappées sur ces variables
+via tailwind.config dans index.html. Il suffit de redéfinir les
+variables par thème pour que tout change.
+================================================================ */
 
 /* ================================================================
-   THÈME 1 — CLASSIQUE (défaut)
-   Tons ambrés/ivoire de l'application d'origine.
-   ================================================================ */
+THÈME 1 — BLEU/BLANC/ORANGE (défaut)
+Fond blanc, texte bleu marine, accent orange.
+Ratio WCAG AA : ≥ 4.5:1.
+================================================================ */
 :root,
 body[data-theme="light"] {
-  --bg-primary:     #fef9f0;
-  --bg-secondary:   #fef3dc;
-  --surface:        #fffdf7;
-  --surface-hover:  #fef0cc;
-  --text-primary:   #1c1208;
-  --text-secondary: #78501f;
-  --accent:         #d97706;
+  --bg-primary: #f5f8ff;
+  --bg-secondary: #e8eef9;
+  --surface: #ffffff;
+  --surface-hover: #dce6f7;
+  --text-primary: #0d2a6e;
+  --text-secondary: #3a5299;
+  --accent: #e07b00;
   --text-on-accent: #ffffff;
-  --border:         #d97706;
-  --focus-ring:     #b45309;
+  --border: #e07b00;
+  --focus-ring: #b35f00;
 }
 
-
 /* ================================================================
-   THÈME 2 — BLANC SUR FOND NOIR
-   Texte, icônes et bordures blancs (#ffffff) sur fond noir (#000000).
-   Ratio WCAG AAA : 21:1.
-   ================================================================ */
+THÈME 2 — BLANC SUR FOND NOIR
+Texte, icônes et bordures blancs (#ffffff) sur fond noir (#000000).
+Ratio WCAG AAA : 21:1.
+================================================================ */
 body[data-theme="dark"] {
-  --bg-primary:     #000000;
-  --bg-secondary:   #000000;
-  --surface:        #000000;
-  --surface-hover:  #111111;
-  --text-primary:   #ffffff;
+  --bg-primary: #000000;
+  --bg-secondary: #000000;
+  --surface: #000000;
+  --surface-hover: #111111;
+  --text-primary: #ffffff;
   --text-secondary: #ffffff;
-  --accent:         #ffffff;
+  --accent: #ffffff;
   --text-on-accent: #000000;
-  --border:         #ffffff;
-  --focus-ring:     #ffffff;
+  --border: #ffffff;
+  --focus-ring: #ffffff;
 }
 
-
 /* ================================================================
-   THÈME 3 — NOIR SUR FOND BLANC
-   Texte, icônes et bordures noirs (#000000) sur fond blanc (#ffffff).
-   Ratio WCAG AAA : 21:1.
-   ================================================================ */
+THÈME 3 — NOIR SUR FOND BLANC
+Texte, icônes et bordures noirs (#000000) sur fond blanc (#ffffff).
+Ratio WCAG AAA : 21:1.
+================================================================ */
 body[data-theme="hc"] {
-  --bg-primary:     #ffffff;
-  --bg-secondary:   #ffffff;
-  --surface:        #ffffff;
-  --surface-hover:  #e8e8e8;
-  --text-primary:   #000000;
+  --bg-primary: #ffffff;
+  --bg-secondary: #ffffff;
+  --surface: #ffffff;
+  --surface-hover: #e8e8e8;
+  --text-primary: #000000;
   --text-secondary: #000000;
-  --accent:         #000000;
+  --accent: #000000;
   --text-on-accent: #ffffff;
-  --border:         #000000;
-  --focus-ring:     #000000;
+  --border: #000000;
+  --focus-ring: #000000;
 }
 
-
 /* ================================================================
-   THÈME 4 — ORANGE SUR FOND NOIR
-   Texte/icônes/bordures orange (#ff8c00) sur fond noir (#000000).
-   Ratio WCAG AAA : ≈ 9.5:1.
-   ================================================================ */
+THÈME 4 — ORANGE SUR FOND NOIR
+Texte/icônes/bordures orange (#ff8c00) sur fond noir (#000000).
+Ratio WCAG AAA : ≈ 9.5:1.
+================================================================ */
 body[data-theme="sepia"] {
-  --bg-primary:     #000000;
-  --bg-secondary:   #000000;
-  --surface:        #000000;
-  --surface-hover:  #0f0800;
-  --text-primary:   #ff8c00;
+  --bg-primary: #000000;
+  --bg-secondary: #000000;
+  --surface: #000000;
+  --surface-hover: #0f0800;
+  --text-primary: #ff8c00;
   --text-secondary: #ff8c00;
-  --accent:         #ff8c00;
+  --accent: #ff8c00;
   --text-on-accent: #000000;
-  --border:         #ff8c00;
-  --focus-ring:     #ffaa33;
+  --border: #ff8c00;
+  --focus-ring: #ffaa33;
 }
 
-
 /* ================================================================
-   THÈME 5 — JAUNE SUR FOND NOIR
-   Texte/icônes/bordures jaune (#ffdd00) sur fond noir (#000000).
-   Ratio WCAG AAA : ≈ 14.7:1.
-   ================================================================ */
+THÈME 5 — JAUNE SUR FOND NOIR
+Texte/icônes/bordures jaune (#ffdd00) sur fond noir (#000000).
+Ratio WCAG AAA : ≈ 14.7:1.
+================================================================ */
 body[data-theme="yellow"] {
-  --bg-primary:     #000000;
-  --bg-secondary:   #000000;
-  --surface:        #000000;
-  --surface-hover:  #0e0d00;
-  --text-primary:   #ffdd00;
+  --bg-primary: #000000;
+  --bg-secondary: #000000;
+  --surface: #000000;
+  --surface-hover: #0e0d00;
+  --text-primary: #ffdd00;
   --text-secondary: #ffdd00;
-  --accent:         #ffdd00;
+  --accent: #ffdd00;
   --text-on-accent: #000000;
-  --border:         #ffdd00;
-  --focus-ring:     #ffe94d;
+  --border: #ffdd00;
+  --focus-ring: #ffe94d;
 }
 
-
 /* ================================================================
-   POLICES : Luciole chargée via @font-face dans index.html.
-   On l'applique ici sur html et body en fallback.
-   ================================================================ */
+POLICES : Luciole chargée via @font-face dans index.html.
+On l'applique ici sur html et body en fallback.
+================================================================ */
 html, body {
   font-family: 'Luciole', 'Arial', sans-serif;
 }
 
-
 /* ================================================================
-   FOCUS CLAVIER — WCAG 2.1 SC 2.4.7
-   Contour visible sur tous les éléments interactifs.
-   La couleur vient de la variable --focus-ring du thème actif.
-   ================================================================ */
+FOCUS CLAVIER — WCAG 2.1 SC 2.4.7
+Contour visible sur tous les éléments interactifs.
+La couleur vient de la variable --focus-ring du thème actif.
+================================================================ */
 .focus-ring:focus,
 .focus-ring:focus-visible {
   outline: 4px solid var(--focus-ring);
@@ -128,104 +121,94 @@ html, body {
 }
 
 /* Renforcement dans les thèmes fort-contraste */
-body[data-theme="dark"]   .focus-ring:focus,
-body[data-theme="dark"]   .focus-ring:focus-visible,
-body[data-theme="hc"]     .focus-ring:focus,
-body[data-theme="hc"]     .focus-ring:focus-visible,
-body[data-theme="sepia"]  .focus-ring:focus,
-body[data-theme="sepia"]  .focus-ring:focus-visible,
+body[data-theme="dark"] .focus-ring:focus,
+body[data-theme="dark"] .focus-ring:focus-visible,
+body[data-theme="hc"] .focus-ring:focus,
+body[data-theme="hc"] .focus-ring:focus-visible,
+body[data-theme="sepia"] .focus-ring:focus,
+body[data-theme="sepia"] .focus-ring:focus-visible,
 body[data-theme="yellow"] .focus-ring:focus,
 body[data-theme="yellow"] .focus-ring:focus-visible {
   outline: 5px solid var(--focus-ring);
   outline-offset: 4px;
 }
 
-
 /* ================================================================
-   SUPPRESSION DES OMBRES ET DÉGRADÉS dans les thèmes fort-contraste.
-   On ne supprime QUE box-shadow, text-shadow et background-image —
-   aucune propriété de mise en page.
-   ================================================================ */
-body[data-theme="dark"]   *,
-body[data-theme="hc"]     *,
-body[data-theme="sepia"]  *,
+SUPPRESSION DES OMBRES ET DÉGRADÉS dans les thèmes fort-contraste.
+On ne supprime QUE box-shadow, text-shadow et background-image —
+aucune propriété de mise en page.
+================================================================ */
+body[data-theme="dark"] *,
+body[data-theme="hc"] *,
+body[data-theme="sepia"] *,
 body[data-theme="yellow"] * {
-  box-shadow:       none !important;
-  text-shadow:      none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
   background-image: none !important;
 }
 
-
 /* ================================================================
-   SCROLLBAR THÉMATISÉE
-   Firefox + WebKit — uniquement des couleurs, pas de dimensions.
-   ================================================================ */
+SCROLLBAR THÉMATISÉE
+Firefox + WebKit — uniquement des couleurs, pas de dimensions.
+================================================================ */
 * {
   scrollbar-color: var(--border) var(--bg-secondary);
   scrollbar-width: thin;
 }
-
 ::-webkit-scrollbar-track {
   background-color: var(--bg-secondary);
 }
-
 ::-webkit-scrollbar-thumb {
   background-color: var(--border);
   border: 2px solid var(--bg-secondary);
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--text-secondary);
 }
 
-
 /* ================================================================
-   SÉLECTION DE TEXTE
-   ================================================================ */
+SÉLECTION DE TEXTE
+================================================================ */
 ::selection {
   background-color: var(--text-primary);
-  color:            var(--bg-primary);
+  color: var(--bg-primary);
 }
 
-
 /* ================================================================
-   ICÔNES MATERIAL SYMBOLS
-   Garantit que les icônes héritent bien de la couleur du texte
-   courant dans tous les thèmes, sans surcharger les tailles.
-   ================================================================ */
+ICÔNES MATERIAL SYMBOLS
+Garantit que les icônes héritent bien de la couleur du texte
+courant dans tous les thèmes, sans surcharger les tailles.
+================================================================ */
 .material-symbols-outlined {
   color: inherit;
 }
 
-
 /* ================================================================
-   TRANSITIONS DE COULEUR ENTRE THÈMES
-   Uniquement sur les propriétés de couleur — jamais sur le layout.
-   ================================================================ */
+TRANSITIONS DE COULEUR ENTRE THÈMES
+Uniquement sur les propriétés de couleur — jamais sur le layout.
+================================================================ */
 body {
   transition:
     background-color 0.2s ease,
-    color            0.2s ease;
+    color 0.2s ease;
 }
-
 button,
 a,
 input,
 [role="button"] {
   transition:
     background-color 0.15s ease,
-    color            0.15s ease,
-    border-color     0.15s ease;
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
-
 /* ================================================================
-   PRÉFÉRENCE prefers-reduced-motion
-   ================================================================ */
+PRÉFÉRENCE prefers-reduced-motion
+================================================================ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration:       0.01ms !important;
-    animation-iteration-count: 1     !important;
-    transition-duration:      0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
