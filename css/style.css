@@ -1,303 +1,180 @@
-/* ============================================================
-   style.css — Lumière Audio DAISY Player
-   Thèmes : light (défaut), dark, high-contrast
-   ============================================================ */
+@import url('https://fonts.cdnfonts.com/css/luciole');
 
-/* ── 1. VARIABLES DE THÈME ─────────────────────────────────── */
+/* ── 1. VARIABLES DE THÈMES (Couleurs Strictes) ───────────────────────── */
 
-/* Thème clair — défaut : fond blanc/bleu, accents orange */
-:root,
-.theme-light {
-  --bg:             #f0f4f8;
-  --surface:        #ffffff;
-  --surface-hover:  #e8edf3;
-  --text-primary:   #1a2744;
-  --text-secondary: #4a5568;
-  --accent:         #d97706;
-  --accent-hover:   #b45309;
-  --border:         #d97706;
-  --border-light:   #cbd5e0;
-  --nav-active-bg:  #fef3c7;
-  --nav-active-border: #d97706;
-  --slider-track:   #cbd5e0;
-  --slider-thumb:   #d97706;
-  --btn-primary-bg: #d97706;
-  --btn-primary-text: #ffffff;
-  --overlay-bg:     rgba(255,255,255,0.85);
+/* Thème clair (Défaut) : Fond bleu/gris très clair, Surfaces blanches, Accent Orange vif */
+:root, .theme-light {
+  --bg: #e6f0fa;               /* Bleu très clair / apaisant */
+  --surface: #ffffff;          /* Blanc pur */
+  --surface-hover: #f1f5f9;
+  --text-primary: #0a192f;     /* Bleu nuit très foncé / Lisibilité ++ */
+  --text-secondary: #334155;
+  --accent: #ff7700;           /* Orange vif */
+  --border: #ff7700;
+  --border-light: #cbd5e1;
+  --nav-active-bg: #fff1e5;    /* Fond légèrement orangé pour l'onglet actif */
+  --slider-track: #94a3b8;     /* Gris moyen, bien visible sur fond blanc */
+  --slider-thumb: #ff7700;
 }
 
 /* Thème sombre */
 .theme-dark {
-  --bg:             #0d0d0d;
-  --surface:        #1a1a1a;
-  --surface-hover:  #2a2a2a;
-  --text-primary:   #f5f5f5;
-  --text-secondary: #a0a0a0;
-  --accent:         #f59e0b;
-  --accent-hover:   #d97706;
-  --border:         #f59e0b;
-  --border-light:   #333333;
-  --nav-active-bg:  #2d2000;
-  --nav-active-border: #f59e0b;
-  --slider-track:   #444444;
-  --slider-thumb:   #f59e0b;
-  --btn-primary-bg: #f59e0b;
-  --btn-primary-text: #000000;
-  --overlay-bg:     rgba(0,0,0,0.85);
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-hover: #334155;
+  --text-primary: #ffffff;
+  --text-secondary: #e2e8f0;
+  --accent: #f59e0b;
+  --border: #f59e0b;
+  --border-light: #475569;
+  --nav-active-bg: #334155;
+  --slider-track: #cbd5e1;     /* Gris clair pour contraster sur le fond sombre */
+  --slider-thumb: #f59e0b;
 }
 
-/* Thème haut contraste */
+/* Thème contraste élevé (Noir / Blanc) */
 .theme-hc {
-  --bg:             #000000;
-  --surface:        #000000;
-  --surface-hover:  #1a1a00;
-  --text-primary:   #ffff00;
+  --bg: #000000;
+  --surface: #000000;
+  --surface-hover: #1a1a1a;
+  --text-primary: #ffffff;
   --text-secondary: #ffffff;
-  --accent:         #ffff00;
-  --accent-hover:   #ffff99;
-  --border:         #ffff00;
-  --border-light:   #ffff00;
-  --nav-active-bg:  #1a1a00;
-  --nav-active-border: #ffff00;
-  --slider-track:   #555555;
-  --slider-thumb:   #ffff00;
-  --btn-primary-bg: #ffff00;
-  --btn-primary-text: #000000;
-  --overlay-bg:     rgba(0,0,0,0.92);
+  --accent: #ffffff;
+  --border: #ffffff;
+  --border-light: #ffffff;
+  --nav-active-bg: #1a1a1a;
+  --slider-track: #ffffff;     /* Piste totalement blanche */
+  --slider-thumb: #ffffff;
 }
 
-/* ── 2. BASE ────────────────────────────────────────────────── */
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html {
-  height: 100%;
-  overflow: hidden; /* Empêche le scroll global sur PC */
-}
-
+/* Base Typographique */
 body {
-  height: 100%;
-  margin: 0;
-  background-color: var(--bg);
-  color: var(--text-primary);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  overflow: hidden; /* Empêche le scroll global sur PC */
+  font-family: 'Luciole', Arial, sans-serif !important;
+}
+button, input, select, textarea {
+  font-family: inherit !important;
 }
 
-/* Permettre le scroll uniquement à l'intérieur des vues */
-#view-home,
-#view-history,
-#view-player {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
+/* ── 2. NAVIGATION BOTTOM RESPONSIVE (Le plus important) ──────────────── */
 
-/* ── 3. VARIABLES TAILWIND (bridge) ─────────────────────────── */
-
-/* Ces classes permettent d'utiliser les variables CSS dans Tailwind */
-.bg-background  { background-color: var(--bg); }
-.bg-surface     { background-color: var(--surface); }
-.text-textPrimary   { color: var(--text-primary); }
-.text-textSecondary { color: var(--text-secondary); }
-.text-accent        { color: var(--accent); }
-.border-borderCustom { border-color: var(--border); }
-.border-borderLight  { border-color: var(--border-light); }
-
-/* ── 4. BARRE DE NAVIGATION INFÉRIEURE ──────────────────────── */
-
-/* Boutons nav — taille mobile : grands, gras, bien lisibles */
+/* MOBILE EN PREMIER : Énorme, lisible, bordures très épaisses */
 .nav-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 8px 12px;
-  min-height: 64px;         /* 64px sur mobile pour accessibilité */
-  min-width: 80px;
-  border-radius: 16px;
-  border: 3px solid transparent;
-  background: transparent;
+  gap: 0.5rem;
   color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-size: 0.95rem;       /* Texte lisible sur mobile */
-  font-weight: 700;
+  background-color: transparent;
+  transition: all 0.2s ease;
+  
+  /* Tailles Mobile (Accessibilité Max) */
+  padding: 1rem 0.5rem;
+  border: 4px solid transparent;
+  border-radius: 1.5rem;
+  font-size: 1.35rem;
+  font-weight: 900;
+  width: 30%;
 }
 
 .nav-btn .material-symbols-outlined {
-  font-size: 30px;          /* Icône grande sur mobile */
+  font-size: 3rem; /* Très grande icône sur mobile */
 }
 
 .nav-btn.active {
-  background-color: var(--nav-active-bg);
-  border-color: var(--nav-active-border);
   color: var(--accent);
+  background-color: var(--nav-active-bg);
+  border-color: var(--border);
 }
 
-/* PC : on réduit la taille pour ne pas déséquilibrer l'interface */
+/* PC / TABLETTE : Redimensionnement standard et discret pour ne pas casser l'UI */
 @media (min-width: 768px) {
   .nav-btn {
-    min-height: 52px;
-    min-width: 72px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    padding: 6px 10px;
+    padding: 0.5rem 1rem;
     border-width: 2px;
+    border-radius: 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    gap: 0.25rem;
+    width: auto;
+    min-width: 140px;
   }
-
   .nav-btn .material-symbols-outlined {
-    font-size: 24px;
+    font-size: 2rem;
   }
 }
 
-/* ── 5. BOUTON THÈME ────────────────────────────────────────── */
+/* ── 3. BOUTONS LECTEUR (LIGNE UNIQUE) ────────────────────────────────── */
 
-.btn-theme {
+.control-btn {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 6px 14px;
-  border: 2px solid var(--border);
-  border-radius: 14px;
-  background: transparent;
+  border: 4px solid var(--border-light) !important;
+  border-radius: 1.5rem;
+  background-color: var(--surface);
   color: var(--text-primary);
+  min-height: 90px;
+  padding: 0.5rem;
+  transition: transform 0.1s ease, background-color 0.2s ease;
   cursor: pointer;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  min-height: 56px;
-  min-width: 64px;
-  transition: background 0.15s;
+}
+.control-btn:active, .control-btn-main:active {
+  transform: scale(0.95);
+}
+.control-btn:hover { background-color: var(--surface-hover); }
+
+.control-btn-main {
+  flex: 1.3;
+  border-color: var(--accent) !important;
+  background-color: var(--accent);
+  color: #ffffff !important;
+}
+.control-btn-main * { color: #ffffff !important; }
+
+.control-icon { font-size: 2.5rem !important; pointer-events: none; }
+.control-icon-main { font-size: 4rem !important; pointer-events: none; }
+.control-text { font-size: 1rem !important; font-weight: 900 !important; margin-top: 0.5rem; pointer-events: none; }
+
+/* Masquer le texte des boutons de contrôle sur très petit écran pour éviter les chevauchements */
+@media (max-width: 600px) {
+  .control-text {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+  }
+  .control-btn { min-height: 75px; }
 }
 
-.btn-theme:hover {
-  background-color: var(--surface-hover);
-}
-
-.btn-theme .material-symbols-outlined {
-  font-size: 26px;
-}
-
-/* ── 6. BARRE DE PROGRESSION AUDIO (slider) ─────────────────── */
-/* Forcée visible dans tous les thèmes */
+/* ── 4. SLIDER AUDIO (FORCE VISIBILITÉ) ───────────────────────────────── */
 
 #audio-slider {
-  -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 8px;
-  border-radius: 4px;
-  background: var(--slider-track);
+  height: 16px; /* Très épais */
+  background: var(--slider-track) !important;
+  border-radius: 8px;
   outline: none;
-  cursor: pointer;
+  border: 2px solid var(--surface-hover);
 }
-
-/* Track — WebKit (Chrome, Safari, Edge) */
-#audio-slider::-webkit-slider-runnable-track {
-  height: 8px;
-  border-radius: 4px;
-  background: var(--slider-track);
-}
-
-/* Thumb — WebKit */
 #audio-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
   appearance: none;
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
+  background: var(--slider-thumb) !important;
   border-radius: 50%;
-  background: var(--slider-thumb);
-  border: 2px solid var(--surface);
+  border: 4px solid var(--surface);
   box-shadow: 0 0 0 2px var(--slider-thumb);
   cursor: pointer;
-  margin-top: -7px; /* Centre le thumb sur la track */
 }
-
-/* Track — Firefox */
-#audio-slider::-moz-range-track {
-  height: 8px;
-  border-radius: 4px;
-  background: var(--slider-track);
-}
-
-/* Thumb — Firefox */
 #audio-slider::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
+  background: var(--slider-thumb) !important;
   border-radius: 50%;
-  background: var(--slider-thumb);
-  border: 2px solid var(--surface);
-  box-shadow: 0 0 0 2px var(--slider-thumb);
+  border: 4px solid var(--surface);
   cursor: pointer;
 }
 
-/* Progress fill (partie jouée) — WebKit uniquement */
-#audio-slider::-webkit-slider-container {
-  border-radius: 4px;
-}
-
-/* ── 7. OVERLAY DE CHARGEMENT ───────────────────────────────── */
-
-#loading-overlay {
-  background-color: var(--overlay-bg);
-}
-
-/* ── 8. FOCUS ACCESSIBLE ────────────────────────────────────── */
-
-:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 3px;
-  border-radius: 4px;
-}
-
-/* ── 9. ZONE DE DÉPÔT (DROP ZONE) ──────────────────────────── */
-
-#dropZone {
-  border: 3px dashed var(--border);
-  background-color: var(--surface);
-  transition: background-color 0.15s;
-}
-
-#dropZone:hover {
-  background-color: var(--surface-hover);
-}
-
-/* ── 10. SCROLLBAR DISCRÈTE (pour les vues défilantes) ─────── */
-
-#view-home::-webkit-scrollbar,
-#view-history::-webkit-scrollbar,
-#view-player::-webkit-scrollbar {
-  width: 6px;
-}
-
-#view-home::-webkit-scrollbar-track,
-#view-history::-webkit-scrollbar-track,
-#view-player::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-#view-home::-webkit-scrollbar-thumb,
-#view-history::-webkit-scrollbar-thumb,
-#view-player::-webkit-scrollbar-thumb {
-  background-color: var(--border-light);
-  border-radius: 3px;
-}
-
-/* ── 11. PREFERS-REDUCED-MOTION ─────────────────────────────── */
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition: none !important;
-    animation: none !important;
-  }
-}
+/* ── 5. FOCUS CLAVIER ─────────────────────────────────────────────────── */
+:focus-visible { outline: 4px solid var(--accent); outline-offset: 4px; }
