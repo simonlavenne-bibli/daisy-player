@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lumière Audio - Lecteur DAISY</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#d97706">
-  <link class="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#e07b00">
+  <link rel="apple-touch-icon" href="public/Logo_Lumiere_Audio.png">
 
-  <!-- CORRECTION 1 : Favicon SVG Data URI — supprime l'erreur 404 -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23d97706'/%3E%3Cpath d='M32 10c-8.837 0-16 7.163-16 16 0 5.9 3.2 11.05 7.96 13.82L22 48h20l-1.96-8.18C44.8 37.05 48 31.9 48 26c0-8.837-7.163-16-16-16zm-3 38v4h6v-4h-6z' fill='white'/%3E%3C/svg%3E">
+  <!-- Favicon PNG -->
+  <link rel="icon" type="image/png" href="public/Logo_Lumiere_Audio.png">
 
   <!-- CORRECTION 2 : Suppression de l'avertissement Tailwind CDN -->
   <!-- On intercepte console.warn avant le chargement de Tailwind   -->
@@ -59,6 +59,17 @@
       src: url('https://cdn.jsdelivr.net/gh/luciole-vision/luciole@main/Luciole-BoldItalic.woff2') format('woff2'),
            url('https://cdn.jsdelivr.net/gh/luciole-vision/luciole@main/Luciole-BoldItalic.woff') format('woff');
     }
+    .app-logo {
+      width: 3rem;
+      height: 3rem;
+      object-fit: contain;
+    }
+    @media (min-width: 768px) {
+      .app-logo {
+        width: 3.75rem;
+        height: 3.75rem;
+      }
+    }
   </style>
 
   <!-- Configuration Tailwind : mappe les classes Tailwind sur les variables CSS de thème -->
@@ -91,7 +102,7 @@
 
 <header class="p-6 bg-surface shadow-sm flex justify-between items-center border-b-4 border-borderCustom">
   <h1 class="text-3xl md:text-4xl font-black flex items-center gap-4 text-textPrimary">
-    <span class="material-symbols-outlined text-5xl md:text-6xl text-accent">lightbulb</span> Lumière Audio
+    <img src="public/Logo_Lumiere_Audio.png" alt="Lumière Audio" class="app-logo"> Lumière Audio
   </h1>
   <div class="flex items-center gap-4">
     <button id="toggleCleanMode" class="hidden flex items-center gap-3 bg-surface text-textPrimary px-6 py-4 rounded-3xl font-black hover:bg-surfaceHover shadow-md border-4 border-borderCustom focus-ring" aria-label="Basculer entre le mode complet et le mode simple">
