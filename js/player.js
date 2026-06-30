@@ -29,6 +29,29 @@ export class DaisyPlayer {
         this.isPlaying = false;
     }
 
+    // ── Reprise de lecture à un point précis ───────────────────
+    async resumeAt(chapterIndex, positionSeconds) {
+        this.currentIndex = Math.max(0, Math.min(chapterIndex, this.playlist.length - 1));
+        const track = await this.loadCurrentTrack();
+        
+        const applyPosition = () => {
+            this.audio.currentTime = positionSeconds;
+        };
+
+        // On attend que les métadonnées soient prêtes pour pouvoir faire un seek
+        if (this.audio.readyState >= 1) {
+            applyPosition();
+        } else {
+            const onLoaded = () => {
+                applyPosition();
+                this.audio.removeEventListener('loadedmetadata', onLoaded);
+            };
+            this.audio.addEventListener('loadedmetadata', onLoaded);
+        }
+        
+        return track;
+    }
+
     // ── Chargement et lecture de la piste courante ─────────────
     async loadCurrentTrack() {
         if (this.playlist.length === 0) return null;
