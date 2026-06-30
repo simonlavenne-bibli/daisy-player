@@ -2,21 +2,21 @@
  * js/db.js — Couche d'accès IndexedDB pour Lumière Audio
  *
  * Responsabilités :
- *   - Ouvrir et migrer la base de données
- *   - Fournir des fonctions CRUD pour les 5 stores
- *   - Gérer la persistance du stockage (navigator.storage.persist)
- *   - Surveiller le quota disponible
- *   - Ne jamais toucher au DOM (zéro dépendance UI)
+ * - Ouvrir et migrer la base de données
+ * - Fournir des fonctions CRUD pour les 5 stores
+ * - Gérer la persistance du stockage (navigator.storage.persist)
+ * - Surveiller le quota disponible
+ * - Ne jamais toucher au DOM (zéro dépendance UI)
  *
  * Stores :
- *   books        — métadonnées de chaque livre
- *   book_files   — blobs ZIP binaires (store séparé pour pouvoir supprimer sans perdre la progression)
- *   progress     — position de lecture, vitesse, temps écouté
- *   bookmarks    — marque-pages manuels et automatiques (structure prête, UI à venir)
- *   settings     — préférences globales (vitesse par défaut, thème, etc.)
+ * books        — métadonnées de chaque livre
+ * book_files   — blobs ZIP binaires (store séparé pour pouvoir supprimer sans perdre la progression)
+ * progress     — position de lecture, vitesse, temps écouté
+ * bookmarks    — marque-pages manuels et automatiques (structure prête, UI à venir)
+ * settings     — preferences globales (vitesse par défaut, thème, etc.)
  *
  * Compatibilité testée :
- *   Chrome Desktop/Android, Edge, Safari macOS 14+, Safari iOS 15+
+ * Chrome Desktop/Android, Edge, Safari macOS 14+, Safari iOS 15+
  *
  * @module db
  */
@@ -49,21 +49,24 @@ const QUOTA_WARNING_THRESHOLD_BYTES = 300 * 1024 * 1024;
 /** Référence unique à la connexion IDBDatabase, partagée par toutes les fonctions */
 let _db = null;
 
+/** Promesse unique partagée pour gérer les ouvertures simultanées de la base */
+let _openPromise = null;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 1 — INITIALISATION ET MIGRATION
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Ouvre la base de données et effectue les migrations si nécessaire.
- * Doit être appelée une seule fois au démarrage de l'application (dans main.js).
- * Les appels suivants retournent immédiatement la connexion existante.
+ * Gère correctement la concurrence au démarrage.
  *
  * @returns {Promise<IDBDatabase>}
  */
-export async function openDB() {
-  if (_db) return _db;
+export function openDB() {
+  if (_db) return Promise.resolve(_db);
+  if (_openPromise) return _openPromise;
 
-  _db = await new Promise((resolve, reject) => {
+  _openPromise = new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     // Déclenché à la première ouverture ou lors d'une montée de version
@@ -73,8 +76,15 @@ export async function openDB() {
       _migrate(db, oldVersion);
     };
 
-    request.onsuccess = (event) => resolve(event.target.result);
-    request.onerror  = (event) => reject(event.target.error);
+    request.onsuccess = (event) => {
+      _db = event.target.result; // Assigné immédiatement ici !
+      resolve(_db);
+    };
+
+    request.onerror = (event) => {
+      _openPromise = null; // Permet de retenter la connexion en cas d'échec
+      reject(event.target.error);
+    };
 
     // Connexion bloquée par un autre onglet encore ouvert sur une ancienne version
     request.onblocked = () => {
@@ -82,7 +92,7 @@ export async function openDB() {
     };
   });
 
-  return _db;
+  return _openPromise;
 }
 
 /**
@@ -97,7 +107,6 @@ function _migrate(db, oldVersion) {
   if (oldVersion < 1) {
     _createSchemaV1(db);
   }
-  // Versions futures : if (oldVersion < 2) { _migrateToV2(db); }
 }
 
 /**
@@ -107,56 +116,26 @@ function _migrate(db, oldVersion) {
  * @param {IDBDatabase} db
  */
 function _createSchemaV1(db) {
-
   // ── Store: books ──────────────────────────────────────────────────────────
-  // Métadonnées de chaque livre. Clé primaire : bookId (UUID v4).
   const booksStore = db.createObjectStore('books', { keyPath: 'bookId' });
-
-  // Index pour la déduplication par hash du fichier ZIP
   booksStore.createIndex('by_contentHash', 'contentHash', { unique: false });
-
-  // Index pour la déduplication par identifiant DAISY standard (dc:identifier dans ncc.html)
-  // non-unique car le champ peut être absent (null) pour plusieurs livres
   booksStore.createIndex('by_nccId', 'nccId', { unique: false });
-
-  // Index pour trier par dernière ouverture → "livres récents"
-  // C'est l'index le plus sollicité : utilisé à chaque démarrage
   booksStore.createIndex('by_lastOpenedAt', 'lastOpenedAt', { unique: false });
-
-  // Index pour trier par date d'import → tri alternatif dans la bibliothèque
   booksStore.createIndex('by_importedAt', 'importedAt', { unique: false });
 
   // ── Store: book_files ─────────────────────────────────────────────────────
-  // Contenu binaire (blob ZIP). Séparé de books pour deux raisons :
-  //   1. Permet de supprimer le fichier sans perdre les métadonnées ni la progression
-  //   2. Les reads de métadonnées n'ont jamais besoin de charger les blobs en mémoire
   db.createObjectStore('book_files', { keyPath: 'bookId' });
-  // Pas d'index secondaire : on accède toujours par bookId
 
   // ── Store: progress ───────────────────────────────────────────────────────
-  // Position de lecture. Écrit toutes les ~5 secondes pendant la lecture.
-  // Clé primaire : bookId (une seule entrée de progression par livre).
   const progressStore = db.createObjectStore('progress', { keyPath: 'bookId' });
-
-  // Index utile pour trouver les livres dont la lecture est avancée (> X %)
   progressStore.createIndex('by_percentage', 'percentage', { unique: false });
 
   // ── Store: bookmarks ──────────────────────────────────────────────────────
-  // Marque-pages manuels et automatiques.
-  // Store créé maintenant pour éviter une migration de schéma ultérieure.
-  // L'UI des marque-pages n'est pas encore implémentée mais la structure est prête.
   const bookmarksStore = db.createObjectStore('bookmarks', { keyPath: 'id' });
-
-  // Index pour récupérer tous les marque-pages d'un livre donné
   bookmarksStore.createIndex('by_bookId', 'bookId', { unique: false });
-
-  // Index pour filtrer par type (manual / auto)
   bookmarksStore.createIndex('by_type', 'type', { unique: false });
 
   // ── Store: settings ───────────────────────────────────────────────────────
-  // Préférences globales de l'utilisateur.
-  // Stockage clé-valeur simple (keyPath: 'key', value: 'value').
-  // Valeurs attendues : defaultPlaybackRate, theme, lastExportedAt, etc.
   db.createObjectStore('settings', { keyPath: 'key' });
 
   console.log('[DB] Schéma v1 créé.');
@@ -197,16 +176,13 @@ function _req(request) {
 
 /**
  * Génère un UUID v4 sans dépendance externe.
- * Utilise crypto.randomUUID() si disponible (Chrome 92+, Safari 15.4+, Firefox 95+),
- * sinon utilise un fallback basé sur crypto.getRandomValues().
  *
- * @returns {string} UUID v4, ex: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+ * @returns {string} UUID v4
  */
 function _uuid() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
-  // Fallback pour Safari < 15.4
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
     (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
   );
@@ -218,27 +194,20 @@ function _uuid() {
 
 /**
  * Demande le stockage persistant au navigateur.
- * Sans persistance, le navigateur peut expulser les données IndexedDB sous pression.
- * Particulièrement important sur Safari iOS (règle ITP des 7 jours).
  *
- * @returns {Promise<boolean>} true si la persistance est accordée, false sinon
+ * @returns {Promise<boolean>}
  */
 export async function requestPersistentStorage() {
-  if (!navigator.storage || !navigator.storage.persist) {
-    // API non disponible (très ancien navigateur) — on continue sans garantie
-    return false;
-  }
+  if (!navigator.storage || !navigator.storage.persist) return false;
 
   try {
     const isPersisted = await navigator.storage.persisted();
-    if (isPersisted) return true; // Déjà accordé
+    if (isPersisted) return true;
 
     const granted = await navigator.storage.persist();
     if (granted) {
       console.log('[DB] Stockage persistant accordé.');
     } else {
-      // Sur Safari iOS, persist() retourne toujours false même si les données
-      // sont conservées. Ce n'est pas bloquant mais on le signale.
       console.warn('[DB] Stockage persistant refusé ou non supporté (comportement normal sur Safari iOS).');
     }
     return granted;
@@ -250,18 +219,11 @@ export async function requestPersistentStorage() {
 
 /**
  * Estime l'espace de stockage disponible.
- * Retourne un objet avec usage, quota, et un flag d'alerte si l'espace est insuffisant.
  *
- * @returns {Promise<{
- *   usage: number,        — octets utilisés par l'origine
- *   quota: number,        — quota total accordé
- *   available: number,    — octets disponibles estimés
- *   isLow: boolean        — true si < QUOTA_WARNING_THRESHOLD_BYTES
- * }>}
+ * @returns {Promise<object>}
  */
 export async function getStorageEstimate() {
   if (!navigator.storage || !navigator.storage.estimate) {
-    // API non disponible : on retourne des valeurs fictives non-bloquantes
     return { usage: 0, quota: Infinity, available: Infinity, isLow: false };
   }
 
@@ -289,29 +251,12 @@ export async function getStorageEstimate() {
 
 /**
  * Insère un nouveau livre dans le store books.
- * N'écrit PAS le fichier ZIP (c'est le rôle de saveBookFile).
  *
- * Structure complète d'un objet book :
- * {
- *   bookId:         string,   — UUID v4, généré ici
- *   contentHash:    string|null, — SHA-256 du ZIP, calculé en arrière-plan
- *   nccId:          string|null, — dc:identifier extrait du ncc.html
- *   title:          string,
- *   author:         string,
- *   narrator:       string|null,
- *   coverBlob:      Blob|null,
- *   totalChapters:  number,
- *   importedAt:     number,   — timestamp ms
- *   lastOpenedAt:   number,   — timestamp ms (= importedAt à la création)
- *   schemaVersion:  number,   — toujours 1 pour cette version
- *   syncedAt:       null,     — réservé pour la synchronisation cloud future
- *   deviceId:       string,   — UUID de l'appareil pour la sync future
- * }
- *
- * @param {Omit<book, 'bookId'|'importedAt'|'lastOpenedAt'|'schemaVersion'|'syncedAt'>} metadata
+ * @param {object} metadata
  * @returns {Promise<string>} bookId généré
  */
 export async function addBook(metadata) {
+  await openDB(); // Sécurisation
   const now    = Date.now();
   const bookId = _uuid();
 
@@ -328,7 +273,6 @@ export async function addBook(metadata) {
     lastOpenedAt:  now,
     schemaVersion: 1,
     syncedAt:      null,
-    // deviceId fixe pour cet appareil, persisté dans settings
     deviceId:      await getSettingValue('deviceId') ?? null,
   };
 
@@ -339,14 +283,14 @@ export async function addBook(metadata) {
 }
 
 /**
- * Met à jour les métadonnées d'un livre existant (merge partiel).
- * Seules les clés présentes dans `changes` sont modifiées.
+ * Met à jour les métadonnées d'un livre existant.
  *
  * @param {string} bookId
  * @param {Partial<book>} changes
  * @returns {Promise<void>}
  */
 export async function updateBook(bookId, changes) {
+  await openDB(); // Sécurisation
   const store = _tx('books', 'readwrite').stores;
   const existing = await _req(store.get(bookId));
   if (!existing) throw new Error(`[DB] Livre non trouvé : ${bookId}`);
@@ -357,35 +301,32 @@ export async function updateBook(bookId, changes) {
  * Récupère un livre par son bookId.
  *
  * @param {string} bookId
- * @returns {Promise<book|undefined>}
+ * @returns {Promise<object|undefined>}
  */
 export async function getBook(bookId) {
+  await openDB(); // Sécurisation
   const store = _tx('books').stores;
   return _req(store.get(bookId));
 }
 
 /**
- * Retourne tous les livres triés par dernière ouverture (plus récent en premier).
- * Utilisé pour la vue bibliothèque complète.
+ * Retourne tous les livres triés par dernière ouverture.
  *
- * @returns {Promise<book[]>}
+ * @returns {Promise<array>}
  */
 export async function getAllBooks() {
+  await openDB(); // Sécurisation
   const store = _tx('books').stores;
   const index = store.index('by_lastOpenedAt');
-
-  // IDBIndex.getAll() retourne les entrées dans l'ordre croissant de la clé d'index.
-  // On inverse le résultat pour avoir le plus récent en premier.
   const books = await _req(index.getAll());
   return books.reverse();
 }
 
 /**
  * Retourne les N livres les plus récemment ouverts.
- * Implémente la fonctionnalité "Livres récents".
  *
  * @param {number} [limit=5]
- * @returns {Promise<book[]>}
+ * @returns {Promise<array>}
  */
 export async function getRecentBooks(limit = 5) {
   const all = await getAllBooks();
@@ -394,9 +335,8 @@ export async function getRecentBooks(limit = 5) {
 
 /**
  * Retourne le livre ouvert le plus récemment.
- * Utilisé pour la section "Reprendre ma lecture" sur l'écran d'accueil.
  *
- * @returns {Promise<book|null>}
+ * @returns {Promise<object|null>}
  */
 export async function getLastOpenedBook() {
   const recent = await getRecentBooks(1);
@@ -405,7 +345,6 @@ export async function getLastOpenedBook() {
 
 /**
  * Met à jour la date de dernière ouverture d'un livre.
- * À appeler à chaque fois que l'utilisateur ouvre un livre.
  *
  * @param {string} bookId
  * @returns {Promise<void>}
@@ -416,24 +355,22 @@ export async function touchBook(bookId) {
 
 /**
  * Supprime un livre ET son fichier ZIP ET sa progression ET ses marque-pages.
- * Opération atomique dans une transaction multi-stores.
  *
  * @param {string} bookId
  * @returns {Promise<void>}
  */
 export async function deleteBook(bookId) {
+  await openDB(); // Sécurisation
   const { tx, stores } = _tx(
     ['books', 'book_files', 'progress', 'bookmarks'],
     'readwrite'
   );
   const [booksStore, filesStore, progressStore, bookmarksStore] = stores;
 
-  // Suppression des stores simples (clé primaire = bookId)
   booksStore.delete(bookId);
   filesStore.delete(bookId);
   progressStore.delete(bookId);
 
-  // Suppression des marque-pages liés (index, pas de clé directe)
   const bookmarkIndex = bookmarksStore.index('by_bookId');
   const bookmarkKeys  = await _req(bookmarkIndex.getAllKeys(bookId));
   for (const key of bookmarkKeys) {
@@ -452,12 +389,9 @@ export async function deleteBook(bookId) {
 
 /**
  * Calcule le SHA-256 d'un Blob ou ArrayBuffer.
- * Utilisé pour la détection de doublons à l'import.
- * Cette opération peut prendre 1 à 5 secondes sur un fichier de 300 Mo — à appeler
- * en arrière-plan après avoir déjà affiché un indicateur de chargement.
  *
  * @param {Blob|ArrayBuffer} data
- * @returns {Promise<string>} hash hexadécimal, ex: "a3f5..."
+ * @returns {Promise<string>}
  */
 export async function computeHash(data) {
   const buffer = data instanceof Blob ? await data.arrayBuffer() : data;
@@ -468,12 +402,12 @@ export async function computeHash(data) {
 
 /**
  * Recherche un livre existant par son hash SHA-256.
- * Retourne le premier livre trouvé ou null.
  *
  * @param {string} contentHash
- * @returns {Promise<book|null>}
+ * @returns {Promise<object|null>}
  */
 export async function findBookByHash(contentHash) {
+  await openDB(); // Sécurisation
   const store  = _tx('books').stores;
   const index  = store.index('by_contentHash');
   const result = await _req(index.getAll(contentHash));
@@ -482,13 +416,13 @@ export async function findBookByHash(contentHash) {
 
 /**
  * Recherche un livre existant par son identifiant DAISY (dc:identifier).
- * Second mécanisme de déduplication, complémentaire au hash.
  *
  * @param {string} nccId
- * @returns {Promise<book|null>}
+ * @returns {Promise<object|null>}
  */
 export async function findBookByNccId(nccId) {
   if (!nccId) return null;
+  await openDB(); // Sécurisation
   const store  = _tx('books').stores;
   const index  = store.index('by_nccId');
   const result = await _req(index.getAll(nccId));
@@ -497,7 +431,6 @@ export async function findBookByNccId(nccId) {
 
 /**
  * Met à jour le contentHash d'un livre après calcul en arrière-plan.
- * Appelée par library.js une fois le hash disponible.
  *
  * @param {string} bookId
  * @param {string} contentHash
@@ -513,13 +446,13 @@ export async function setBookHash(bookId, contentHash) {
 
 /**
  * Sauvegarde le fichier ZIP d'un livre dans IndexedDB.
- * Le blob est stocké tel quel, sans transformation.
  *
  * @param {string} bookId
  * @param {Blob}   zipBlob
  * @returns {Promise<void>}
  */
 export async function saveBookFile(bookId, zipBlob) {
+  await openDB(); // Sécurisation
   const store = _tx('book_files', 'readwrite').stores;
   await _req(store.put({
     bookId,
@@ -531,12 +464,12 @@ export async function saveBookFile(bookId, zipBlob) {
 
 /**
  * Récupère le blob ZIP d'un livre.
- * Retourne null si le fichier n'a pas été stocké (ou a été supprimé).
  *
  * @param {string} bookId
  * @returns {Promise<Blob|null>}
  */
 export async function getBookFile(bookId) {
+  await openDB(); // Sécurisation
   const store  = _tx('book_files').stores;
   const record = await _req(store.get(bookId));
   return record?.zipBlob ?? null;
@@ -549,20 +482,20 @@ export async function getBookFile(bookId) {
  * @returns {Promise<boolean>}
  */
 export async function hasBookFile(bookId) {
+  await openDB(); // Sécurisation
   const store  = _tx('book_files').stores;
   const record = await _req(store.get(bookId));
   return record != null;
 }
 
 /**
- * Supprime uniquement le fichier ZIP d'un livre, en conservant
- * les métadonnées, la progression et les marque-pages.
- * Utile pour libérer de l'espace disque sans perdre la position de lecture.
+ * Supprime uniquement le fichier ZIP d'un livre.
  *
  * @param {string} bookId
  * @returns {Promise<void>}
  */
 export async function deleteBookFile(bookId) {
+  await openDB(); // Sécurisation
   const store = _tx('book_files', 'readwrite').stores;
   await _req(store.delete(bookId));
 }
@@ -573,31 +506,13 @@ export async function deleteBookFile(bookId) {
 
 /**
  * Sauvegarde ou met à jour la progression de lecture d'un livre.
- * Conçu pour être appelé fréquemment (toutes les 5 secondes pendant la lecture)
- * sans impacter les performances grâce à IndexedDB put() qui écrase l'entrée.
- *
- * Structure complète d'un objet progress :
- * {
- *   bookId:            string,  — FK → books.bookId
- *   chapterIndex:      number,  — index du chapitre courant (0-based)
- *   positionSeconds:   number,  — position exacte dans le chapitre
- *   percentage:        number,  — 0–100, progression globale calculée
- *   savedAt:           number,  — timestamp ms de la dernière sauvegarde
- *   playbackRate:      number,  — vitesse de lecture (0.5, 0.75, 1, 1.25, 1.5, 2)
- *   totalListenedSec:  number,  — temps total écouté (cumul, pour statistiques futures)
- * }
  *
  * @param {string} bookId
  * @param {object} data
- * @param {number} data.chapterIndex
- * @param {number} data.positionSeconds
- * @param {number} data.percentage       — valeur 0–100
- * @param {number} data.playbackRate     — ex: 1.0, 1.25, 1.5
- * @param {number} [data.totalListenedSec] — optionnel, cumulé par le player
  * @returns {Promise<void>}
  */
 export async function saveProgress(bookId, data) {
-  // Récupère la progression existante pour cumuler totalListenedSec
+  await openDB(); // Sécurisation
   const existing = await getProgress(bookId);
 
   const store = _tx('progress', 'readwrite').stores;
@@ -614,19 +529,19 @@ export async function saveProgress(bookId, data) {
 
 /**
  * Récupère la progression d'un livre.
- * Retourne null si aucune progression n'a encore été sauvegardée.
  *
  * @param {string} bookId
- * @returns {Promise<progress|null>}
+ * @returns {Promise<object|null>}
  */
 export async function getProgress(bookId) {
+  await openDB(); // Sécurisation
   const store  = _tx('progress').stores;
   const record = await _req(store.get(bookId));
   return record ?? null;
 }
 
 /**
- * Réinitialise la progression d'un livre (lecture depuis le début).
+ * Réinitialise la progression d'un livre.
  *
  * @param {string} bookId
  * @returns {Promise<void>}
@@ -644,21 +559,16 @@ export async function resetProgress(bookId) {
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 8 — STORE: bookmarks
 // ─────────────────────────────────────────────────────────────────────────────
-// Le store est créé et les fonctions sont exposées dès maintenant.
-// L'interface utilisateur des marque-pages sera implémentée dans une phase ultérieure.
 
 /**
  * Ajoute un marque-page.
  *
  * @param {string} bookId
  * @param {object} data
- * @param {number}  data.chapterIndex
- * @param {number}  data.positionSeconds
- * @param {string}  [data.label]      — libellé optionnel saisi par l'utilisateur
- * @param {'manual'|'auto'} [data.type='manual']
  * @returns {Promise<string>} id du marque-page créé
  */
 export async function addBookmark(bookId, data) {
+  await openDB(); // Sécurisation
   const id    = _uuid();
   const store = _tx('bookmarks', 'readwrite').stores;
   await _req(store.put({
@@ -677,13 +587,13 @@ export async function addBookmark(bookId, data) {
  * Retourne tous les marque-pages d'un livre, triés par position.
  *
  * @param {string} bookId
- * @returns {Promise<bookmark[]>}
+ * @returns {Promise<array>}
  */
 export async function getBookmarks(bookId) {
+  await openDB(); // Sécurisation
   const store  = _tx('bookmarks').stores;
   const index  = store.index('by_bookId');
   const marks  = await _req(index.getAll(bookId));
-  // Tri par chapitre puis par position dans le chapitre
   return marks.sort((a, b) =>
     a.chapterIndex !== b.chapterIndex
       ? a.chapterIndex - b.chapterIndex
@@ -698,6 +608,7 @@ export async function getBookmarks(bookId) {
  * @returns {Promise<void>}
  */
 export async function deleteBookmark(id) {
+  await openDB(); // Sécurisation
   const store = _tx('bookmarks', 'readwrite').stores;
   await _req(store.delete(id));
 }
@@ -708,12 +619,12 @@ export async function deleteBookmark(id) {
 
 /**
  * Lit une valeur dans le store settings.
- * Retourne undefined si la clé n'existe pas.
  *
  * @param {string} key
  * @returns {Promise<any>}
  */
 export async function getSettingValue(key) {
+  await openDB(); // Sécurisation
   const store  = _tx('settings').stores;
   const record = await _req(store.get(key));
   return record?.value;
@@ -727,13 +638,13 @@ export async function getSettingValue(key) {
  * @returns {Promise<void>}
  */
 export async function setSettingValue(key, value) {
+  await openDB(); // Sécurisation
   const store = _tx('settings', 'readwrite').stores;
   await _req(store.put({ key, value }));
 }
 
 /**
  * Lit la vitesse de lecture par défaut.
- * Retourne 1.0 si non définie.
  *
  * @returns {Promise<number>}
  */
@@ -744,7 +655,7 @@ export async function getDefaultPlaybackRate() {
 /**
  * Définit la vitesse de lecture par défaut (globale).
  *
- * @param {number} rate — valeur entre 0.5 et 2.0
+ * @param {number} rate
  * @returns {Promise<void>}
  */
 export async function setDefaultPlaybackRate(rate) {
@@ -754,19 +665,15 @@ export async function setDefaultPlaybackRate(rate) {
 
 /**
  * Initialise les settings obligatoires au premier lancement.
- * Appelée par openDB() après la création du schéma, ou au démarrage si les
- * valeurs sont absentes (upgrade depuis une version sans settings).
  *
  * @returns {Promise<void>}
  */
 export async function initDefaultSettings() {
-  // deviceId : identifiant stable de cet appareil, pour la sync cloud future
   const existingDeviceId = await getSettingValue('deviceId');
   if (!existingDeviceId) {
     await setSettingValue('deviceId', _uuid());
   }
 
-  // Vitesse par défaut
   const existingRate = await getSettingValue('defaultPlaybackRate');
   if (existingRate === undefined) {
     await setSettingValue('defaultPlaybackRate', 1.0);
@@ -776,25 +683,9 @@ export async function initDefaultSettings() {
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 10 — EXPORT / IMPORT DES DONNÉES UTILISATEUR
 // ─────────────────────────────────────────────────────────────────────────────
-// Structure prête pour une future fonctionnalité d'export complet.
-// Les blobs ZIP sont exclus de l'export v1 (trop volumineux).
 
 /**
  * Exporte toutes les données utilisateur au format JSON.
- * Les blobs ZIP (book_files) sont exclus pour des raisons de taille.
- * L'utilisateur devra réimporter les fichiers ZIP si nécessaire.
- *
- * Format de sortie :
- * {
- *   exportVersion: 1,
- *   exportedAt: timestamp,
- *   deviceId: string,
- *   books: [...],
- *   progress: [...],
- *   bookmarks: [...],
- *   settings: [...],
- *   files: "excluded"
- * }
  *
  * @returns {Promise<object>}
  */
@@ -802,7 +693,6 @@ export async function exportData() {
   const deviceId = await getSettingValue('deviceId');
   await setSettingValue('lastExportedAt', Date.now());
 
-  // Lecture de tous les stores (sauf book_files)
   const [books, progress, bookmarks, settingsRaw] = await Promise.all([
     getAllBooks(),
     _getAllFromStore('progress'),
@@ -810,8 +700,6 @@ export async function exportData() {
     _getAllFromStore('settings'),
   ]);
 
-  // Sérialisation : les coverBlob (Blob) ne sont pas JSON-sérialisables.
-  // On les exclut proprement de l'export v1.
   const booksClean = books.map(({ coverBlob: _ignored, ...rest }) => rest);
 
   return {
@@ -822,17 +710,15 @@ export async function exportData() {
     progress,
     bookmarks,
     settings:      settingsRaw,
-    files:         'excluded', // Les ZIP ne sont pas inclus dans l'export v1
+    files:         'excluded',
   };
 }
 
 /**
  * Importe des données utilisateur depuis un objet JSON exporté.
- * Fusionne les données : les livres existants ne sont pas écrasés si le bookId correspond.
- * La progression et les marque-pages importés prennent le dessus sur les données locales.
  *
- * @param {object} data — objet retourné par exportData()
- * @returns {Promise<{ imported: number, skipped: number }>}
+ * @param {object} data
+ * @returns {Promise<object>}
  */
 export async function importData(data) {
   if (!data || data.exportVersion !== 1) {
@@ -842,11 +728,10 @@ export async function importData(data) {
   let imported = 0;
   let skipped  = 0;
 
-  // Import des livres (métadonnées uniquement, sans coverBlob ni fichier ZIP)
   for (const book of (data.books ?? [])) {
     const existing = await getBook(book.bookId);
     if (!existing) {
-      // Le livre n'existe pas localement : on l'importe sans coverBlob ni fichier
+      await openDB();
       const store = _tx('books', 'readwrite').stores;
       await _req(store.put({ ...book, coverBlob: null }));
       imported++;
@@ -855,14 +740,14 @@ export async function importData(data) {
     }
   }
 
-  // Import de la progression
   for (const prog of (data.progress ?? [])) {
+    await openDB();
     const store = _tx('progress', 'readwrite').stores;
     await _req(store.put(prog));
   }
 
-  // Import des marque-pages
   for (const mark of (data.bookmarks ?? [])) {
+    await openDB();
     const store = _tx('bookmarks', 'readwrite').stores;
     await _req(store.put(mark));
   }
@@ -877,6 +762,7 @@ export async function importData(data) {
  * @returns {Promise<any[]>}
  */
 async function _getAllFromStore(storeName) {
+  await openDB(); // Sécurisation
   const store = _tx(storeName).stores;
   return _req(store.getAll());
 }
@@ -887,12 +773,6 @@ async function _getAllFromStore(storeName) {
 
 /**
  * Initialise complètement la couche base de données.
- * Doit être la première chose appelée au démarrage de l'application.
- *
- * Séquence :
- *   1. Ouvre la connexion IndexedDB (crée le schéma si premier lancement)
- *   2. Initialise les settings par défaut manquants
- *   3. Demande le stockage persistant
  *
  * @returns {Promise<{ persisted: boolean }>}
  */
