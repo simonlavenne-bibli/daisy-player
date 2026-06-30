@@ -89,14 +89,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Sauvegarde du livre dans la bibliothèque (IndexedDB)
             const importResult = await library.importBook(file, bookData);
-            window.currentBookId = importResult.id;
+            window.currentBookId = importResult.bookId;
             
             let startChapter = 0;
             let startPos = 0;
             
             // Gestion de la reprise si le livre existe déjà
-            if (importResult.status === 'duplicate' || importResult.status === 'existing') {
-                const prog = await library.getResumeData(importResult.id);
+            if (importResult.status === 'duplicate') {
+                const prog = importResult.progress;
                 if (prog && (prog.chapterIndex > 0 || prog.positionSeconds > 0)) {
                     if (confirm(`Vous aviez déjà commencé "${bookData.title}". Voulez-vous reprendre là où vous vous étiez arrêté ?`)) {
                         startChapter = prog.chapterIndex;
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await library.saveReadingProgress(window.currentBookId, {
                 chapterIndex: player.currentIndex,
                 positionSeconds: player.audio.currentTime,
-                percentage: 0,
+                totalChapters: player.playlist.length,
                 playbackRate: player.audio.playbackRate
             });
         }
@@ -216,8 +216,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         container.innerHTML = '';
         
         try {
-            // getLibrarySummary fournit l'état global et la liste des livres mappés
-            const summary = await library.getLibrarySummary();
+            const summary = await library.getDiagnosticSummary();
             const books = summary?.books || [];
 
             if (books.length === 0) {
@@ -229,7 +228,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             books.sort((a, b) => (b.lastOpenedAt || 0) - (a.lastOpenedAt || 0));
 
             books.forEach(item => {
-                // Sécurité : Ignorer les lignes de test corrompues sans identifiant ou titre
                 if (!item.bookId) return;
 
                 const card = document.createElement('div');
@@ -254,11 +252,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (overlay) overlay.classList.remove('hidden');
                     
                     try {
-                        // Utilisation du bon identifiant ciblé (bookId au lieu de id)
                         const openedBook = await library.openBook(item.bookId);
-                        if (!openedBook) throw new Error("Fichier du livre introuvable dans la base locale.");
+                        if (!openedBook || !openedBook.zipBlob) throw new Error("Fichier du livre introuvable dans la base locale.");
                         
-                        const bookData = await parseDaisyZip(openedBook.file);
+                        const bookData = await parseDaisyZip(openedBook.zipBlob);
                         player.setBook(bookData.zip, bookData.playlist);
                         
                         const bTitle = document.getElementById('book-title');
@@ -266,14 +263,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         
                         window.currentBookId = item.bookId;
                         
-                        const prog = await library.getResumeData(item.bookId);
-                        let startChap = 0;
-                        let startPos = 0;
-                        
-                        if (prog) {
-                            startChap = prog.chapterIndex || 0;
-                            startPos = prog.positionSeconds || 0;
-                        }
+                        const prog = openedBook.progress;
+                        const startChap = prog?.chapterIndex || 0;
+                        const startPos  = prog?.positionSeconds || 0;
                         
                         await handleTrackChange(player.resumeAt(startChap, startPos));
                         
@@ -284,7 +276,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     } catch(e) {
                         alert(e.message);
-                    } blocks {
+                    } finally {
                         if (overlay) overlay.classList.add('hidden');
                     }
                 });
