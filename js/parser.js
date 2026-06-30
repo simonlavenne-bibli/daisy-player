@@ -12,16 +12,18 @@ export async function parseDaisyZip(file) {
         throw new Error("Ce fichier ne semble pas être une archive DAISY valide (aucun fichier d'index trouvé).");
     }
 
-    // 2. Lire les métadonnées globales (Titre et Auteur)
+    // 2. Lire les métadonnées globales (Titre, Auteur et ID)
     const indexText = await zip.files[indexFile].async('string');
     const parser = new DOMParser();
     const doc = parser.parseFromString(indexText, 'text/html');
 
     const titleMeta = doc.querySelector('meta[name="dc:title"], meta[name="NCC:title"]');
     const authorMeta = doc.querySelector('meta[name="dc:creator"], meta[name="NCC:creator"]');
+    const idMeta = doc.querySelector('meta[name="dc:identifier"], meta[name="NCC:Identifier"]');
     
     const bookTitle = titleMeta ? titleMeta.getAttribute('content') : file.name.replace('.zip', '');
     const bookAuthor = authorMeta ? authorMeta.getAttribute('content') : "Auteur inconnu";
+    const nccId = idMeta ? idMeta.getAttribute('content') : null;
 
     // 3. Construire la liste de lecture
     let playlist = [];
@@ -59,6 +61,7 @@ export async function parseDaisyZip(file) {
     return {
         title: bookTitle,
         author: bookAuthor,
+        nccId: nccId,
         playlist: playlist,
         zip: zip
     };
