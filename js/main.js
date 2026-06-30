@@ -1,44 +1,15 @@
-// ─── Imports Phase 1 — TEST UNIQUEMENT, à supprimer après validation ──────────
-import { initDB, addBook, getLastOpenedBook, saveProgress, getProgress } from './db.js';
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { parseDaisyZip } from './parser.js';
 import { DaisyPlayer } from './player.js';
 import * as ui from './ui.js';
+import * as library from './library.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-
-    // ─── Test Phase 1 — À SUPPRIMER après validation ──────────────────────────
-    window.__testDB = async () => {
-        await initDB();
-
-        const id = await addBook({
-            title: 'Test Guerre et Paix',
-            author: 'Tolstoï',
-            totalChapters: 5,
-        });
-        console.log('[TEST] Livre créé, bookId :', id);
-
-        await saveProgress(id, {
-            chapterIndex: 2,
-            positionSeconds: 127.4,
-            percentage: 41,
-            playbackRate: 1.25,
-        });
-        console.log('[TEST] Progression sauvegardée.');
-
-        const last = await getLastOpenedBook();
-        console.log('[TEST] Dernier livre :', last?.title);
-
-        const prog = await getProgress(id);
-        console.log('[TEST] Progression récupérée :', prog);
-    };
-
-    window.__testDB();
-    // ─── Fin du bloc de test ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
 
     const player = new DaisyPlayer();
     const toggleCleanModeBtn = document.getElementById('toggleCleanMode');
+    
+    // Initialisation de la base de données au démarrage
+    await library.initLibrary();
 
     function listen(id, event, callback) {
         const el = document.getElementById(id);
@@ -115,13 +86,33 @@ document.addEventListener('DOMContentLoaded', () => {
         if (overlay) overlay.classList.remove('hidden');
         try {
             const bookData = await parseDaisyZip(file);
+            
+            // 1. Sauvegarde du livre dans la bibliothèque (IndexedDB)
+            const importResult = await library.importBook(file, bookData);
+            window.currentBookId = importResult.id;
+            
+            let startChapter = 0;
+            let startPos = 0;
+            
+            // 2. Gestion de la reprise si le livre existe déjà
+            if (importResult.status === 'duplicate' || importResult.status === 'existing') {
+                const prog = await library.getResumeData(importResult.id);
+                if (prog && (prog.chapterIndex > 0 || prog.positionSeconds > 0)) {
+                    if (confirm(`Vous aviez déjà commencé "${bookData.title}". Voulez-vous reprendre là où vous vous étiez arrêté ?`)) {
+                        startChapter = prog.chapterIndex;
+                        startPos = prog.positionSeconds;
+                    }
+                }
+            }
+
+            // 3. Chargement dans le lecteur audio
             player.setBook(bookData.zip, bookData.playlist);
 
             const bTitle = document.getElementById('book-title');
             if (bTitle) bTitle.textContent = bookData.title;
 
-            await handleTrackChange(player.loadCurrentTrack());
-            addToHistory(bookData.title, bookData.author);
+            // 4. On utilise resumeAt plutôt que loadCurrentTrack pour démarrer au bon endroit
+            await handleTrackChange(player.resumeAt(startChapter, startPos));
 
             ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
             if (toggleCleanModeBtn) toggleCleanModeBtn.classList.remove('hidden');
@@ -207,12 +198,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Sauvegarde et Historique (ancien système localStorage — remplacé en Phase 2)
-    function loadHistory() {
+    // ─── Tâche de fond : Sauvegarde de la progression ──────────────────────────
+    setInterval(async () => {
+        if (player.isPlaying && window.currentBookId) {
+            await library.saveReadingProgress(window.currentBookId, {
+                chapterIndex: player.currentIndex,
+                positionSeconds: player.audio.currentTime,
+                percentage: 0, // Optionnel, calculable ultérieurement si nécessaire
+                playbackRate: player.audio.playbackRate
+            });
+        }
+    }, 5000); // Sauvegarde automatique toutes les 5 secondes
+
+    // ─── Chargement de l'historique depuis IndexedDB ───────────────────────────
+    async function loadHistory() {
         const container = document.getElementById('history-container');
         if (!container) return;
         container.innerHTML = '';
-        const history = JSON.parse(localStorage.getItem('daisy_history') || '[]');
+        
+        const history = await library.getRecentLibrary();
 
         if (history.length === 0) {
             container.innerHTML = `<p class="text-center py-12 text-textSecondary text-2xl font-black">Aucun historique de lecture.</p>`;
@@ -222,25 +226,69 @@ document.addEventListener('DOMContentLoaded', () => {
         history.forEach(item => {
             const card = document.createElement('div');
             card.className = "p-6 md:p-8 bg-surface rounded-3xl border-4 border-borderCustom flex justify-between items-center gap-6 shadow-md text-textPrimary";
-            card.innerHTML = `
-                <div class="overflow-hidden">
-                    <h4 class="font-black text-2xl md:text-3xl truncate">${item.title}</h4>
-                    <p class="text-xl md:text-2xl font-bold text-textSecondary mt-2 truncate">${item.author} — Lu le ${item.date}</p>
-                </div>
-                <span class="material-symbols-outlined text-[50px] text-accent flex-shrink-0">book</span>
+            
+            const infoDiv = document.createElement('div');
+            infoDiv.className = "overflow-hidden flex-grow";
+            
+            const dateStr = item.lastOpened ? new Date(item.lastOpened).toLocaleDateString('fr-FR') : "Date inconnue";
+            
+            infoDiv.innerHTML = `
+                <h4 class="font-black text-2xl md:text-3xl truncate">${item.title}</h4>
+                <p class="text-xl md:text-2xl font-bold text-textSecondary mt-2 truncate">${item.author || "Auteur inconnu"} — Lu le ${dateStr}</p>
             `;
+            
+            const resumeBtn = document.createElement('button');
+            resumeBtn.className = "bg-accent text-white font-black py-3 px-6 rounded-2xl flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all text-xl border-4 border-borderCustom flex-shrink-0 cursor-pointer";
+            resumeBtn.innerHTML = `<span class="material-symbols-outlined">play_arrow</span> Reprendre`;
+            
+            // Action de reprise depuis l'historique
+            resumeBtn.addEventListener('click', async () => {
+                const overlay = document.getElementById('loading-overlay');
+                if (overlay) overlay.classList.remove('hidden');
+                
+                try {
+                    // Récupération du fichier stocké
+                    const openedBook = await library.openBook(item.id);
+                    if (!openedBook) throw new Error("Fichier introuvable dans la base de données de votre navigateur.");
+                    
+                    // On repars avec le nouveau ZIP depuis la DB
+                    const bookData = await parseDaisyZip(openedBook.file);
+                    player.setBook(bookData.zip, bookData.playlist);
+                    
+                    const bTitle = document.getElementById('book-title');
+                    if (bTitle) bTitle.textContent = bookData.title;
+                    
+                    window.currentBookId = item.id;
+                    
+                    const prog = await library.getResumeData(item.id);
+                    let startChap = 0;
+                    let startPos = 0;
+                    
+                    if (prog) {
+                        startChap = prog.chapterIndex || 0;
+                        startPos = prog.positionSeconds || 0;
+                    }
+                    
+                    await handleTrackChange(player.resumeAt(startChap, startPos));
+                    
+                    ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
+                    if (toggleCleanModeBtn) toggleCleanModeBtn.classList.remove('hidden');
+                    
+                    if (!player.isPlaying) playPauseAction();
+
+                } catch(e) {
+                    alert(e.message);
+                } finally {
+                    if (overlay) overlay.classList.add('hidden');
+                }
+            });
+
+            card.appendChild(infoDiv);
+            card.appendChild(resumeBtn);
             container.appendChild(card);
         });
     }
 
-    function addToHistory(title, author) {
-        let history = JSON.parse(localStorage.getItem('daisy_history') || '[]');
-        history = history.filter(h => h.title !== title);
-        const dateStr = new Date().toLocaleDateString('fr-FR');
-        history.unshift({ title, author, date: dateStr });
-        if (history.length > 5) history.pop();
-        localStorage.setItem('daisy_history', JSON.stringify(history));
-    }
-
+    // Chargement initial
     loadHistory();
 });
