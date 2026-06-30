@@ -87,14 +87,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const bookData = await parseDaisyZip(file);
             
-            // 1. Sauvegarde du livre dans la bibliothèque (IndexedDB)
+            // Sauvegarde du livre dans la bibliothèque (IndexedDB)
             const importResult = await library.importBook(file, bookData);
             window.currentBookId = importResult.id;
             
             let startChapter = 0;
             let startPos = 0;
             
-            // 2. Gestion de la reprise si le livre existe déjà
+            // Gestion de la reprise si le livre existe déjà
             if (importResult.status === 'duplicate' || importResult.status === 'existing') {
                 const prog = await library.getResumeData(importResult.id);
                 if (prog && (prog.chapterIndex > 0 || prog.positionSeconds > 0)) {
@@ -105,13 +105,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // 3. Chargement dans le lecteur audio
+            // Chargement dans le lecteur audio
             player.setBook(bookData.zip, bookData.playlist);
 
             const bTitle = document.getElementById('book-title');
             if (bTitle) bTitle.textContent = bookData.title;
 
-            // 4. On utilise resumeAt plutôt que loadCurrentTrack pour démarrer au bon endroit
             await handleTrackChange(player.resumeAt(startChapter, startPos));
 
             ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
@@ -126,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Commandes Audio (Mappées sur les 2 modes)
+    // Commandes Audio
     const playPauseAction = () => {
         const isPlaying = player.toggle();
         ui.updatePlayPauseUI(isPlaying);
@@ -198,97 +197,108 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // ─── Tâche de fond : Sauvegarde de la progression ──────────────────────────
+    // Tâche de fond : Sauvegarde de la progression toutes les 5 secondes
     setInterval(async () => {
         if (player.isPlaying && window.currentBookId) {
             await library.saveReadingProgress(window.currentBookId, {
                 chapterIndex: player.currentIndex,
                 positionSeconds: player.audio.currentTime,
-                percentage: 0, // Optionnel, calculable ultérieurement si nécessaire
+                percentage: 0,
                 playbackRate: player.audio.playbackRate
             });
         }
-    }, 5000); // Sauvegarde automatique toutes les 5 secondes
+    }, 5000);
 
-    // ─── Chargement de l'historique depuis IndexedDB ───────────────────────────
+    // ─── Chargement sécurisé de l'historique ───────────────────────────
     async function loadHistory() {
         const container = document.getElementById('history-container');
         if (!container) return;
         container.innerHTML = '';
         
-        const history = await library.getRecentLibrary();
+        try {
+            // getLibrarySummary fournit l'état global et la liste des livres mappés
+            const summary = await library.getLibrarySummary();
+            const books = summary?.books || [];
 
-        if (history.length === 0) {
-            container.innerHTML = `<p class="text-center py-12 text-textSecondary text-2xl font-black">Aucun historique de lecture.</p>`;
-            return;
-        }
+            if (books.length === 0) {
+                container.innerHTML = `<p class="text-center py-12 text-textSecondary text-2xl font-black">Aucun historique de lecture.</p>`;
+                return;
+            }
 
-        history.forEach(item => {
-            const card = document.createElement('div');
-            card.className = "p-6 md:p-8 bg-surface rounded-3xl border-4 border-borderCustom flex justify-between items-center gap-6 shadow-md text-textPrimary";
-            
-            const infoDiv = document.createElement('div');
-            infoDiv.className = "overflow-hidden flex-grow";
-            
-            const dateStr = item.lastOpened ? new Date(item.lastOpened).toLocaleDateString('fr-FR') : "Date inconnue";
-            
-            infoDiv.innerHTML = `
-                <h4 class="font-black text-2xl md:text-3xl truncate">${item.title}</h4>
-                <p class="text-xl md:text-2xl font-bold text-textSecondary mt-2 truncate">${item.author || "Auteur inconnu"} — Lu le ${dateStr}</p>
-            `;
-            
-            const resumeBtn = document.createElement('button');
-            resumeBtn.className = "bg-accent text-white font-black py-3 px-6 rounded-2xl flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all text-xl border-4 border-borderCustom flex-shrink-0 cursor-pointer";
-            resumeBtn.innerHTML = `<span class="material-symbols-outlined">play_arrow</span> Reprendre`;
-            
-            // Action de reprise depuis l'historique
-            resumeBtn.addEventListener('click', async () => {
-                const overlay = document.getElementById('loading-overlay');
-                if (overlay) overlay.classList.remove('hidden');
+            // Tri par ouverture la plus récente
+            books.sort((a, b) => (b.lastOpenedAt || 0) - (a.lastOpenedAt || 0));
+
+            books.forEach(item => {
+                // Sécurité : Ignorer les lignes de test corrompues sans identifiant ou titre
+                if (!item.bookId) return;
+
+                const card = document.createElement('div');
+                card.className = "p-6 md:p-8 bg-surface rounded-3xl border-4 border-borderCustom flex justify-between items-center gap-6 shadow-md text-textPrimary";
                 
-                try {
-                    // Récupération du fichier stocké
-                    const openedBook = await library.openBook(item.id);
-                    if (!openedBook) throw new Error("Fichier introuvable dans la base de données de votre navigateur.");
+                const infoDiv = document.createElement('div');
+                infoDiv.className = "overflow-hidden flex-grow";
+                
+                const dateStr = item.lastOpenedAt ? new Date(item.lastOpenedAt).toLocaleDateString('fr-FR') : "Date inconnue";
+                
+                infoDiv.innerHTML = `
+                    <h4 class="font-black text-2xl md:text-3xl truncate">${item.title || "Titre inconnu"}</h4>
+                    <p class="text-xl md:text-2xl font-bold text-textSecondary mt-2 truncate">${item.author || "Auteur inconnu"} — Lu le ${dateStr}</p>
+                `;
+                
+                const resumeBtn = document.createElement('button');
+                resumeBtn.className = "bg-accent text-white font-black py-3 px-6 rounded-2xl flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all text-xl border-4 border-borderCustom flex-shrink-0 cursor-pointer";
+                resumeBtn.innerHTML = `<span class="material-symbols-outlined">play_arrow</span> Reprendre`;
+                
+                resumeBtn.addEventListener('click', async () => {
+                    const overlay = document.getElementById('loading-overlay');
+                    if (overlay) overlay.classList.remove('hidden');
                     
-                    // On repars avec le nouveau ZIP depuis la DB
-                    const bookData = await parseDaisyZip(openedBook.file);
-                    player.setBook(bookData.zip, bookData.playlist);
-                    
-                    const bTitle = document.getElementById('book-title');
-                    if (bTitle) bTitle.textContent = bookData.title;
-                    
-                    window.currentBookId = item.id;
-                    
-                    const prog = await library.getResumeData(item.id);
-                    let startChap = 0;
-                    let startPos = 0;
-                    
-                    if (prog) {
-                        startChap = prog.chapterIndex || 0;
-                        startPos = prog.positionSeconds || 0;
+                    try {
+                        // Utilisation du bon identifiant ciblé (bookId au lieu de id)
+                        const openedBook = await library.openBook(item.bookId);
+                        if (!openedBook) throw new Error("Fichier du livre introuvable dans la base locale.");
+                        
+                        const bookData = await parseDaisyZip(openedBook.file);
+                        player.setBook(bookData.zip, bookData.playlist);
+                        
+                        const bTitle = document.getElementById('book-title');
+                        if (bTitle) bTitle.textContent = bookData.title;
+                        
+                        window.currentBookId = item.bookId;
+                        
+                        const prog = await library.getResumeData(item.bookId);
+                        let startChap = 0;
+                        let startPos = 0;
+                        
+                        if (prog) {
+                            startChap = prog.chapterIndex || 0;
+                            startPos = prog.positionSeconds || 0;
+                        }
+                        
+                        await handleTrackChange(player.resumeAt(startChap, startPos));
+                        
+                        ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
+                        if (toggleCleanModeBtn) toggleCleanModeBtn.classList.remove('hidden');
+                        
+                        if (!player.isPlaying) playPauseAction();
+
+                    } catch(e) {
+                        alert(e.message);
+                    } blocks {
+                        if (overlay) overlay.classList.add('hidden');
                     }
-                    
-                    await handleTrackChange(player.resumeAt(startChap, startPos));
-                    
-                    ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
-                    if (toggleCleanModeBtn) toggleCleanModeBtn.classList.remove('hidden');
-                    
-                    if (!player.isPlaying) playPauseAction();
+                });
 
-                } catch(e) {
-                    alert(e.message);
-                } finally {
-                    if (overlay) overlay.classList.add('hidden');
-                }
+                card.appendChild(infoDiv);
+                card.appendChild(resumeBtn);
+                container.appendChild(card);
             });
-
-            card.appendChild(infoDiv);
-            card.appendChild(resumeBtn);
-            container.appendChild(card);
-        });
+        } catch (err) {
+            console.error("[History] Erreur :", err);
+            container.innerHTML = `<p class="text-center py-12 text-textSecondary text-xl font-bold">Base de données inaccessible ou corrompue. Veuillez purger le stockage de votre navigateur.</p>`;
+        }
     }
 
-    // Chargement initial
+    // Chargement initial au démarrage
     loadHistory();
 });
