@@ -98,7 +98,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 
-<body class="bg-bgPrimary text-textPrimary transition-colors duration-200 min-h-screen flex flex-col pb-40" data-theme="light">
+<body class="bg-bgPrimary text-textPrimary transition-colors duration-200 min-h-screen flex flex-col pb-44" data-theme="light">
 
 <header class="p-6 bg-surface shadow-sm flex justify-between items-center border-b-4 border-borderCustom">
   <h1 class="text-3xl md:text-4xl font-black flex items-center gap-4 text-textPrimary">
@@ -117,6 +117,13 @@
 
 <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6">
   <section id="view-home" class="space-y-8 py-4">
+    <div id="current-reads-section" class="space-y-4">
+      <h2 class="text-2xl md:text-3xl font-black text-textPrimary flex items-center gap-3">
+        <span class="material-symbols-outlined text-3xl md:text-4xl">history</span> Mes lectures en cours
+      </h2>
+      <div id="current-reads-list" class="space-y-4"></div>
+    </div>
+
     <div class="bg-surface p-8 md:p-12 rounded-3xl shadow-md border-4 border-borderCustom text-center space-y-8">
       <p class="text-xl md:text-2xl leading-relaxed text-textPrimary font-bold">
         Votre lecteur de livres audio DAISY. <br>
@@ -129,11 +136,6 @@
         <input type="file" id="file-input" accept=".zip" class="hidden">
       </div>
     </div>
-  </section>
-
-  <section id="view-history" class="hidden space-y-6 py-6">
-    <h2 class="text-3xl font-black text-textPrimary flex items-center gap-4"><span class="material-symbols-outlined text-4xl">history</span> Vos lectures récentes</h2>
-    <div id="history-container" class="space-y-6"></div>
   </section>
 
   <section id="view-player" class="hidden space-y-8 py-4">
@@ -185,18 +187,14 @@
   </section>
 </main>
 
-<nav class="fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-borderCustom shadow-[0_-10px_30px_rgba(0,0,0,0.15)] p-4 flex justify-around items-center z-40 min-h-[120px]">
-  <button id="nav-home" class="nav-tab flex flex-col items-center justify-center bg-surface text-textSecondary px-4 md:px-10 py-4 md:py-6 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent min-w-[100px] md:min-w-[180px] focus-ring">
-    <span class="material-symbols-outlined text-[40px] md:text-[50px]">home</span>
-    <span class="text-lg md:text-xl font-black mt-2">Accueil</span>
+<nav class="fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-borderCustom shadow-[0_-10px_30px_rgba(0,0,0,0.15)] p-3 flex gap-3 items-stretch z-40 min-h-[140px]">
+  <button id="nav-home" class="nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary py-5 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent focus-ring">
+    <span class="material-symbols-outlined text-[52px] md:text-[60px]">home</span>
+    <span class="text-xl md:text-2xl font-black mt-2">Accueil</span>
   </button>
-  <button id="nav-player" class="nav-tab flex flex-col items-center justify-center bg-surface text-textSecondary px-4 md:px-10 py-4 md:py-6 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent min-w-[100px] md:min-w-[180px] focus-ring">
-    <span class="material-symbols-outlined text-[40px] md:text-[50px]">radio</span>
-    <span class="text-lg md:text-xl font-black mt-2">Lecteur</span>
-  </button>
-  <button id="nav-history" class="nav-tab flex flex-col items-center justify-center bg-surface text-textSecondary px-4 md:px-10 py-4 md:py-6 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent min-w-[100px] md:min-w-[180px] focus-ring">
-    <span class="material-symbols-outlined text-[40px] md:text-[50px]">history</span>
-    <span class="text-lg md:text-xl font-black mt-2">Historique</span>
+  <button id="nav-player" class="nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary py-5 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent focus-ring">
+    <span class="material-symbols-outlined text-[52px] md:text-[60px]">radio</span>
+    <span class="text-xl md:text-2xl font-black mt-2">Lecteur</span>
   </button>
 </nav>
 
