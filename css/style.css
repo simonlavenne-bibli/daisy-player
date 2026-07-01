@@ -212,3 +212,23 @@ PRÉFÉRENCE prefers-reduced-motion
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ================================================================
+AJOUTS ACCESSIBILITÉ : EFFET GRAS GLOBAL ET GRANDS BOUTONS
+================================================================ */
+
+/* 1. Force absolument TOUS les mots de l'application en gras */
+*, *::before, *::after {
+  font-weight: 700 !important; /* 700 équivaut à Bold */
+}
+
+/* 2. Repère et agrandit les éléments Accueil et Lecteur */
+[id*="accueil" i], [class*="accueil" i], [aria-label*="accueil" i],
+[id*="lecteur" i], [class*="lecteur" i], [aria-label*="lecteur" i] {
+  font-size: 1.5rem !important;  /* Rend le texte environ 50% plus grand */
+  font-weight: 900 !important;   /* Applique l'épaisseur maximale disponible (Black) */
+  padding-top: 12px !important;    /* Ajuste l'espace intérieur pour le confort visuel */
+  padding-bottom: 12px !important;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+}
