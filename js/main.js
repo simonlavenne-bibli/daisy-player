@@ -21,10 +21,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         ui.showPage(document.getElementById('nav-home'), document.getElementById('view-home'));
         loadHistory();
     });
-    listen('nav-history', 'click', () => {
-        ui.showPage(document.getElementById('nav-history'), document.getElementById('view-history'));
-        loadHistory();
-    });
     listen('nav-player', 'click', () => {
         ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
         if (toggleCleanModeBtn) toggleCleanModeBtn.classList.remove('hidden');
@@ -211,18 +207,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ─── Chargement sécurisé de l'historique ───────────────────────────
     async function loadHistory() {
-        const container = document.getElementById('history-container');
-        if (!container) return;
+        const container = document.getElementById('current-reads-list');
+        const section   = document.getElementById('current-reads-section');
+        if (!container || !section) return;
         container.innerHTML = '';
-        
+
         try {
             const summary = await library.getDiagnosticSummary();
             const books = summary?.books || [];
 
             if (books.length === 0) {
-                container.innerHTML = `<p class="text-center py-12 text-textSecondary text-2xl font-black">Aucun historique de lecture.</p>`;
+                section.classList.add('hidden');
                 return;
             }
+
+            section.classList.remove('hidden');
 
             // Tri par ouverture la plus récente
             books.sort((a, b) => (b.lastOpenedAt || 0) - (a.lastOpenedAt || 0));
@@ -232,46 +231,46 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const card = document.createElement('div');
                 card.className = "p-6 md:p-8 bg-surface rounded-3xl border-4 border-borderCustom flex justify-between items-center gap-6 shadow-md text-textPrimary";
-                
+
                 const infoDiv = document.createElement('div');
                 infoDiv.className = "overflow-hidden flex-grow";
-                
+
                 const dateStr = item.lastOpenedAt ? new Date(item.lastOpenedAt).toLocaleDateString('fr-FR') : "Date inconnue";
-                
+
                 infoDiv.innerHTML = `
                     <h4 class="font-black text-2xl md:text-3xl truncate">${item.title || "Titre inconnu"}</h4>
                     <p class="text-xl md:text-2xl font-bold text-textSecondary mt-2 truncate">${item.author || "Auteur inconnu"} — Lu le ${dateStr}</p>
                 `;
-                
+
                 const resumeBtn = document.createElement('button');
                 resumeBtn.className = "bg-accent text-white font-black py-3 px-6 rounded-2xl flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all text-xl border-4 border-borderCustom flex-shrink-0 cursor-pointer";
                 resumeBtn.innerHTML = `<span class="material-symbols-outlined">play_arrow</span> Reprendre`;
-                
+
                 resumeBtn.addEventListener('click', async () => {
                     const overlay = document.getElementById('loading-overlay');
                     if (overlay) overlay.classList.remove('hidden');
-                    
+
                     try {
                         const openedBook = await library.openBook(item.bookId);
                         if (!openedBook || !openedBook.zipBlob) throw new Error("Fichier du livre introuvable dans la base locale.");
-                        
+
                         const bookData = await parseDaisyZip(openedBook.zipBlob);
                         player.setBook(bookData.zip, bookData.playlist);
-                        
+
                         const bTitle = document.getElementById('book-title');
                         if (bTitle) bTitle.textContent = bookData.title;
-                        
+
                         window.currentBookId = item.bookId;
-                        
+
                         const prog = openedBook.progress;
                         const startChap = prog?.chapterIndex || 0;
                         const startPos  = prog?.positionSeconds || 0;
-                        
+
                         await handleTrackChange(player.resumeAt(startChap, startPos));
-                        
+
                         ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
                         if (toggleCleanModeBtn) toggleCleanModeBtn.classList.remove('hidden');
-                        
+
                         if (!player.isPlaying) playPauseAction();
 
                     } catch(e) {
@@ -287,7 +286,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         } catch (err) {
             console.error("[History] Erreur :", err);
-            container.innerHTML = `<p class="text-center py-12 text-textSecondary text-xl font-bold">Base de données inaccessible ou corrompue. Veuillez purger le stockage de votre navigateur.</p>`;
+            section.classList.remove('hidden');
+            container.innerHTML = `<p class="py-4 text-textSecondary text-xl font-bold">Base de données inaccessible.</p>`;
         }
     }
 
