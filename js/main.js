@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
 
                 const resumeBtn = document.createElement('button');
-                resumeBtn.className = "bg-accent text-white font-black py-5 px-8 rounded-2xl flex items-center gap-3 hover:brightness-110 active:scale-95 transition-all text-2xl border-4 border-borderCustom flex-shrink-0 cursor-pointer";
+                resumeBtn.className = "bg-accent text-textOnAccent font-black py-5 px-8 rounded-2xl flex items-center gap-3 hover:brightness-110 active:scale-95 transition-all text-2xl border-4 border-borderCustom flex-shrink-0 cursor-pointer";
                 resumeBtn.innerHTML = `<span class="material-symbols-outlined text-3xl">play_arrow</span> Reprendre`;
 
                 resumeBtn.addEventListener('click', async () => {
