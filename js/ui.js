@@ -27,12 +27,12 @@ export function showPage(activeButton, activeSection) {
   // Apparence inactive
   navs.forEach(btn => {
     if (btn) {
-      btn.className = "nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary py-5 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent focus-ring";
+      btn.className = "nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary py-6 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent focus-ring";
     }
   });
   // Apparence active
   if (activeButton) {
-    activeButton.className = "nav-tab flex-1 flex flex-col items-center justify-center bg-bgSecondary text-textPrimary py-5 shadow-md rounded-3xl border-4 border-accent focus-ring";
+    activeButton.className = "nav-tab flex-1 flex flex-col items-center justify-center bg-bgSecondary text-textPrimary py-6 shadow-md rounded-3xl border-4 border-accent focus-ring";
   }
 }
 
