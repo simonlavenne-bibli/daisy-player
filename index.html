@@ -93,16 +93,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 
-<body class="bg-bgPrimary text-textPrimary transition-colors duration-200 min-h-screen flex flex-col pb-44" data-theme="light">
+<body class="bg-bgPrimary text-textPrimary transition-colors duration-200 min-h-screen flex flex-col pb-52" data-theme="light">
 
 <header class="p-6 bg-surface shadow-sm flex justify-between items-center border-b-4 border-borderCustom">
   <h1 class="text-3xl md:text-4xl font-black flex items-center gap-4 text-textPrimary">
     <img src="Logo_Lumiere_Audio.png" alt="Lumière Audio" class="app-logo"> Lumière Audio
   </h1>
   <div class="flex items-center gap-4">
-    <button id="toggleCleanMode" class="hidden flex items-center gap-3 bg-surface text-textPrimary px-6 py-4 rounded-3xl font-black hover:bg-surfaceHover shadow-md border-4 border-borderCustom focus-ring" aria-label="Basculer entre le mode complet et le mode simple">
-      <span class="material-symbols-outlined text-3xl">check_box_outline_blank</span>
-      <span class="text-xl">MODE SIMPLE</span>
+    <button id="toggleCleanMode" class="hidden flex items-center gap-3 bg-surface text-textPrimary px-8 py-5 rounded-3xl font-black hover:bg-surfaceHover shadow-md border-4 border-borderCustom focus-ring" aria-label="Basculer entre le mode complet et le mode simple">
+      <span class="material-symbols-outlined text-4xl">check_box_outline_blank</span>
+      <span class="text-2xl">MODE SIMPLE</span>
     </button>
     <button id="btn-theme-toggle" class="p-4 md:p-5 rounded-3xl bg-surface hover:bg-surfaceHover text-textPrimary border-4 border-borderCustom shadow-md focus-ring" aria-label="Changer le thème visuel">
       <span class="material-symbols-outlined text-4xl md:text-5xl">palette</span>
@@ -113,21 +113,21 @@
 <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6">
   <section id="view-home" class="space-y-8 py-4">
     <div id="current-reads-section" class="space-y-4">
-      <h2 class="text-2xl md:text-3xl font-black text-textPrimary flex items-center gap-3">
-        <span class="material-symbols-outlined text-3xl md:text-4xl">history</span> Mes lectures en cours
+      <h2 class="text-3xl md:text-4xl font-black text-textPrimary flex items-center gap-3">
+        <span class="material-symbols-outlined text-4xl md:text-5xl">history</span> Mes lectures en cours
       </h2>
       <div id="current-reads-list" class="space-y-4"></div>
     </div>
 
     <div class="bg-surface p-8 md:p-12 rounded-3xl shadow-md border-4 border-borderCustom text-center space-y-8">
-      <p class="text-xl md:text-2xl leading-relaxed text-textPrimary font-bold">
+      <p class="text-2xl md:text-3xl leading-relaxed text-textPrimary font-bold">
         Votre lecteur de livres audio DAISY. <br>
         Glissez-déposez l'archive ZIP ou parcourez vos fichiers.
       </p>
       <div id="dropZone" class="border-8 border-dashed border-borderCustom rounded-3xl p-12 md:p-24 cursor-pointer hover:bg-surfaceHover transition-all text-center bg-bgSecondary focus-ring" tabindex="0" aria-label="Zone de dépôt du fichier zip">
         <span class="material-symbols-outlined text-[80px] md:text-[120px] text-textSecondary">cloud_upload</span>
-        <p class="mt-6 text-2xl md:text-3xl font-black text-textPrimary">Déposez votre fichier ZIP ici</p>
-        <button id="btn-browse" class="mt-10 bg-accent text-textOnAccent font-black text-xl md:text-2xl px-12 py-6 rounded-3xl shadow-lg border-4 border-accent focus-ring active:scale-95 transition-transform">Parcourir mes fichiers</button>
+        <p class="mt-6 text-3xl md:text-4xl font-black text-textPrimary">Déposez votre fichier ZIP ici</p>
+        <button id="btn-browse" class="mt-10 bg-accent text-textOnAccent font-black text-2xl md:text-3xl px-14 py-8 rounded-3xl shadow-lg border-4 border-accent focus-ring active:scale-95 transition-transform">Parcourir mes fichiers</button>
         <input type="file" id="file-input" accept=".zip" class="hidden">
       </div>
     </div>
@@ -136,12 +136,12 @@
   <section id="view-player" class="hidden space-y-8 py-4">
     <div class="bg-surface p-6 md:p-8 rounded-3xl shadow-md border-4 border-borderCustom space-y-6">
       <div class="text-center">
-        <h3 id="book-title" class="text-3xl md:text-4xl font-black text-textPrimary truncate">Titre du livre</h3>
-        <p id="cleanChapterTitle" class="text-xl md:text-2xl font-bold text-textSecondary truncate mt-2">Chapitre</p>
+        <h3 id="book-title" class="text-4xl md:text-5xl font-black text-textPrimary truncate">Titre du livre</h3>
+        <p id="cleanChapterTitle" class="text-2xl md:text-3xl font-bold text-textSecondary truncate mt-2">Chapitre</p>
       </div>
       <div class="space-y-4">
         <input type="range" id="audio-slider" min="0" max="100" value="0" class="w-full h-8 bg-bgSecondary rounded-2xl appearance-none cursor-pointer accent-accent focus-ring" aria-label="Progression de la lecture">
-        <div class="flex justify-between text-xl font-black text-textSecondary">
+        <div class="flex justify-between text-2xl font-black text-textSecondary">
           <span id="time-current">00:00</span>
           <span id="time-duration">00:00</span>
         </div>
@@ -150,25 +150,25 @@
 
     <div id="player-normal-layout" class="w-full">
       <div class="flex justify-center items-stretch gap-3 flex-wrap py-2">
-        <button id="btn-skip-back" class="flex flex-col items-center justify-center gap-2 p-5 flex-1 min-w-[80px] max-w-[140px] bg-surface text-textPrimary rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Reculer d'une minute">
-          <span class="material-symbols-outlined text-[40px]">fast_rewind</span>
-          <span class="text-sm font-black">-1 MIN</span>
+        <button id="btn-skip-back" class="flex flex-col items-center justify-center gap-2 p-6 flex-1 min-w-[90px] max-w-[160px] bg-surface text-textPrimary rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Reculer d'une minute">
+          <span class="material-symbols-outlined text-[52px]">fast_rewind</span>
+          <span class="text-lg font-black">-1 MIN</span>
         </button>
-        <button id="btn-prev" class="flex flex-col items-center justify-center gap-2 p-5 flex-1 min-w-[80px] max-w-[140px] bg-surface text-textPrimary rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Chapitre précédent">
-          <span class="material-symbols-outlined text-[40px]">skip_previous</span>
-          <span class="text-sm font-black">PRÉCÉDENT</span>
+        <button id="btn-prev" class="flex flex-col items-center justify-center gap-2 p-6 flex-1 min-w-[90px] max-w-[160px] bg-surface text-textPrimary rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Chapitre précédent">
+          <span class="material-symbols-outlined text-[52px]">skip_previous</span>
+          <span class="text-lg font-black">PRÉCÉDENT</span>
         </button>
-        <button id="playPause" class="flex flex-col items-center justify-center gap-2 px-6 py-6 flex-1 min-w-[100px] max-w-[160px] bg-accent text-textOnAccent rounded-3xl border-4 border-accent shadow-lg focus-ring" aria-label="Lecture ou Pause">
-          <span id="playPauseIcon" class="material-symbols-outlined text-[50px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-          <span id="playLabel" class="text-sm font-black">LECTURE</span>
+        <button id="playPause" class="flex flex-col items-center justify-center gap-2 px-8 py-8 flex-1 min-w-[120px] max-w-[200px] bg-accent text-textOnAccent rounded-3xl border-4 border-accent shadow-lg focus-ring" aria-label="Lecture ou Pause">
+          <span id="playPauseIcon" class="material-symbols-outlined text-[64px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+          <span id="playLabel" class="text-xl font-black">LECTURE</span>
         </button>
-        <button id="btn-next" class="flex flex-col items-center justify-center gap-2 p-5 flex-1 min-w-[80px] max-w-[140px] bg-surface text-textPrimary rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Chapitre suivant">
-          <span class="material-symbols-outlined text-[40px]">skip_next</span>
-          <span class="text-sm font-black">SUIVANT</span>
+        <button id="btn-next" class="flex flex-col items-center justify-center gap-2 p-6 flex-1 min-w-[90px] max-w-[160px] bg-surface text-textPrimary rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Chapitre suivant">
+          <span class="material-symbols-outlined text-[52px]">skip_next</span>
+          <span class="text-lg font-black">SUIVANT</span>
         </button>
-        <button id="btn-skip-forward" class="flex flex-col items-center justify-center gap-2 p-5 flex-1 min-w-[80px] max-w-[140px] bg-surface text-textPrimary rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Avancer d'une minute">
-          <span class="material-symbols-outlined text-[40px]">fast_forward</span>
-          <span class="text-sm font-black">+1 MIN</span>
+        <button id="btn-skip-forward" class="flex flex-col items-center justify-center gap-2 p-6 flex-1 min-w-[90px] max-w-[160px] bg-surface text-textPrimary rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Avancer d'une minute">
+          <span class="material-symbols-outlined text-[52px]">fast_forward</span>
+          <span class="text-lg font-black">+1 MIN</span>
         </button>
       </div>
     </div>
@@ -176,20 +176,20 @@
     <div id="player-clean-layout" class="hidden w-full flex justify-center py-6">
       <button id="cleanPlayPause" class="w-full max-w-sm aspect-square rounded-[3rem] bg-accent border-4 border-borderCustom focus-ring flex flex-col items-center justify-center transition-transform active:scale-95 shadow-lg" aria-label="Lecture ou Pause">
         <span id="cleanPlayIcon" class="material-symbols-outlined text-[8rem] md:text-[10rem] text-textOnAccent" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-        <span id="cleanPlayLabel" class="text-3xl md:text-4xl font-black mt-4 text-textOnAccent">LECTURE</span>
+        <span id="cleanPlayLabel" class="text-4xl md:text-5xl font-black mt-4 text-textOnAccent">LECTURE</span>
       </button>
     </div>
   </section>
 </main>
 
-<nav class="fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-borderCustom shadow-[0_-10px_30px_rgba(0,0,0,0.15)] p-3 flex gap-3 items-stretch z-40 min-h-[140px]">
-  <button id="nav-home" class="nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary py-5 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent focus-ring">
-    <span class="material-symbols-outlined text-[52px] md:text-[60px]">home</span>
-    <span class="text-xl md:text-2xl font-black mt-2">Accueil</span>
+<nav class="fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-borderCustom shadow-[0_-10px_30px_rgba(0,0,0,0.15)] p-4 flex gap-3 items-stretch z-40 min-h-[168px]">
+  <button id="nav-home" class="nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary py-6 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent focus-ring">
+    <span class="material-symbols-outlined text-[64px] md:text-[72px]">home</span>
+    <span class="text-2xl md:text-3xl font-black mt-2">Accueil</span>
   </button>
-  <button id="nav-player" class="nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary py-5 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent focus-ring">
-    <span class="material-symbols-outlined text-[52px] md:text-[60px]">radio</span>
-    <span class="text-xl md:text-2xl font-black mt-2">Lecteur</span>
+  <button id="nav-player" class="nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary py-6 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent focus-ring">
+    <span class="material-symbols-outlined text-[64px] md:text-[72px]">radio</span>
+    <span class="text-2xl md:text-3xl font-black mt-2">Lecteur</span>
   </button>
 </nav>
 
