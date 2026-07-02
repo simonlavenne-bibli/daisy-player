@@ -39,11 +39,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (isCleanMode) {
                 normalLayout.classList.add('hidden');
                 cleanLayout.classList.remove('hidden');
-                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined text-3xl">view_module</span><span class="text-lg md:text-xl font-black">MODE COMPLET</span>';
+                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined text-4xl">view_module</span><span class="text-2xl font-black">MODE COMPLET</span>';
             } else {
                 normalLayout.classList.remove('hidden');
                 cleanLayout.classList.add('hidden');
-                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined text-3xl">check_box_outline_blank</span><span class="text-lg md:text-xl font-black">MODE SIMPLE</span>';
+                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined text-4xl">check_box_outline_blank</span><span class="text-2xl font-black">MODE SIMPLE</span>';
             }
         }
     });
@@ -238,13 +238,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const dateStr = item.lastOpenedAt ? new Date(item.lastOpenedAt).toLocaleDateString('fr-FR') : "Date inconnue";
 
                 infoDiv.innerHTML = `
-                    <h4 class="font-black text-2xl md:text-3xl truncate">${item.title || "Titre inconnu"}</h4>
-                    <p class="text-xl md:text-2xl font-bold text-textSecondary mt-2 truncate">${item.author || "Auteur inconnu"} — Lu le ${dateStr}</p>
+                    <h4 class="font-black text-3xl md:text-4xl truncate">${item.title || "Titre inconnu"}</h4>
+                    <p class="text-2xl md:text-3xl font-bold text-textSecondary mt-2 truncate">${item.author || "Auteur inconnu"} — Lu le ${dateStr}</p>
                 `;
 
                 const resumeBtn = document.createElement('button');
-                resumeBtn.className = "bg-accent text-white font-black py-3 px-6 rounded-2xl flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all text-xl border-4 border-borderCustom flex-shrink-0 cursor-pointer";
-                resumeBtn.innerHTML = `<span class="material-symbols-outlined">play_arrow</span> Reprendre`;
+                resumeBtn.className = "bg-accent text-white font-black py-5 px-8 rounded-2xl flex items-center gap-3 hover:brightness-110 active:scale-95 transition-all text-2xl border-4 border-borderCustom flex-shrink-0 cursor-pointer";
+                resumeBtn.innerHTML = `<span class="material-symbols-outlined text-3xl">play_arrow</span> Reprendre`;
 
                 resumeBtn.addEventListener('click', async () => {
                     const overlay = document.getElementById('loading-overlay');
