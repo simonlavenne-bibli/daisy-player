@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Gestion de la navigation
     listen('nav-home', 'click', () => {
         ui.showPage(document.getElementById('nav-home'), document.getElementById('view-home'));
+        if (toggleCleanModeBtn) toggleCleanModeBtn.classList.add('hidden');
         loadHistory();
     });
     listen('nav-player', 'click', () => {
@@ -39,11 +40,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (isCleanMode) {
                 normalLayout.classList.add('hidden');
                 cleanLayout.classList.remove('hidden');
-                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined text-4xl">view_module</span><span class="text-2xl font-black">MODE COMPLET</span>';
+                toggleCleanModeBtn.innerHTML = '<span class="text-2xl font-black">MODE COMPLET</span>';
             } else {
                 normalLayout.classList.remove('hidden');
                 cleanLayout.classList.add('hidden');
-                toggleCleanModeBtn.innerHTML = '<span class="material-symbols-outlined text-4xl">check_box_outline_blank</span><span class="text-2xl font-black">MODE SIMPLE</span>';
+                toggleCleanModeBtn.innerHTML = '<span class="text-2xl font-black">MODE SIMPLE</span>';
             }
         }
     });
