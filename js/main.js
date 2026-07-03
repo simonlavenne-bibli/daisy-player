@@ -242,8 +242,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <p class="text-2xl md:text-3xl font-bold text-textSecondary mt-2 truncate">${item.author || "Auteur inconnu"} — Lu le ${dateStr}</p>
                 `;
 
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = "flex flex-col gap-3 flex-shrink-0";
+
                 const resumeBtn = document.createElement('button');
-                resumeBtn.className = "bg-accent text-textOnAccent font-black py-5 px-8 rounded-2xl flex items-center gap-3 hover:brightness-110 active:scale-95 transition-all text-2xl border-4 border-borderCustom flex-shrink-0 cursor-pointer";
+                resumeBtn.className = "bg-accent text-textOnAccent font-black py-5 px-8 rounded-2xl flex items-center gap-3 hover:brightness-110 active:scale-95 transition-all text-2xl border-4 border-borderCustom cursor-pointer";
                 resumeBtn.innerHTML = `<span class="material-symbols-outlined text-3xl">play_arrow</span> Reprendre`;
 
                 resumeBtn.addEventListener('click', async () => {
@@ -280,8 +283,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 });
 
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = "bg-surface text-textPrimary font-black py-4 px-5 rounded-2xl flex items-center justify-center gap-2 hover:bg-surfaceHover active:scale-95 transition-all text-xl border-4 border-borderCustom cursor-pointer";
+                deleteBtn.setAttribute('aria-label', `Supprimer "${item.title || 'ce livre'}"`);
+                deleteBtn.innerHTML = `<span class="material-symbols-outlined text-3xl">delete</span>`;
+
+                deleteBtn.addEventListener('click', async () => {
+                    const titre = item.title || "ce livre";
+                    if (!confirm(`Voulez-vous vraiment supprimer "${titre}" de vos lectures en cours ?\nCette action est irréversible.`)) return;
+                    try {
+                        await library.removeBook(item.bookId);
+                        card.remove();
+                        if (container.children.length === 0) section.classList.add('hidden');
+                    } catch(e) {
+                        alert("Impossible de supprimer ce livre : " + e.message);
+                    }
+                });
+
+                actionsDiv.appendChild(resumeBtn);
+                actionsDiv.appendChild(deleteBtn);
                 card.appendChild(infoDiv);
-                card.appendChild(resumeBtn);
+                card.appendChild(actionsDiv);
                 container.appendChild(card);
             });
         } catch (err) {
