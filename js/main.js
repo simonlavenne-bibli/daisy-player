@@ -127,9 +127,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isPlaying = player.toggle();
         ui.updatePlayPauseUI(isPlaying);
     };
-    listen('playPause',           'click', playPauseAction);
-    listen('playPause-desktop',   'click', playPauseAction);
-    listen('cleanPlayPause',      'click', playPauseAction);
+    listen('playPause', 'click', playPauseAction);
+    listen('cleanPlayPause', 'click', playPauseAction);
 
     const skipBackAction = () => {
         if (player.audio) player.audio.currentTime = Math.max(0, player.audio.currentTime - 60);
@@ -140,10 +139,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             player.audio.currentTime + 60
         );
     };
-    listen('btn-skip-back',        'click', skipBackAction);
-    listen('btn-skip-back-desktop','click', skipBackAction);
-    listen('btn-skip-forward',        'click', skipForwardAction);
-    listen('btn-skip-forward-desktop','click', skipForwardAction);
+    listen('btn-skip-back', 'click', skipBackAction);
+    listen('btn-skip-forward', 'click', skipForwardAction);
 
     async function handleTrackChange(trackPromise) {
         const track = await trackPromise;
@@ -153,12 +150,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             ui.updatePlayPauseUI(false);
         }
     }
-    const nextAction = () => handleTrackChange(player.next());
-    const prevAction = () => handleTrackChange(player.prev());
-    listen('btn-next',        'click', nextAction);
-    listen('btn-next-desktop','click', nextAction);
-    listen('btn-prev',        'click', prevAction);
-    listen('btn-prev-desktop','click', prevAction);
+    listen('btn-next', 'click', () => handleTrackChange(player.next()));
+    listen('btn-prev', 'click', () => handleTrackChange(player.prev()));
 
     // Synchronisation de la barre temporelle
     const audioSlider  = document.getElementById('audio-slider');
