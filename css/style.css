@@ -104,40 +104,85 @@ body[data-theme="yellow"] {
 /* ================================================================
 POLICES : Luciole chargée via @font-face dans index.html.
 On l'applique ici sur html et body en fallback.
+Taille de base augmentee pour malvoyants.
 ================================================================ */
 html, body {
   font-family: 'Luciole', 'Arial', sans-serif;
-  /* Taille de base adaptée pour malvoyants */
-  font-size: 17px;
-}
-
-/* Sur desktop, on garde une taille confortable */
-@media (min-width: 768px) {
-  html, body {
-    font-size: 16px;
-  }
+  font-size: 18px;
 }
 
 /* ================================================================
 SMARTPHONES — AMÉLIORATIONS D'ACCESSIBILITÉ
-- Boutons plus grands et plus espacés pour faciliter le tactile
-- Texte plus lisible
+Textes plus grands et plus gras pour malvoyants.
 ================================================================ */
 @media (max-width: 767px) {
-  /* Zone tactile minimum44px conformément WCAG */
-  button, a, input[type="file"], [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
+  /* Titre principal */
+  header h1 {
+    font-size: 1.5rem !important;
+    font-weight: 900 !important;
+  }
+
+  /*Titres de sections */
+  h2, h3, #book-title {
+    font-size: 1.25rem !important;
+    font-weight: 900 !important;
+  }
+
+  /* Textes importants */
+  #cleanChapterTitle {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+  }
+
+  /*Temps de lecture */
+  #time-current, #time-duration {
+    font-size: 1.1rem !important;
+    font-weight: 900 !important;
+  }
+
+  /* Textes de bienvenue */
+  .bg-surface p {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+  }
+
+  /* Bouton parcourir */
+  #btn-browse {
+    font-size: 1.1rem !important;
+    font-weight: 900 !important;
+  }
+
+  /* Labels des boutons du lecteur */
+  #player-normal-layout button span:last-child {
+    font-weight: 900 !important;
   }
 
   /* Slider plus grand pour être manipulable */
   input[type="range"] {
-    height: 32px !important;
+    height: 28px !important;
   }
 
   /* Empêcher le zoom involuntary sur les inputs */
   input, select, textarea {
     font-size: 16px;
+  }
+
+  /* Titre dans l'historique */
+  #current-reads-list h4 {
+    font-size: 1.1rem !important;
+    font-weight: 900 !important;
+  }
+
+  /* Texte secondaire dans l'historique */
+  #current-reads-list p {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+  }
+
+  /* Bouton reprendre dans l'historique */
+  #current-reads-list button {
+    font-size: 1rem !important;
+    font-weight: 900 !important;
   }
 }
 
