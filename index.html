@@ -93,7 +93,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 
-<body class="bg-bgPrimary text-textPrimary transition-colors duration-200 min-h-screen flex flex-col pb-32 md:pb-52" data-theme="light">
+<body class="bg-bgPrimary text-textPrimary transition-colors duration-200 min-h-screen flex flex-col pb-20 md:pb-24" data-theme="light">
 
 <header class="p-6 bg-surface shadow-sm flex justify-between items-center border-b-4 border-borderCustom">
   <h1 class="text-3xl md:text-4xl font-black flex items-center gap-4 text-textPrimary">
@@ -137,7 +137,7 @@
       <div id="dropZone" class="border-8 border-dashed border-borderCustom rounded-3xl p-12 md:p-24 cursor-pointer hover:bg-surfaceHover transition-all text-center bg-bgSecondary focus-ring" tabindex="0" aria-label="Zone de dépôt du fichier zip">
         <span class="material-symbols-outlined text-[80px] md:text-[120px] text-textSecondary">cloud_upload</span>
         <p class="mt-6 text-3xl md:text-4xl font-black text-textPrimary">Déposez votre fichier ZIP ici</p>
-        <button id="btn-browse" class="mt-10 bg-accent text-textOnAccent font-black text-2xl md:text-3xl px-14 py-8 rounded-3xl shadow-lg border-4 border-accent focus-ring active:scale-95 transition-transform">Parcourir mes fichiers</button>
+        <button id="btn-browse" class="mt-8 md:mt-10 bg-accent text-textOnAccent font-black text-xl md:text-2xl px-8 py-4 md:px-12 md:py-6 rounded-2xl md:rounded-3xl shadow-lg border-4 border-accent focus-ring active:scale-95 transition-transform">Parcourir mes fichiers</button>
         <input type="file" id="file-input" accept=".zip" class="hidden">
       </div>
     </div>
@@ -159,26 +159,54 @@
     </div>
 
     <div id="player-normal-layout" class="w-full">
-      <div class="flex justify-center items-stretch gap-2 md:gap-3 flex-wrap py-2">
-        <button id="btn-skip-back" class="flex flex-col items-center justify-center gap-1 md:gap-2 p-3 md:p-6 flex-1 min-w-[70px] md:min-w-[90px] max-w-[140px] md:max-w-[160px] bg-surface text-textPrimary rounded-2xl md:rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Reculer d'une minute">
-          <span class="material-symbols-outlined text-4xl md:text-5xl">fast_rewind</span>
-          <span class="text-base md:text-lg font-black">-1 MIN</span>
+      <!-- Layout mobile : grille 2 lignes -->
+      <div class="md:hidden grid grid-cols-3 gap-2 py-2">
+        <!-- Ligne 1 : Skip back, Prev, Skip forward -->
+        <button id="btn-skip-back" class="flex flex-col items-center justify-center gap-1 p-3 bg-surface text-textPrimary rounded-2xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Reculer d'une minute">
+          <span class="material-symbols-outlined text-3xl">fast_rewind</span>
+          <span class="text-sm font-black">-1 MIN</span>
         </button>
-        <button id="btn-prev" class="flex flex-col items-center justify-center gap-1 md:gap-2 p-3 md:p-6 flex-1 min-w-[70px] md:min-w-[90px] max-w-[140px] md:max-w-[160px] bg-surface text-textPrimary rounded-2xl md:rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Chapitre précédent">
-          <span class="material-symbols-outlined text-4xl md:text-5xl">skip_previous</span>
-          <span class="text-base md:text-lg font-black">PRÉCÉDENT</span>
+        <button id="btn-prev" class="flex flex-col items-center justify-center gap-1 p-3 bg-surface text-textPrimary rounded-2xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Chapitre précédent">
+          <span class="material-symbols-outlined text-3xl">skip_previous</span>
+          <span class="text-sm font-black">PREC.</span>
         </button>
-        <button id="playPause" class="flex flex-col items-center justify-center gap-1 md:gap-2 px-4 md:px-8 py-4 md:py-8 flex-1 min-w-[90px] md:min-w-[120px] max-w-[160px] md:max-w-[200px] bg-accent text-textOnAccent rounded-2xl md:rounded-3xl border-4 border-accent shadow-lg focus-ring" aria-label="Lecture ou Pause">
-          <span id="playPauseIcon" class="material-symbols-outlined text-5xl md:text-6xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-          <span id="playLabel" class="text-lg md:text-xl font-black">LECTURE</span>
+        <button id="btn-skip-forward" class="flex flex-col items-center justify-center gap-1 p-3 bg-surface text-textPrimary rounded-2xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Avancer d'une minute">
+          <span class="material-symbols-outlined text-3xl">fast_forward</span>
+          <span class="text-sm font-black">+1 MIN</span>
         </button>
-        <button id="btn-next" class="flex flex-col items-center justify-center gap-1 md:gap-2 p-3 md:p-6 flex-1 min-w-[70px] md:min-w-[90px] max-w-[140px] md:max-w-[160px] bg-surface text-textPrimary rounded-2xl md:rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Chapitre suivant">
-          <span class="material-symbols-outlined text-4xl md:text-5xl">skip_next</span>
-          <span class="text-base md:text-lg font-black">SUIVANT</span>
+        <!-- Ligne 2 : Play (large) + Next -->
+        <div class="col-span-2">
+          <button id="playPause" class="w-full h-full flex flex-col items-center justify-center gap-1 p-4 bg-accent text-textOnAccent rounded-2xl border-4 border-accent shadow-lg focus-ring" aria-label="Lecture ou Pause">
+            <span id="playPauseIcon" class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+            <span id="playLabel" class="text-base font-black">LECTURE</span>
+          </button>
+        </div>
+        <button id="btn-next" class="flex flex-col items-center justify-center gap-1 p-3 bg-surface text-textPrimary rounded-2xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Chapitre suivant">
+          <span class="material-symbols-outlined text-3xl">skip_next</span>
+          <span class="text-sm font-black">SUIV.</span>
         </button>
-        <button id="btn-skip-forward" class="flex flex-col items-center justify-center gap-1 md:gap-2 p-3 md:p-6 flex-1 min-w-[70px] md:min-w-[90px] max-w-[140px] md:max-w-[160px] bg-surface text-textPrimary rounded-2xl md:rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Avancer d'une minute">
-          <span class="material-symbols-outlined text-4xl md:text-5xl">fast_forward</span>
-          <span class="text-base md:text-lg font-black">+1 MIN</span>
+      </div>
+      <!-- Layout desktop : ligne horizontale -->
+      <div class="hidden md:flex justify-center items-stretch gap-3 flex-wrap py-2">
+        <button id="btn-skip-back-desktop" class="flex flex-col items-center justify-center gap-2 p-6 flex-1 min-w-[90px] max-w-[160px] bg-surface text-textPrimary rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Reculer d'une minute">
+          <span class="material-symbols-outlined text-5xl">fast_rewind</span>
+          <span class="text-lg font-black">-1 MIN</span>
+        </button>
+        <button id="btn-prev-desktop" class="flex flex-col items-center justify-center gap-2 p-6 flex-1 min-w-[90px] max-w-[160px] bg-surface text-textPrimary rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Chapitre précédent">
+          <span class="material-symbols-outlined text-5xl">skip_previous</span>
+          <span class="text-lg font-black">PRÉCÉDENT</span>
+        </button>
+        <button id="playPause-desktop" class="flex flex-col items-center justify-center gap-2 px-8 py-8 flex-1 min-w-[120px] max-w-[200px] bg-accent text-textOnAccent rounded-3xl border-4 border-accent shadow-lg focus-ring" aria-label="Lecture ou Pause">
+          <span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+          <span class="text-xl font-black">LECTURE</span>
+        </button>
+        <button id="btn-next-desktop" class="flex flex-col items-center justify-center gap-2 p-6 flex-1 min-w-[90px] max-w-[160px] bg-surface text-textPrimary rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Chapitre suivant">
+          <span class="material-symbols-outlined text-5xl">skip_next</span>
+          <span class="text-lg font-black">SUIVANT</span>
+        </button>
+        <button id="btn-skip-forward-desktop" class="flex flex-col items-center justify-center gap-2 p-6 flex-1 min-w-[90px] max-w-[160px] bg-surface text-textPrimary rounded-3xl border-4 border-borderCustom hover:bg-surfaceHover shadow-md focus-ring" aria-label="Avancer d'une minute">
+          <span class="material-symbols-outlined text-5xl">fast_forward</span>
+          <span class="text-lg font-black">+1 MIN</span>
         </button>
       </div>
     </div>
@@ -192,14 +220,14 @@
   </section>
 </main>
 
-<nav class="fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-borderCustom shadow-[0_-10px_30px_rgba(0,0,0,0.15)] p-3 md:p-4 flex gap-2 md:gap-3 items-stretch z-40 min-h-[120px] md:min-h-[168px]">
-  <button id="nav-home" class="nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary py-4 md:py-6 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent focus-ring">
-    <span class="material-symbols-outlined text-5xl md:text-6xl">home</span>
-    <span class="text-xl md:text-3xl font-black mt-1 md:mt-2">Accueil</span>
+<nav class="fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-borderCustom shadow-[0_-10px_30px_rgba(0,0,0,0.15)] p-2 md:p-3 flex gap-2 items-stretch z-40 h-16 md:h-20">
+  <button id="nav-home" class="nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary py-2 md:py-3 hover:bg-surfaceHover transition-colors rounded-2xl md:rounded-3xl border-4 border-transparent focus-ring">
+    <span class="material-symbols-outlined text-3xl md:text-4xl">home</span>
+    <span class="text-sm md:text-lg font-black">Accueil</span>
   </button>
-  <button id="nav-player" class="nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary py-4 md:py-6 hover:bg-surfaceHover transition-colors rounded-3xl border-4 border-transparent focus-ring">
-    <span class="material-symbols-outlined text-5xl md:text-6xl">radio</span>
-    <span class="text-xl md:text-3xl font-black mt-1 md:mt-2">Lecteur</span>
+  <button id="nav-player" class="nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary py-2 md:py-3 hover:bg-surfaceHover transition-colors rounded-2xl md:rounded-3xl border-4 border-transparent focus-ring">
+    <span class="material-symbols-outlined text-3xl md:text-4xl">radio</span>
+    <span class="text-sm md:text-lg font-black">Lecteur</span>
   </button>
 </nav>
 
