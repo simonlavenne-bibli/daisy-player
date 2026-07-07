@@ -104,117 +104,40 @@ body[data-theme="yellow"] {
 /* ================================================================
 POLICES : Luciole chargée via @font-face dans index.html.
 On l'applique ici sur html et body en fallback.
-Base agrandie pour malvoyants sur smartphones.
 ================================================================ */
 html, body {
   font-family: 'Luciole', 'Arial', sans-serif;
+  /* Taille de base adaptée pour malvoyants */
+  font-size: 17px;
 }
 
-/* Base plus grande sur smartphones pour malvoyants */
-@media (max-width: 767px) {
-  html {
-    font-size: 18px;
+/* Sur desktop, on garde une taille confortable */
+@media (min-width: 768px) {
+  html, body {
+    font-size: 16px;
   }
 }
 
 /* ================================================================
-SMARTPHONES — SURCHARGES DE TAILLES POUR MALVOYANTS
-Tout est agrandi : boutons, textes, icônes.
-=============================================================== */
+SMARTPHONES — AMÉLIORATIONS D'ACCESSIBILITÉ
+- Boutons plus grands et plus espacés pour faciliter le tactile
+- Texte plus lisible
+================================================================ */
 @media (max-width: 767px) {
-
-  /* HEADER */
-  header h1 {
-    font-size: 2rem !important;
+  /* Zone tactile minimum44px conformément WCAG */
+  button, a, input[type="file"], [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
   }
 
-  /* Bouton MODE SIMPLE/COMPLET */
-  #toggleCleanMode span {
-    font-size: 1.5rem !important;
+  /* Slider plus grand pour être manipulable */
+  input[type="range"] {
+    height: 32px !important;
   }
 
-  /* SECTION ACCUEIL */
-  #view-home h2 {
-    font-size: 1.75rem !important;
-  }
-
-  .bg-surface p {
-    font-size: 1.5rem !important;
-  }
-
-  /* Drop zone */
-  #dropZone .material-symbols-outlined {
-    font-size: 6rem !important;
-  }
-
-  #dropZone p {
-    font-size: 1.75rem !important;
-  }
-
-  #btn-browse {
-    font-size: 1.75rem !important;
-    padding: 2rem 3rem !important;
-  }
-
-  /* PLAYER — BOUTONS LECTEUR */
-  #player-normal-layout button {
-    min-width: 80px !important;
-    padding: 1rem 0.5rem !important;
-  }
-
-  #player-normal-layout .material-symbols-outlined {
-    font-size: 3rem !important;
-  }
-
-  #player-normal-layout button span:last-child {
-    font-size: 1.25rem !important;
-  }
-
-  /* Bouton LECTURE principal */
-  #playPause .material-symbols-outlined {
-    font-size: 4rem !important;
-  }
-
-  #playLabel {
-    font-size: 1.5rem !important;
-  }
-
-  /* Titre livre et chapitre */
-  #book-title {
-    font-size: 2rem !important;
-  }
-
-  #cleanChapterTitle {
-    font-size: 1.5rem !important;
-  }
-
-  /* Temps (00:00) */
-  #time-current,
-  #time-duration {
-    font-size: 1.5rem !important;
-  }
-
-  /* Slider audio */
-  #audio-slider {
-    height: 2.5rem !important;
-  }
-
-  /* Navigation footer */
-  nav button .material-symbols-outlined {
-    font-size: 4rem !important;
-  }
-
-  nav button span:last-child {
-    font-size: 1.75rem !important;
-  }
-
-  /* Mode simple — bouton géant */
-  #cleanPlayIcon {
-    font-size: 6rem !important;
-  }
-
-  #cleanPlayLabel {
-    font-size: 2.5rem !important;
+  /* Empêcher le zoom involuntary sur les inputs */
+  input, select, textarea {
+    font-size: 16px;
   }
 }
 
