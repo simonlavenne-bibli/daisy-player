@@ -193,14 +193,15 @@
   </section>
 </main>
 
-<nav class="fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-borderCustom shadow-[0_-10px_30px_rgba(0,0,0,0.15)] px-3 md:px-4 flex gap-3 items-stretch z-40 h-24 md:h-28">
-  <button id="nav-home" class="nav-tab flex-1 flex flex-col items-center justify-center h-full bg-surface text-textSecondary hover:bg-surfaceHover transition-colors rounded-2xl md:rounded-3xl border-4 border-transparent focus-ring">
-    <span class="material-symbols-outlined text-3xl md:text-4xl">home</span>
-    <span class="text-lg md:text-xl font-bold">Accueil</span>
+<!-- NAVIGATION RESPONSIVE AMÉLIORÉE -->
+<nav class="fixed bottom-0 left-0 right-0 bg-surface border-t-4 border-borderCustom shadow-lg flex z-40">
+  <button id="nav-home" class="nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary hover:bg-surfaceHover transition-colors rounded-none md:rounded-2xl focus-ring">
+    <span class="material-symbols-outlined">home</span>
+    <span class="font-bold">Accueil</span>
   </button>
-  <button id="nav-player" class="nav-tab flex-1 flex flex-col items-center justify-center h-full bg-surface text-textSecondary hover:bg-surfaceHover transition-colors rounded-2xl md:rounded-3xl border-4 border-transparent focus-ring">
-    <span class="material-symbols-outlined text-3xl md:text-4xl">radio</span>
-    <span class="text-lg md:text-xl font-bold">Lecteur</span>
+  <button id="nav-player" class="nav-tab flex-1 flex flex-col items-center justify-center bg-surface text-textSecondary hover:bg-surfaceHover transition-colors rounded-none md:rounded-2xl focus-ring">
+    <span class="material-symbols-outlined">radio</span>
+    <span class="font-bold">Lecteur</span>
   </button>
 </nav>
 
