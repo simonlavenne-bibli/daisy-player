@@ -7,57 +7,74 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const player = new DaisyPlayer();
     const toggleCleanModeBtn = document.getElementById('toggleCleanMode');
-    
-    // Initialisation de la base de données au démarrage
+
+    // ─── Initialisation de la base de données ──────────────────────────
     await library.initLibrary();
 
+    // ─── Utilitaire : raccourci addEventListener ────────────────────────
     function listen(id, event, callback) {
         const el = document.getElementById(id);
         if (el) el.addEventListener(event, callback);
     }
 
-    // Gestion de la navigation
+    // ─── Navigation entre pages ─────────────────────────────────────────
+    function showView(viewId, activeNavId) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+        const view = document.getElementById(viewId);
+        const tab  = document.getElementById(activeNavId);
+        if (view) view.classList.add('active');
+        if (tab)  tab.classList.add('active');
+    }
+
     listen('nav-home', 'click', () => {
-        ui.showPage(document.getElementById('nav-home'), document.getElementById('view-home'));
-        if (toggleCleanModeBtn) toggleCleanModeBtn.classList.add('hidden');
+        showView('view-home', 'nav-home');
+        if (toggleCleanModeBtn) toggleCleanModeBtn.classList.remove('visible');
         loadHistory();
     });
+
     listen('nav-player', 'click', () => {
-        ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
-        if (toggleCleanModeBtn) toggleCleanModeBtn.classList.remove('hidden');
+        showView('view-player', 'nav-player');
+        if (toggleCleanModeBtn) toggleCleanModeBtn.classList.add('visible');
     });
 
+    // ─── Changement de thème ────────────────────────────────────────────
     listen('btn-theme-toggle', 'click', () => ui.cycleThemes());
 
-    // Basculement Mode Complet <-> Mode Simple
+    // ─── Basculement Mode Complet <-> Mode Simple ───────────────────────
     let isCleanMode = false;
+
     listen('toggleCleanMode', 'click', () => {
         const normalLayout = document.getElementById('player-normal-layout');
-        const cleanLayout = document.getElementById('player-clean-layout');
+        const cleanLayout  = document.getElementById('player-clean-layout');
         isCleanMode = !isCleanMode;
 
         if (normalLayout && cleanLayout) {
             if (isCleanMode) {
-                normalLayout.classList.add('hidden');
-                cleanLayout.classList.remove('hidden');
-                toggleCleanModeBtn.innerHTML = '<span class="text-2xl font-black">MODE COMPLET</span>';
+                normalLayout.style.display = 'none';
+                cleanLayout.classList.add('visible');
+                if (toggleCleanModeBtn) toggleCleanModeBtn.textContent = 'MODE COMPLET';
             } else {
-                normalLayout.classList.remove('hidden');
-                cleanLayout.classList.add('hidden');
-                toggleCleanModeBtn.innerHTML = '<span class="text-2xl font-black">MODE SIMPLE</span>';
+                normalLayout.style.display = '';
+                cleanLayout.classList.remove('visible');
+                if (toggleCleanModeBtn) toggleCleanModeBtn.textContent = 'MODE SIMPLE';
             }
         }
     });
 
-    // Explorateur de fichiers & Drag & Drop
+    // ─── Explorateur de fichiers & Drag & Drop ──────────────────────────
     const fileInput = document.getElementById('file-input');
     const dropZone  = document.getElementById('dropZone');
 
-    listen('btn-browse', 'click', (e) => { e.stopPropagation(); if (fileInput) fileInput.click(); });
+    listen('btn-browse', 'click', (e) => {
+        e.stopPropagation();
+        if (fileInput) fileInput.click();
+    });
 
     if (dropZone) {
         dropZone.addEventListener('click',   () => { if (fileInput) fileInput.click(); });
-        dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter') fileInput.click(); });
+        dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.style.backgroundColor = 'var(--surface-hover)';
@@ -78,20 +95,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // ─── Chargement d'un fichier ZIP ────────────────────────────────────
     async function handleFileSelection(file) {
         const overlay = document.getElementById('loading-overlay');
-        if (overlay) overlay.classList.remove('hidden');
+        if (overlay) overlay.classList.add('visible');
         try {
             const bookData = await parseDaisyZip(file);
-            
-            // Sauvegarde du livre dans la bibliothèque (IndexedDB)
+
+            // Sauvegarde dans IndexedDB
             const importResult = await library.importBook(file, bookData);
             window.currentBookId = importResult.bookId;
-            
+
             let startChapter = 0;
             let startPos = 0;
-            
-            // Gestion de la reprise si le livre existe déjà
+
+            // Reprise si livre déjà commencé
             if (importResult.status === 'duplicate') {
                 const prog = importResult.progress;
                 if (prog && (prog.chapterIndex > 0 || prog.positionSeconds > 0)) {
@@ -102,7 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // Chargement dans le lecteur audio
+            // Chargement dans le lecteur
             player.setBook(bookData.zip, bookData.playlist);
 
             const bTitle = document.getElementById('book-title');
@@ -110,37 +128,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             await handleTrackChange(player.resumeAt(startChapter, startPos));
 
-            ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
-            if (toggleCleanModeBtn) toggleCleanModeBtn.classList.remove('hidden');
+            showView('view-player', 'nav-player');
+            if (toggleCleanModeBtn) toggleCleanModeBtn.classList.add('visible');
 
             if (!player.isPlaying) playPauseAction();
 
         } catch (error) {
             alert(error.message || "Erreur lors de l'ouverture du livre.");
         } finally {
-            if (overlay) overlay.classList.add('hidden');
+            if (overlay) overlay.classList.remove('visible');
         }
     }
 
-    // Commandes Audio
+    // ─── Commandes Audio ────────────────────────────────────────────────
     const playPauseAction = () => {
         const isPlaying = player.toggle();
         ui.updatePlayPauseUI(isPlaying);
     };
-    listen('playPause', 'click', playPauseAction);
+
+    listen('playPause',      'click', playPauseAction);
     listen('cleanPlayPause', 'click', playPauseAction);
 
-    const skipBackAction = () => {
+    listen('btn-skip-back', 'click', () => {
         if (player.audio) player.audio.currentTime = Math.max(0, player.audio.currentTime - 60);
-    };
-    const skipForwardAction = () => {
+    });
+
+    listen('btn-skip-forward', 'click', () => {
         if (player.audio) player.audio.currentTime = Math.min(
             player.audio.duration || Infinity,
             player.audio.currentTime + 60
         );
-    };
-    listen('btn-skip-back', 'click', skipBackAction);
-    listen('btn-skip-forward', 'click', skipForwardAction);
+    });
 
     async function handleTrackChange(trackPromise) {
         const track = await trackPromise;
@@ -150,10 +168,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             ui.updatePlayPauseUI(false);
         }
     }
+
     listen('btn-next', 'click', () => handleTrackChange(player.next()));
     listen('btn-prev', 'click', () => handleTrackChange(player.prev()));
 
-    // Synchronisation de la barre temporelle
+    // ─── Synchronisation barre de progression ───────────────────────────
     const audioSlider  = document.getElementById('audio-slider');
     const timeCurrent  = document.getElementById('time-current');
     const timeDuration = document.getElementById('time-duration');
@@ -195,19 +214,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Tâche de fond : Sauvegarde de la progression toutes les 5 secondes
+    // ─── Sauvegarde progression toutes les 5 secondes ───────────────────
     setInterval(async () => {
         if (player.isPlaying && window.currentBookId) {
             await library.saveReadingProgress(window.currentBookId, {
-                chapterIndex: player.currentIndex,
+                chapterIndex:    player.currentIndex,
                 positionSeconds: player.audio.currentTime,
-                totalChapters: player.playlist.length,
-                playbackRate: player.audio.playbackRate
+                totalChapters:   player.playlist.length,
+                playbackRate:    player.audio.playbackRate
             });
         }
     }, 5000);
 
-    // ─── Chargement sécurisé de l'historique ───────────────────────────
+    // ─── Chargement de l'historique de lecture ───────────────────────────
     async function loadHistory() {
         const container = document.getElementById('current-reads-list');
         const section   = document.getElementById('current-reads-section');
@@ -219,45 +238,48 @@ document.addEventListener('DOMContentLoaded', async () => {
             const books = summary?.books || [];
 
             if (books.length === 0) {
-                section.classList.add('hidden');
+                section.style.display = 'none';
                 return;
             }
 
-            section.classList.remove('hidden');
+            section.style.display = '';
 
-            // Tri par ouverture la plus récente
+            // Tri : lecture la plus récente en premier
             books.sort((a, b) => (b.lastOpenedAt || 0) - (a.lastOpenedAt || 0));
 
             books.forEach(item => {
                 if (!item.bookId) return;
 
                 const card = document.createElement('div');
-                card.className = "p-6 md:p-8 bg-surface rounded-3xl border-4 border-borderCustom flex justify-between items-center gap-6 shadow-md text-textPrimary";
+                card.className = 'book-card';
 
                 const infoDiv = document.createElement('div');
-                infoDiv.className = "overflow-hidden flex-grow";
+                infoDiv.className = 'book-card-info';
 
-                const dateStr = item.lastOpenedAt ? new Date(item.lastOpenedAt).toLocaleDateString('fr-FR') : "Date inconnue";
+                const dateStr = item.lastOpenedAt
+                    ? new Date(item.lastOpenedAt).toLocaleDateString('fr-FR')
+                    : "Date inconnue";
 
                 infoDiv.innerHTML = `
-                    <h4 class="font-black text-3xl md:text-4xl truncate">${item.title || "Titre inconnu"}</h4>
-                    <p class="text-2xl md:text-3xl font-bold text-textSecondary mt-2 truncate">${item.author || "Auteur inconnu"} — Lu le ${dateStr}</p>
+                    <h4>${item.title  || "Titre inconnu"}</h4>
+                    <p>${item.author || "Auteur inconnu"} — Lu le ${dateStr}</p>
                 `;
 
                 const actionsDiv = document.createElement('div');
-                actionsDiv.className = "flex flex-col gap-3 flex-shrink-0";
+                actionsDiv.className = 'book-card-actions';
 
+                // Bouton Reprendre
                 const resumeBtn = document.createElement('button');
-                resumeBtn.className = "bg-accent text-textOnAccent font-black py-5 px-8 rounded-2xl flex items-center gap-3 hover:brightness-110 active:scale-95 transition-all text-2xl border-4 border-borderCustom cursor-pointer";
-                resumeBtn.innerHTML = `<span class="material-symbols-outlined text-3xl">play_arrow</span> Reprendre`;
+                resumeBtn.className = 'btn-resume';
+                resumeBtn.innerHTML = `<span class="material-symbols-outlined">play_arrow</span> Reprendre`;
 
                 resumeBtn.addEventListener('click', async () => {
                     const overlay = document.getElementById('loading-overlay');
-                    if (overlay) overlay.classList.remove('hidden');
-
+                    if (overlay) overlay.classList.add('visible');
                     try {
                         const openedBook = await library.openBook(item.bookId);
-                        if (!openedBook || !openedBook.zipBlob) throw new Error("Fichier du livre introuvable dans la base locale.");
+                        if (!openedBook || !openedBook.zipBlob)
+                            throw new Error("Fichier du livre introuvable dans la base locale.");
 
                         const bookData = await parseDaisyZip(openedBook.zipBlob);
                         player.setBook(bookData.zip, bookData.playlist);
@@ -267,28 +289,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         window.currentBookId = item.bookId;
 
-                        const prog = openedBook.progress;
-                        const startChap = prog?.chapterIndex || 0;
+                        const prog     = openedBook.progress;
+                        const startChap = prog?.chapterIndex    || 0;
                         const startPos  = prog?.positionSeconds || 0;
 
                         await handleTrackChange(player.resumeAt(startChap, startPos));
 
-                        ui.showPage(document.getElementById('nav-player'), document.getElementById('view-player'));
-                        if (toggleCleanModeBtn) toggleCleanModeBtn.classList.remove('hidden');
+                        showView('view-player', 'nav-player');
+                        if (toggleCleanModeBtn) toggleCleanModeBtn.classList.add('visible');
 
                         if (!player.isPlaying) playPauseAction();
 
                     } catch(e) {
                         alert(e.message);
                     } finally {
-                        if (overlay) overlay.classList.add('hidden');
+                        if (overlay) overlay.classList.remove('visible');
                     }
                 });
 
+                // Bouton Supprimer
                 const deleteBtn = document.createElement('button');
-                deleteBtn.className = "bg-surface text-textPrimary font-black py-4 px-5 rounded-2xl flex items-center justify-center gap-2 hover:bg-surfaceHover active:scale-95 transition-all text-xl border-4 border-borderCustom cursor-pointer";
+                deleteBtn.className = 'btn-delete';
                 deleteBtn.setAttribute('aria-label', `Supprimer "${item.title || 'ce livre'}"`);
-                deleteBtn.innerHTML = `<span class="material-symbols-outlined text-3xl">delete</span>`;
+                deleteBtn.innerHTML = `<span class="material-symbols-outlined">delete</span>`;
 
                 deleteBtn.addEventListener('click', async () => {
                     const titre = item.title || "ce livre";
@@ -296,7 +319,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     try {
                         await library.removeBook(item.bookId);
                         card.remove();
-                        if (container.children.length === 0) section.classList.add('hidden');
+                        if (container.children.length === 0) section.style.display = 'none';
                     } catch(e) {
                         alert("Impossible de supprimer ce livre : " + e.message);
                     }
@@ -308,13 +331,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 card.appendChild(actionsDiv);
                 container.appendChild(card);
             });
+
         } catch (err) {
             console.error("[History] Erreur :", err);
-            section.classList.remove('hidden');
-            container.innerHTML = `<p class="py-4 text-textSecondary text-xl font-bold">Base de données inaccessible.</p>`;
+            section.style.display = '';
+            container.innerHTML = `<p style="color:var(--text-secondary); padding:0.5rem 0;">Base de données inaccessible.</p>`;
         }
     }
 
-    // Chargement initial au démarrage
+    // Chargement initial
     loadHistory();
 });
