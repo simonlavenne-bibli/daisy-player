@@ -1,194 +1,641 @@
 /* ================================================================
-LUMIÈRE AUDIO — css/style.css
-================================================================
-PRINCIPE : Ce fichier ne touche QU'AUX COULEURS via des variables
-CSS. Aucune propriété de structure (display, position, flex,
-grid, width, height, margin, padding, font-size) n'est modifiée.
-Les classes Tailwind de l'HTML (bg-surface, text-textPrimary,
-border-borderCustom, etc.) sont déjà mappées sur ces variables
-via tailwind.config dans index.html. Il suffit de redéfinir les
-variables par thème pour que tout change.
+   LUMIÈRE AUDIO — css/style.css
+   Accessibilité malvoyants — WCAG AA/AAA
+   Sans Tailwind : tout le layout et les couleurs ici.
 ================================================================ */
 
 /* ================================================================
-THÈME 1 — BLEU/BLANC/ORANGE (défaut)
-Fond blanc, texte bleu marine, accent orange.
-Ratio WCAG AA : ≥ 4.5:1.
+   VARIABLES DE THÈME
 ================================================================ */
 :root,
 body[data-theme="light"] {
-  --bg-primary: #f5f8ff;
-  --bg-secondary: #e8eef9;
-  --surface: #ffffff;
-  --surface-hover: #dce6f7;
-  --text-primary: #0d2a6e;
-  --text-secondary: #3a5299;
-  --accent: #e07b00;
-  --text-on-accent: #ffffff;
-  --border: #e07b00;
-  --focus-ring: #b35f00;
+  --bg-primary:      #f5f8ff;
+  --bg-secondary:    #e8eef9;
+  --surface:         #ffffff;
+  --surface-hover:   #dce6f7;
+  --text-primary:    #0d2a6e;
+  --text-secondary:  #3a5299;
+  --accent:          #e07b00;
+  --text-on-accent:  #ffffff;
+  --border:          #e07b00;
+  --focus-ring:      #b35f00;
+  --nav-height:      5rem;
 }
 
-/* ================================================================
-THÈME 2 — BLANC SUR FOND NOIR
-Texte, icônes et bordures blancs (#ffffff) sur fond noir (#000000).
-Ratio WCAG AAA : 21:1.
-================================================================ */
 body[data-theme="dark"] {
-  --bg-primary: #000000;
-  --bg-secondary: #000000;
-  --surface: #000000;
-  --surface-hover: #111111;
-  --text-primary: #ffffff;
-  --text-secondary: #ffffff;
-  --accent: #ffffff;
-  --text-on-accent: #000000;
-  --border: #ffffff;
-  --focus-ring: #ffffff;
+  --bg-primary:      #000000;
+  --bg-secondary:    #000000;
+  --surface:         #000000;
+  --surface-hover:   #111111;
+  --text-primary:    #ffffff;
+  --text-secondary:  #ffffff;
+  --accent:          #ffffff;
+  --text-on-accent:  #000000;
+  --border:          #ffffff;
+  --focus-ring:      #ffffff;
+  --nav-height:      5rem;
 }
 
-/* ================================================================
-THÈME 3 — NOIR SUR FOND BLANC
-Texte, icônes et bordures noirs (#000000) sur fond blanc (#ffffff).
-Ratio WCAG AAA : 21:1.
-================================================================ */
 body[data-theme="hc"] {
-  --bg-primary: #ffffff;
-  --bg-secondary: #ffffff;
-  --surface: #ffffff;
-  --surface-hover: #e8e8e8;
-  --text-primary: #000000;
-  --text-secondary: #000000;
-  --accent: #000000;
-  --text-on-accent: #ffffff;
-  --border: #000000;
-  --focus-ring: #000000;
+  --bg-primary:      #ffffff;
+  --bg-secondary:    #ffffff;
+  --surface:         #ffffff;
+  --surface-hover:   #e8e8e8;
+  --text-primary:    #000000;
+  --text-secondary:  #000000;
+  --accent:          #000000;
+  --text-on-accent:  #ffffff;
+  --border:          #000000;
+  --focus-ring:      #000000;
+  --nav-height:      5rem;
 }
 
-/* ================================================================
-THÈME 4 — ORANGE SUR FOND NOIR
-Texte/icônes/bordures orange (#ff8c00) sur fond noir (#000000).
-Ratio WCAG AAA : ≈ 9.5:1.
-================================================================ */
 body[data-theme="sepia"] {
-  --bg-primary: #000000;
-  --bg-secondary: #000000;
-  --surface: #000000;
-  --surface-hover: #0f0800;
-  --text-primary: #ff8c00;
-  --text-secondary: #ff8c00;
-  --accent: #ff8c00;
-  --text-on-accent: #000000;
-  --border: #ff8c00;
-  --focus-ring: #ffaa33;
+  --bg-primary:      #000000;
+  --bg-secondary:    #000000;
+  --surface:         #000000;
+  --surface-hover:   #0f0800;
+  --text-primary:    #ff8c00;
+  --text-secondary:  #ff8c00;
+  --accent:          #ff8c00;
+  --text-on-accent:  #000000;
+  --border:          #ff8c00;
+  --focus-ring:      #ffaa33;
+  --nav-height:      5rem;
 }
 
-/* ================================================================
-THÈME 5 — JAUNE SUR FOND NOIR
-Texte/icônes/bordures jaune (#ffdd00) sur fond noir (#000000).
-Ratio WCAG AAA : ≈ 14.7:1.
-================================================================ */
 body[data-theme="yellow"] {
-  --bg-primary: #000000;
-  --bg-secondary: #000000;
-  --surface: #000000;
-  --surface-hover: #0e0d00;
-  --text-primary: #ffdd00;
-  --text-secondary: #ffdd00;
-  --accent: #ffdd00;
-  --text-on-accent: #000000;
-  --border: #ffdd00;
-  --focus-ring: #ffe94d;
+  --bg-primary:      #000000;
+  --bg-secondary:    #000000;
+  --surface:         #000000;
+  --surface-hover:   #0e0d00;
+  --text-primary:    #ffdd00;
+  --text-secondary:  #ffdd00;
+  --accent:          #ffdd00;
+  --text-on-accent:  #000000;
+  --border:          #ffdd00;
+  --focus-ring:      #ffe94d;
+  --nav-height:      5rem;
 }
 
 /* ================================================================
-POLICES : Luciole chargée via @font-face dans index.html.
-On l'applique ici sur html et body en fallback.
+   RESET & BASE
 ================================================================ */
-html, body {
-  font-family: 'Luciole', 'Arial', sans-serif;
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* ================================================================
-BASE FONT SIZE POUR ACCESSIBILITÉ
-Taille de base agrandie pour malvoyants (16px minimum recommande).
-================================================================ */
+@font-face {
+  font-family: 'Luciole';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/dreamRs/luciole@main/inst/assets/fonts/Luciole-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Luciole';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/dreamRs/luciole@main/inst/assets/fonts/Luciole-Bold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Luciole';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/dreamRs/luciole@main/inst/assets/fonts/Luciole-Regular-Italic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Luciole';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/dreamRs/luciole@main/inst/assets/fonts/Luciole-Bold-Italic.ttf') format('truetype');
+}
+
 html {
-  font-size: 17px;
+  font-family: 'Luciole', Arial, sans-serif;
+  /* Taille unique grande pour malvoyants — identique mobile et desktop */
+  font-size: 20px;
 }
 
-/* Desktop : taille standard */
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* Espace sous le contenu pour la nav fixe */
+  padding-bottom: var(--nav-height);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* ================================================================
-SLIDER PLUS GRAND POUR ACCESSIBILITÉ TACTILE
+   TYPOGRAPHIE — taille unique pour tous les textes de l'appli
+   (lisibilité malvoyants)
 ================================================================ */
-input[type="range"] {
-  height: 24px;
+h1              { font-size: 1.6rem; font-weight: 900; line-height: 1.2; }
+h2              { font-size: 1.4rem; font-weight: 900; line-height: 1.2; }
+h3              { font-size: 1.4rem; font-weight: 900; line-height: 1.2; }
+p, span, button, a, label { font-size: 1rem; font-weight: 700; line-height: 1.4; }
+
+.text-secondary { color: var(--text-secondary); }
+.text-accent    { color: var(--accent); }
+
+/* ================================================================
+   HEADER
+================================================================ */
+.app-header {
+  background-color: var(--surface);
+  border-bottom: 4px solid var(--border);
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  /* Ne jamais dépasser une certaine hauteur — pas de padding excessif */
 }
 
-@media (max-width: 767px) {
-  input[type="range"] {
-    height: 32px;
-  }
+.app-header h1 {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.app-logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
 }
 
 /* ================================================================
-FOCUS CLAVIER — WCAG 2.1 SC 2.4.7
-Contour visible sur tous les éléments interactifs.
-La couleur vient de la variable --focus-ring du thème actif.
+   MAIN
+================================================================ */
+.app-main {
+  flex: 1;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0.75rem;
+  /* Sur PC le lecteur doit tenir à l'écran sans trop scroller */
+}
 
-AMÉLIORATION : Utilise inset pour ne pas déborder de la boîte.
+/* Section cachée / visible */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ================================================================
+   CARD (panneau blanc bordé)
+================================================================ */
+.card {
+  background-color: var(--surface);
+  border: 4px solid var(--border);
+  border-radius: 1.25rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ================================================================
+   PAGE ACCUEIL
+================================================================ */
+.home-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.current-reads-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.book-card {
+  background-color: var(--surface);
+  border: 4px solid var(--border);
+  border-radius: 1.25rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.book-card-info { overflow: hidden; flex: 1; }
+.book-card-info h4 {
+  font-size: 1rem;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+.book-card-info p {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.25rem;
+}
+
+.book-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+/* Bouton "Reprendre" */
+.btn-resume {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  border: 3px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.9rem;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Bouton "Supprimer" */
+.btn-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--surface);
+  color: var(--text-primary);
+  border: 3px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+/* Zone de dépôt */
+.drop-zone {
+  border: 6px dashed var(--border);
+  border-radius: 1.25rem;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  background-color: var(--bg-secondary);
+  cursor: pointer;
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.drop-zone .drop-icon {
+  font-size: 4rem;
+  color: var(--text-secondary);
+}
+
+.drop-zone p {
+  color: var(--text-primary);
+  font-weight: 900;
+}
+
+/* Bouton Parcourir */
+.btn-browse {
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 0.9rem;
+  padding: 0.7rem 1.5rem;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+/* ================================================================
+   PAGE LECTEUR
+   Objectif PC : tout tenir à l'écran sans scroller
+================================================================ */
+#view-player {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+#view-player.active {
+  display: flex;
+}
+
+/* Panneau titre + barre de progression */
+.player-info-card {
+  background-color: var(--surface);
+  border: 4px solid var(--border);
+  border-radius: 1.25rem;
+  padding: 0.75rem 1rem;
+}
+
+.player-info-card h3 {
+  text-align: center;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-chapter {
+  text-align: center;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.2rem;
+}
+
+/* Barre de progression */
+.progress-row {
+  margin-top: 0.6rem;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1.5rem;
+  background-color: var(--bg-secondary);
+  border-radius: 1rem;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.time-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-secondary);
+  font-weight: 900;
+  margin-top: 0.3rem;
+}
+
+/* ================================================================
+   BOUTONS DU LECTEUR
+   Ordre fixe : -1MIN | PRÉC | LECTURE | SUIV | +1MIN
+================================================================ */
+.player-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+/* Bouton générique contrôle */
+.ctrl-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  background-color: var(--surface);
+  color: var(--text-primary);
+  border: 4px solid var(--border);
+  border-radius: 0.9rem;
+  padding: 0.6rem 0.3rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  min-height: 4rem;
+  transition: background-color 0.15s ease;
+}
+
+.ctrl-btn:hover, .ctrl-btn:active {
+  background-color: var(--surface-hover);
+}
+
+/* Bouton LECTURE — plus grand, accent */
+.ctrl-btn.play-btn {
+  flex: 1.6;
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  border-color: var(--accent);
+  min-height: 4rem;
+}
+
+.ctrl-btn.play-btn:hover {
+  filter: brightness(1.1);
+}
+
+.ctrl-btn .material-symbols-outlined {
+  font-size: 1.8rem;
+  color: inherit;
+}
+
+.ctrl-btn.play-btn .material-symbols-outlined {
+  font-size: 2.2rem;
+}
+
+/* Mode simple — grand bouton carré */
+#player-clean-layout {
+  display: none;
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+
+#player-clean-layout.visible {
+  display: flex;
+}
+
+.clean-play-btn {
+  width: min(70vw, 18rem);
+  aspect-ratio: 1;
+  border-radius: 2rem;
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  border: 4px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1.5rem;
+  font-weight: 900;
+  gap: 0.5rem;
+  transition: filter 0.15s ease;
+}
+
+.clean-play-btn:hover { filter: brightness(1.1); }
+
+.clean-play-btn .material-symbols-outlined {
+  font-size: 5rem;
+  color: inherit;
+}
+
+/* Bouton MODE SIMPLE dans le header */
+#toggleCleanMode {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: var(--surface);
+  color: var(--text-primary);
+  border: 3px solid var(--border);
+  border-radius: 1.5rem;
+  padding: 0.5rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#toggleCleanMode.visible {
+  display: flex;
+}
+
+/* Bouton thème (palette) */
+.btn-theme {
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--surface);
+  color: var(--text-primary);
+  border: 4px solid var(--border);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.btn-theme .material-symbols-outlined {
+  font-size: 1.5rem;
+  color: inherit;
+}
+
+/* ================================================================
+   NAVIGATION FIXE EN BAS
+================================================================ */
+.app-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  background-color: var(--surface);
+  border-top: 4px solid var(--border);
+  display: flex;
+  z-index: 40;
+}
+
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  background-color: var(--surface);
+  color: var(--text-secondary);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.5rem;
+  transition: background-color 0.15s ease;
+}
+
+.nav-tab:hover {
+  background-color: var(--surface-hover);
+}
+
+.nav-tab .material-symbols-outlined {
+  font-size: 1.75rem;
+  color: inherit;
+}
+
+/* Onglet actif */
+.nav-tab.active {
+  color: var(--accent);
+  border-top: 4px solid var(--accent);
+}
+
+/* ================================================================
+   FOCUS CLAVIER — WCAG 2.1 SC 2.4.7
 ================================================================ */
 .focus-ring:focus,
-.focus-ring:focus-visible {
+.focus-ring:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
-/* Renforcement dans les thèmes fort-contraste */
-body[data-theme="dark"] .focus-ring:focus,
-body[data-theme="dark"] .focus-ring:focus-visible,
-body[data-theme="hc"] .focus-ring:focus,
-body[data-theme="hc"] .focus-ring:focus-visible,
-body[data-theme="sepia"] .focus-ring:focus,
-body[data-theme="sepia"] .focus-ring:focus-visible,
-body[data-theme="yellow"] .focus-ring:focus,
-body[data-theme="yellow"] .focus-ring:focus-visible {
+body[data-theme="dark"]   button:focus-visible,
+body[data-theme="hc"]     button:focus-visible,
+body[data-theme="sepia"]  button:focus-visible,
+body[data-theme="yellow"] button:focus-visible {
   outline: 4px solid var(--focus-ring);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 /* ================================================================
-NAVIGATION FIXE — RESPONSIVE DESIGN
-Gestion robuste de la nav en bas pour mobile ET desktop
+   OVERLAY DE CHARGEMENT
 ================================================================ */
-nav[class*="fixed bottom"] {
-  padding: clamp(0.75rem, 3vw, 1.5rem) clamp(0.5rem, 2vw, 1rem);
-  gap: clamp(0.5rem, 2vw, 1rem);
-  min-height: clamp(5.5rem, 15vh, 7.5rem);
+#loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: var(--bg-primary);
+  opacity: 0.95;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  gap: 1.5rem;
 }
 
-/* Boutons de navigation */
-.nav-tab {
-  border: 2px solid transparent !important;
-  padding: clamp(0.5rem, 2vw, 0.75rem) !important;
-  font-size: clamp(0.9rem, 2vw, 1rem) !important;
+#loading-overlay.visible {
+  display: flex;
 }
 
-.nav-tab .material-symbols-outlined {
-  font-size: clamp(1.75rem, 5vw, 2rem) !important;
-  margin-bottom: clamp(0.25rem, 1vw, 0.5rem) !important;
+.spinner {
+  width: 5rem;
+  height: 5rem;
+  border: 8px solid var(--bg-secondary);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+#loading-overlay p {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  text-align: center;
 }
 
 /* ================================================================
-SUPPRESSION DES OMBRES ET DÉGRADÉS dans les thèmes fort-contraste.
-On ne supprime QUE box-shadow, text-shadow et background-image —
-aucune propriété de mise en page.
+   THÈMES FORT CONTRASTE : suppression ombres et dégradés
 ================================================================ */
 body[data-theme="dark"] *,
 body[data-theme="hc"] *,
@@ -200,26 +647,21 @@ body[data-theme="yellow"] * {
 }
 
 /* ================================================================
-SCROLLBAR THÉMATISÉE
-Firefox + WebKit — uniquement des couleurs, pas de dimensions.
+   SCROLLBAR THÉMATISÉE
 ================================================================ */
 * {
   scrollbar-color: var(--border) var(--bg-secondary);
   scrollbar-width: thin;
 }
-::-webkit-scrollbar-track {
-  background-color: var(--bg-secondary);
-}
+::-webkit-scrollbar-track { background-color: var(--bg-secondary); }
 ::-webkit-scrollbar-thumb {
   background-color: var(--border);
   border: 2px solid var(--bg-secondary);
 }
-::-webkit-scrollbar-thumb:hover {
-  background-color: var(--text-secondary);
-}
+::-webkit-scrollbar-thumb:hover { background-color: var(--text-secondary); }
 
 /* ================================================================
-SÉLECTION DE TEXTE
+   SÉLECTION DE TEXTE
 ================================================================ */
 ::selection {
   background-color: var(--text-primary);
@@ -227,27 +669,14 @@ SÉLECTION DE TEXTE
 }
 
 /* ================================================================
-ICÔNES MATERIAL SYMBOLS
-Garantit que les icônes héritent bien de la couleur du texte
-courant dans tous les thèmes, sans surcharger les tailles.
+   ICÔNES MATERIAL SYMBOLS — héritent la couleur du parent
 ================================================================ */
-.material-symbols-outlined {
-  color: inherit;
-}
+.material-symbols-outlined { color: inherit; }
 
 /* ================================================================
-TRANSITIONS DE COULEUR ENTRE THÈMES
-Uniquement sur les propriétés de couleur — jamais sur le layout.
+   TRANSITIONS COULEUR
 ================================================================ */
-body {
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-}
-button,
-a,
-input,
-[role="button"] {
+button, a, input, [role="button"] {
   transition:
     background-color 0.15s ease,
     color 0.15s ease,
@@ -255,7 +684,7 @@ input,
 }
 
 /* ================================================================
-PRÉFÉRENCE prefers-reduced-motion
+   PRÉFÉRENCE prefers-reduced-motion
 ================================================================ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -263,4 +692,24 @@ PRÉFÉRENCE prefers-reduced-motion
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ================================================================
+   RESPONSIVE PC (≥ 768px)
+   Sur desktop, on ajuste légèrement la taille de police et les
+   espaces pour profiter de l'écran — mais la lisibilité reste
+   prioritaire.
+================================================================ */
+@media (min-width: 768px) {
+  html { font-size: 18px; }
+
+  .app-logo { width: 3rem; height: 3rem; }
+
+  .drop-zone { padding: 2rem 1.5rem; }
+  .drop-zone .drop-icon { font-size: 5rem; }
+
+  .ctrl-btn { min-height: 5rem; padding: 0.75rem 0.5rem; }
+  .ctrl-btn .material-symbols-outlined { font-size: 2.2rem; }
+  .ctrl-btn.play-btn .material-symbols-outlined { font-size: 2.8rem; }
+  .ctrl-btn.play-btn { min-height: 5rem; }
 }
