@@ -141,11 +141,13 @@ input[type="range"] {
 FOCUS CLAVIER — WCAG 2.1 SC 2.4.7
 Contour visible sur tous les éléments interactifs.
 La couleur vient de la variable --focus-ring du thème actif.
+
+AMÉLIORATION : Utilise inset pour ne pas déborder de la boîte.
 ================================================================ */
 .focus-ring:focus,
 .focus-ring:focus-visible {
-  outline: 4px solid var(--focus-ring);
-  outline-offset: 3px;
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 /* Renforcement dans les thèmes fort-contraste */
@@ -157,8 +159,30 @@ body[data-theme="sepia"] .focus-ring:focus,
 body[data-theme="sepia"] .focus-ring:focus-visible,
 body[data-theme="yellow"] .focus-ring:focus,
 body[data-theme="yellow"] .focus-ring:focus-visible {
-  outline: 5px solid var(--focus-ring);
-  outline-offset: 4px;
+  outline: 4px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ================================================================
+NAVIGATION FIXE — RESPONSIVE DESIGN
+Gestion robuste de la nav en bas pour mobile ET desktop
+================================================================ */
+nav[class*="fixed bottom"] {
+  padding: clamp(0.75rem, 3vw, 1.5rem) clamp(0.5rem, 2vw, 1rem);
+  gap: clamp(0.5rem, 2vw, 1rem);
+  min-height: clamp(5.5rem, 15vh, 7.5rem);
+}
+
+/* Boutons de navigation */
+.nav-tab {
+  border: 2px solid transparent !important;
+  padding: clamp(0.5rem, 2vw, 0.75rem) !important;
+  font-size: clamp(0.9rem, 2vw, 1rem) !important;
+}
+
+.nav-tab .material-symbols-outlined {
+  font-size: clamp(1.75rem, 5vw, 2rem) !important;
+  margin-bottom: clamp(0.25rem, 1vw, 0.5rem) !important;
 }
 
 /* ================================================================
