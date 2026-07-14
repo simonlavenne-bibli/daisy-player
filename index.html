@@ -2,7 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+    viewport : width=device-width évite le zoom-out automatique sur mobile.
+    initial-scale=1.0 affiche à 100% du viewport.
+    user-scalable=no est INTENTIONNELLEMENT ABSENT : on laisse l'utilisateur
+    zoomer librement (accessibilité WCAG 1.4.4).
+    viewport-fit=cover couvre les encoches/barres sur iPhone et Android récents.
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Lumière Audio - Lecteur DAISY</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#e07b00">
@@ -10,7 +17,7 @@
   <link rel="icon" type="image/png" href="Logo_Lumiere_Audio.png">
 
   <!-- Icônes Material Symbols -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400..700,0..1,-50..200" />
 
   <!-- Notre seule feuille de style -->
   <link rel="stylesheet" href="css/style.css">
