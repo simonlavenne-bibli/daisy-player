@@ -118,8 +118,8 @@ body[data-theme="yellow"] {
 
 html {
   font-family: 'Luciole', Arial, sans-serif;
-  /* Taille unique grande pour malvoyants — identique mobile et desktop */
-  font-size: 20px;
+  /* Taille équilibrée : Assez grande pour malvoyants mais évite la compression extrême sur smartphone */
+  font-size: 16px; 
 }
 
 body {
@@ -128,14 +128,12 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  /* Espace sous le contenu pour la nav fixe */
   padding-bottom: var(--nav-height);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* ================================================================
-   TYPOGRAPHIE — taille unique pour tous les textes de l'appli
-   (lisibilité malvoyants)
+   TYPOGRAPHIE
 ================================================================ */
 h1              { font-size: 1.6rem; font-weight: 900; line-height: 1.2; }
 h2              { font-size: 1.4rem; font-weight: 900; line-height: 1.2; }
@@ -156,7 +154,6 @@ p, span, button, a, label { font-size: 1rem; font-weight: 700; line-height: 1.4;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  /* Ne jamais dépasser une certaine hauteur — pas de padding excessif */
 }
 
 .app-header h1 {
@@ -181,7 +178,7 @@ p, span, button, a, label { font-size: 1rem; font-weight: 700; line-height: 1.4;
 }
 
 /* ================================================================
-   MAIN
+   MAIN & VUES
 ================================================================ */
 .app-main {
   flex: 1;
@@ -189,12 +186,20 @@ p, span, button, a, label { font-size: 1rem; font-weight: 700; line-height: 1.4;
   max-width: 900px;
   margin: 0 auto;
   padding: 0.75rem;
-  /* Sur PC le lecteur doit tenir à l'écran sans trop scroller */
 }
 
-/* Section cachée / visible */
+/* Règle de base : on cache les vues */
 .view { display: none; }
-.view.active { display: block; }
+
+/* Définition explicite pour éviter tout conflit de priorité */
+#view-home.active { 
+  display: block; 
+}
+#view-player.active { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 0.75rem; 
+}
 
 /* ================================================================
    CARD (panneau blanc bordé)
@@ -237,7 +242,7 @@ p, span, button, a, label { font-size: 1rem; font-weight: 700; line-height: 1.4;
 
 .book-card-info { overflow: hidden; flex: 1; }
 .book-card-info h4 {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 900;
   white-space: nowrap;
   overflow: hidden;
@@ -259,7 +264,6 @@ p, span, button, a, label { font-size: 1rem; font-weight: 700; line-height: 1.4;
   flex-shrink: 0;
 }
 
-/* Bouton "Reprendre" */
 .btn-resume {
   display: flex;
   align-items: center;
@@ -274,7 +278,6 @@ p, span, button, a, label { font-size: 1rem; font-weight: 700; line-height: 1.4;
   white-space: nowrap;
 }
 
-/* Bouton "Supprimer" */
 .btn-delete {
   display: flex;
   align-items: center;
@@ -287,7 +290,6 @@ p, span, button, a, label { font-size: 1rem; font-weight: 700; line-height: 1.4;
   cursor: pointer;
 }
 
-/* Zone de dépôt */
 .drop-zone {
   border: 6px dashed var(--border);
   border-radius: 1.25rem;
@@ -312,7 +314,6 @@ p, span, button, a, label { font-size: 1rem; font-weight: 700; line-height: 1.4;
   font-weight: 900;
 }
 
-/* Bouton Parcourir */
 .btn-browse {
   background-color: var(--accent);
   color: var(--text-on-accent);
@@ -327,19 +328,7 @@ p, span, button, a, label { font-size: 1rem; font-weight: 700; line-height: 1.4;
 
 /* ================================================================
    PAGE LECTEUR
-   Objectif PC : tout tenir à l'écran sans scroller
 ================================================================ */
-#view-player {
-  display: none;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-#view-player.active {
-  display: flex;
-}
-
-/* Panneau titre + barre de progression */
 .player-info-card {
   background-color: var(--surface);
   border: 4px solid var(--border);
@@ -364,7 +353,6 @@ p, span, button, a, label { font-size: 1rem; font-weight: 700; line-height: 1.4;
   margin-top: 0.2rem;
 }
 
-/* Barre de progression */
 .progress-row {
   margin-top: 0.6rem;
 }
@@ -390,7 +378,6 @@ input[type="range"] {
 
 /* ================================================================
    BOUTONS DU LECTEUR
-   Ordre fixe : -1MIN | PRÉC | LECTURE | SUIV | +1MIN
 ================================================================ */
 .player-controls {
   display: flex;
@@ -399,7 +386,6 @@ input[type="range"] {
   gap: 0.5rem;
 }
 
-/* Bouton générique contrôle */
 .ctrl-btn {
   flex: 1;
   display: flex;
@@ -417,7 +403,7 @@ input[type="range"] {
   font-size: 0.85rem;
   font-weight: 900;
   text-transform: uppercase;
-  min-height: 4rem;
+  min-height: 4.5rem; /* Ajusté pour éviter un défilement forcé */
   transition: background-color 0.15s ease;
 }
 
@@ -425,13 +411,11 @@ input[type="range"] {
   background-color: var(--surface-hover);
 }
 
-/* Bouton LECTURE — plus grand, accent */
 .ctrl-btn.play-btn {
   flex: 1.6;
   background-color: var(--accent);
   color: var(--text-on-accent);
   border-color: var(--accent);
-  min-height: 4rem;
 }
 
 .ctrl-btn.play-btn:hover {
@@ -447,7 +431,7 @@ input[type="range"] {
   font-size: 2.2rem;
 }
 
-/* Mode simple — grand bouton carré */
+/* Mode simple */
 #player-clean-layout {
   display: none;
   justify-content: center;
@@ -505,7 +489,7 @@ input[type="range"] {
   display: flex;
 }
 
-/* Bouton thème (palette) */
+/* Bouton thème */
 .btn-theme {
   width: 3rem;
   height: 3rem;
@@ -567,14 +551,13 @@ input[type="range"] {
   color: inherit;
 }
 
-/* Onglet actif */
 .nav-tab.active {
   color: var(--accent);
   border-top: 4px solid var(--accent);
 }
 
 /* ================================================================
-   FOCUS CLAVIER — WCAG 2.1 SC 2.4.7
+   FOCUS CLAVIER
 ================================================================ */
 .focus-ring:focus,
 .focus-ring:focus-visible,
@@ -635,7 +618,7 @@ body[data-theme="yellow"] button:focus-visible {
 }
 
 /* ================================================================
-   THÈMES FORT CONTRASTE : suppression ombres et dégradés
+   THÈMES FORT CONTRASTE
 ================================================================ */
 body[data-theme="dark"] *,
 body[data-theme="hc"] *,
@@ -647,7 +630,7 @@ body[data-theme="yellow"] * {
 }
 
 /* ================================================================
-   SCROLLBAR THÉMATISÉE
+   SCROLLBAR & SÉLECTION
 ================================================================ */
 * {
   scrollbar-color: var(--border) var(--bg-secondary);
@@ -660,22 +643,13 @@ body[data-theme="yellow"] * {
 }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--text-secondary); }
 
-/* ================================================================
-   SÉLECTION DE TEXTE
-================================================================ */
 ::selection {
   background-color: var(--text-primary);
   color: var(--bg-primary);
 }
 
-/* ================================================================
-   ICÔNES MATERIAL SYMBOLS — héritent la couleur du parent
-================================================================ */
 .material-symbols-outlined { color: inherit; }
 
-/* ================================================================
-   TRANSITIONS COULEUR
-================================================================ */
 button, a, input, [role="button"] {
   transition:
     background-color 0.15s ease,
@@ -683,9 +657,6 @@ button, a, input, [role="button"] {
     border-color 0.15s ease;
 }
 
-/* ================================================================
-   PRÉFÉRENCE prefers-reduced-motion
-================================================================ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -696,20 +667,17 @@ button, a, input, [role="button"] {
 
 /* ================================================================
    RESPONSIVE PC (≥ 768px)
-   Sur desktop, on ajuste légèrement la taille de police et les
-   espaces pour profiter de l'écran — mais la lisibilité reste
-   prioritaire.
 ================================================================ */
 @media (min-width: 768px) {
-  html { font-size: 18px; }
-
+  /* On garde la même taille de base qu'en mobile pour la constance, 
+     mais on limite la hauteur des éléments pour éviter le scroll vertical */
+  
   .app-logo { width: 3rem; height: 3rem; }
 
   .drop-zone { padding: 2rem 1.5rem; }
   .drop-zone .drop-icon { font-size: 5rem; }
 
-  .ctrl-btn { min-height: 5rem; padding: 0.75rem 0.5rem; }
+  .ctrl-btn { min-height: 4.5rem; padding: 0.75rem 0.5rem; }
   .ctrl-btn .material-symbols-outlined { font-size: 2.2rem; }
   .ctrl-btn.play-btn .material-symbols-outlined { font-size: 2.8rem; }
-  .ctrl-btn.play-btn { min-height: 5rem; }
 }
