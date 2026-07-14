@@ -1,9 +1,9 @@
 // ================================================================
-// LUMIÈRE AUDIO v2 — service-worker.js
+// LUMIÈRE AUDIO v3 — service-worker.js
 // Stratégie : Cache First pour assets statiques
 // ================================================================
 
-const CACHE_NAME    = 'lumiere-audio-v2';
+const CACHE_NAME    = 'lumiere-audio-v3';
 const CACHE_TIMEOUT = 5000; // ms avant de tomber en fallback cache
 
 const ASSETS_TO_PRECACHE = [
