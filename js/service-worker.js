@@ -1,9 +1,10 @@
 // ================================================================
-// LUMIÈRE AUDIO v3 — service-worker.js
+// LUMIÈRE AUDIO v6 — js/service-worker.js
 // Stratégie : Cache First pour assets statiques
+// Version incrémentée pour forcer le rechargement du CSS/JS.
 // ================================================================
 
-const CACHE_NAME    = 'lumiere-audio-v3';
+const CACHE_NAME    = 'lumiere-audio-v6';
 const CACHE_TIMEOUT = 5000; // ms avant de tomber en fallback cache
 
 const ASSETS_TO_PRECACHE = [
@@ -23,6 +24,8 @@ const ASSETS_TO_PRECACHE = [
 
 // ── Installation : mise en cache des assets essentiels ─────────
 self.addEventListener('install', (event) => {
+    // Prise de contrôle immédiate sans attendre la fermeture des onglets
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             console.log('[SW] Pré-mise en cache des assets...');
@@ -35,7 +38,6 @@ self.addEventListener('install', (event) => {
             );
         }).then(() => {
             console.log('[SW] Installation terminée.');
-            return self.skipWaiting();
         })
     );
 });
