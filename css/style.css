@@ -574,6 +574,28 @@ input[type="range"] {
   background-color: var(--surface-hover);
 }
 
+/*
+  BUG DÉCISIF CORRIGÉ : le <span> texte ("LECTURE", "PRÉC.", etc.) à
+  l'intérieur de chaque bouton n'a pas de classe propre. Il tombait
+  donc sous la règle globale de base "span { font-size: 1rem; }"
+  définie plus haut — qui s'applique DIRECTEMENT à cet élément et
+  l'emporte sur l'héritage depuis .ctrl-btn, même si .ctrl-btn a une
+  spécificité CSS plus forte : une règle explicite sur l'élément
+  lui-même bat toujours une valeur héritée du parent.
+  Ce 1rem global, relatif au <html> (dont la taille fluide grimpe
+  près de son maximum sur mobile), donnait un texte bien plus gros
+  que prévu → débordement.
+  On force ici ces spans à hériter réellement la taille calculée
+  sur le bouton (le clamp() en px défini juste au-dessus), sauf
+  les icônes (.material-symbols-outlined) qui gardent leur propre
+  taille définie plus bas.
+*/
+.ctrl-btn span:not(.material-symbols-outlined) {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
 .ctrl-btn.play-btn {
   flex: 1.6;
   background-color: var(--accent);
@@ -650,6 +672,14 @@ input[type="range"] {
 }
 
 .clean-play-btn:hover { filter: brightness(1.1); }
+
+/* Même correctif préventif que pour .ctrl-btn : le span texte
+   ("LECTURE") doit hériter du bouton, pas de la règle globale span{1rem}. */
+.clean-play-btn span:not(.material-symbols-outlined) {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
 
 .clean-play-btn .material-symbols-outlined {
   font-size: clamp(3rem, 12vw, 5rem);
