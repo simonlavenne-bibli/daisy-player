@@ -204,6 +204,12 @@ p, span, button, a, label {
   border-bottom: 4px solid var(--border);
   padding: 0.6rem 0.75rem;
   display: flex;
+  /*
+    flex-wrap: wrap : sur les écrans étroits (voir media query plus bas),
+    on autorise le header à passer sur 2 lignes plutôt que d'écraser le
+    titre. Sur écran large, une seule ligne suffit (voir min-width plus bas).
+  */
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
@@ -216,6 +222,11 @@ p, span, button, a, label {
   gap: 0.4rem;
   color: var(--text-primary);
   min-width: 0;
+  /*
+    flex-basis auto + grow : le titre prend toute la ligne disponible
+    quand le header passe sur 2 lignes (voir media query < 480px),
+    donc il n'est plus jamais réduit à "L...".
+  */
   flex: 1 1 auto;
 }
 
@@ -223,8 +234,13 @@ p, span, button, a, label {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  /* Le titre peut se réduire jusqu'à disparaître avant les boutons */
-  min-width: 0;
+  /*
+    AVANT : min-width:0 permettait au texte de disparaître complètement
+    ("L..."). On garantit maintenant une largeur lisible minimale ;
+    en dessous, c'est le header qui passe sur 2 lignes (media query),
+    pas le titre qui se vide.
+  */
+  min-width: 6rem;
 }
 
 .app-logo {
@@ -237,6 +253,7 @@ p, span, button, a, label {
 .header-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.4rem;
   /* Les actions ne rétrécissent jamais : elles gardent leur taille tactile */
   flex-shrink: 0;
@@ -504,11 +521,23 @@ input[type="range"] {
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  gap: 0.3rem;
+  /* Gap réduit sur mobile : 5 boutons dans une largeur d'écran serrée */
+  gap: clamp(0.15rem, 1vw, 0.3rem);
+  /* Empêche le conteneur lui-même de dicter une largeur trop grande */
+  width: 100%;
+  min-width: 0;
 }
 
 .ctrl-btn {
-  flex: 1;
+  flex: 1 1 0;
+  /*
+    BUG CORRIGÉ : min-width:auto (valeur par défaut d'un flex item)
+    empêchait le bouton de rétrécir sous la largeur de son texte
+    ("SUIV." avec white-space:nowrap) → la rangée de 5 boutons
+    débordait hors de l'écran sur iPhone (bouton LECTURE+SUIV.
+    invisibles). min-width:0 autorise enfin le flex-shrink réel.
+  */
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -518,16 +547,19 @@ input[type="range"] {
   color: var(--text-primary);
   border: 4px solid var(--border);
   border-radius: 0.9rem;
-  padding: 0.5rem 0.15rem;
+  padding: 0.5rem 0.1rem;
   cursor: pointer;
   font-family: inherit;
-  /* Label plus lisible : plancher relevé + fluide selon la largeur */
-  font-size: clamp(0.8rem, 2vw + 0.5rem, 0.95rem);
+  /* Plancher abaissé légèrement pour garantir que ça tienne sur 320-390px */
+  font-size: clamp(0.68rem, 2vw + 0.4rem, 0.95rem);
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: -0.01em;
-  white-space: nowrap;
-  /* Touch target WCAG 2.5.5 : 48px minimum */
+  /* On autorise le texte à passer à la ligne plutôt que déborder */
+  white-space: normal;
+  text-align: center;
+  overflow-wrap: break-word;
+  /* Touch target WCAG 2.5.5 : 48px minimum, respecté même en 2 lignes */
   min-height: 5rem;
   transition: background-color 0.15s ease;
 }
@@ -548,12 +580,12 @@ input[type="range"] {
 }
 
 .ctrl-btn .material-symbols-outlined {
-  font-size: 2.1rem;
+  font-size: clamp(1.5rem, 5vw, 2.1rem);
   color: inherit;
 }
 
 .ctrl-btn.play-btn .material-symbols-outlined {
-  font-size: 2.6rem;
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
 }
 
 /* ================================================================
@@ -840,12 +872,34 @@ button, a, input, [role="button"] {
    téléphones précisément dans cette zone.
 ================================================================ */
 
-/* ---- Petits téléphones (Android compacts, iPhone SE) ---- */
-@media (max-width: 379px) {
+/*
+  ---- Téléphones (jusqu'à 479px, couvre tous les iPhone en portrait) ----
+  Le header passe sur 2 lignes : logo + titre complet sur la ligne 1,
+  boutons d'action alignés à droite sur la ligne 2. Plus aucun élément
+  ne se dispute l'espace : le titre ne se tronque plus jamais en "L...".
+*/
+@media (max-width: 479px) {
   .app-header { padding: 0.5rem 0.6rem; }
   .app-logo { width: 1.9rem; height: 1.9rem; }
-  #toggleCleanMode .btn-text { display: none; } /* icône seule : gagne de la place sans perdre la fonction */
+
+  .app-header h1 {
+    flex: 1 1 100%; /* prend toute la largeur : ligne 1 */
+  }
+  .app-title-text {
+    min-width: 0; /* sur sa propre ligne, il a toute la place : pas besoin de plancher */
+  }
+
+  .header-actions {
+    flex: 1 1 100%; /* prend toute la largeur : ligne 2 */
+  }
+
   #toggleCleanMode { padding: 0.35rem 0.6rem; }
+}
+
+/* ---- Très petits téléphones (< 360px) : resserre encore un peu ---- */
+@media (max-width: 359px) {
+  .player-controls { gap: 0.1rem; }
+  .ctrl-btn { padding: 0.4rem 0.05rem; }
 }
 
 /* ---- Phablets / grands téléphones (480px+) ---- */
