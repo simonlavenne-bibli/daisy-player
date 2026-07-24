@@ -30,15 +30,20 @@
 
 <!-- ═══════════════════════════════════════════
      EN-TÊTE
+     Structure inchangée au niveau des id/class (JS intact) :
+     seul un <span class="app-title-text"> a été ajouté autour
+     du texte du h1, pour pouvoir le rétrécir/tronquer indépendamment
+     du logo sans jamais toucher aux boutons d'action.
 ════════════════════════════════════════════ -->
 <header class="app-header">
   <h1>
     <img src="Logo_Lumiere_Audio.png" alt="Lumière Audio" class="app-logo">
-    Lumière Audio
+    <span class="app-title-text">Lumière Audio</span>
   </h1>
   <div class="header-actions">
     <button id="toggleCleanMode" aria-label="Basculer entre le mode complet et le mode simple">
-      MODE SIMPLE
+      <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+      <span class="btn-text">MODE SIMPLE</span>
     </button>
     <button id="btn-theme-toggle" class="btn-theme" aria-label="Changer le thème visuel">
       <span class="material-symbols-outlined">palette</span>
@@ -65,23 +70,22 @@
 
     <!-- Message de bienvenue -->
     <div class="card">
-      <p style="color:var(--text-primary); font-weight:900; margin-bottom:0.5rem;">
+      <p class="card-lead">
         Bienvenue sur Lumière Audio !
       </p>
-      <p style="color:var(--text-secondary);">
+      <p class="card-body text-secondary">
         Vous pouvez télécharger vos livres directement depuis notre
         <a href="https://bibliotheque.lalumiere.be/" target="_blank" rel="noopener noreferrer"
-           style="color:var(--text-primary); text-decoration:underline;">site</a>
+           class="inline-link">site</a>
         ou écrivez-nous sur
-        <a href="mailto:biblio@lalumiere.be"
-           style="color:var(--text-primary); text-decoration:underline;">biblio@lalumiere.be</a>,
+        <a href="mailto:biblio@lalumiere.be" class="inline-link">biblio@lalumiere.be</a>,
         nous vous enverrons un lien de téléchargement par email.
       </p>
     </div>
 
     <!-- Zone de dépôt -->
-    <div class="card" style="text-align:center;">
-      <p style="color:var(--text-primary); font-weight:900;">
+    <div class="card card-center">
+      <p class="card-lead">
         Votre lecteur de livres audio DAISY.<br>
         Glissez-déposez l'archive ZIP ou parcourez vos fichiers.
       </p>
