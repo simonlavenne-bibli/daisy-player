@@ -540,30 +540,32 @@ input[type="range"] {
   color: var(--text-primary);
   border: 4px solid var(--border);
   border-radius: 0.9rem;
-  padding: 0.4rem 0.1rem;
+  padding: 0.4rem 0.05rem;
   cursor: pointer;
   font-family: inherit;
   /*
-    BUG CORRIGÉ : le texte ("LECTURE", "PRÉC.", etc.) était plus large
-    que le bouton et débordait PAR-DESSUS les boutons voisins, car rien
-    ne contenait le contenu à l'intérieur de la boîte. Deux correctifs :
-    1) overflow:hidden ci-dessous empêche tout débordement visuel,
-       le texte reste désormais toujours dans sa propre bordure.
-    2) le plancher de la police est abaissé pour que même le mot le
-       plus long (LECTURE, 7 lettres) ait une chance de tenir sur
-       la largeur réelle d'un 5e de l'écran sur iPhone (~70-80px).
+    BUG CORRIGÉ : la taille était en `rem`, donc relative à la police
+    racine du <html>. Or cette police racine (clamp fluide) grimpe déjà
+    presque à son maximum sur un iPhone standard (~22px) — le label du
+    bouton héritait donc d'une taille bien plus grande que prévu sur
+    mobile, l'exact opposé de l'effet recherché, d'où le texte qui
+    passait sur 2-3 lignes ("LEC-TURE", "-1/MI/N").
+    On utilise ici du px, indépendant de cette échelle, pour garder un
+    contrôle fin et prévisible sur ce composant précis.
   */
-  overflow: hidden;
-  font-size: clamp(0.58rem, 1.7vw + 0.3rem, 0.85rem);
+  font-size: clamp(9px, 2.6vw, 13px);
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: -0.02em;
-  white-space: normal;
+  letter-spacing: -0.03em;
+  /* Une seule ligne, garantie : plus de retour à la ligne ni de coupure par tiret */
+  white-space: nowrap;
   text-align: center;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  hyphens: auto;
-  /* Touch target WCAG 2.5.5 : 48px minimum, respecté même en 2 lignes */
+  /* Filet de sécurité : si un mot était vraiment trop long, on tronque
+     proprement avec "…" plutôt que de déborder ou de re-wrapper */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  /* Touch target WCAG 2.5.5 : 48px minimum */
   min-height: 5rem;
   transition: background-color 0.15s ease;
 }
@@ -584,12 +586,12 @@ input[type="range"] {
 }
 
 .ctrl-btn .material-symbols-outlined {
-  font-size: clamp(1.1rem, 5vw, 2.1rem);
+  font-size: clamp(20px, 6vw, 34px);
   color: inherit;
 }
 
 .ctrl-btn.play-btn .material-symbols-outlined {
-  font-size: clamp(1.3rem, 6vw, 2.6rem);
+  font-size: clamp(24px, 7vw, 42px);
 }
 
 /* ================================================================
@@ -923,6 +925,8 @@ button, a, input, [role="button"] {
   .ctrl-btn {
     min-height: 5.5rem;
     padding: 0.65rem 0.4rem;
+    /* Bien plus de place par bouton dès la tablette : le label peut respirer */
+    font-size: clamp(13px, 1.6vw, 16px);
   }
   .ctrl-btn .material-symbols-outlined { font-size: 2.3rem; }
   .ctrl-btn.play-btn .material-symbols-outlined { font-size: 2.8rem; }
