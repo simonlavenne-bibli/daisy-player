@@ -76,16 +76,12 @@
       <p class="card-body text-secondary">
         Vous pouvez télécharger vos livres directement depuis notre
         <!--
-          x-safari-https:// : schéma d'URL propre à iOS/Safari qui force
-          la sortie du "webclip" standalone (app ajoutée à l'écran
-          d'accueil) vers un vrai onglet Safari complet, avec gestion
-          des téléchargements. C'est le seul mécanisme HTML disponible
-          pour ce cas précis — il cible Safari spécifiquement, pas le
-          navigateur par défaut choisi par l'utilisateur (voir échange
-          précédent : aucune API web ne permet d'invoquer un navigateur
-          tiers comme Chrome depuis du code HTML/JS).
+          Lien normal ici : c'est le script js/external-links.js qui
+          réécrit cette URL en x-safari-https:// UNIQUEMENT sur iOS,
+          pour ne pas casser le lien sur Android/PC où ce schéma
+          d'URL n'existe pas.
         -->
-        <a href="x-safari-https://bibliotheque.lalumiere.be/" rel="noopener noreferrer"
+        <a href="https://bibliotheque.lalumiere.be/" rel="noopener noreferrer"
            id="link-library" class="inline-link">site</a>
         ou écrivez-nous sur
         <a href="mailto:biblio@lalumiere.be" class="inline-link">biblio@lalumiere.be</a>,
@@ -196,5 +192,6 @@
 </div>
 
 <script type="module" src="js/main.js"></script>
+<script src="js/external-links.js" defer></script>
 </body>
 </html>
