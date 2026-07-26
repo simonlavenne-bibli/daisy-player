@@ -63,6 +63,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // ─── Déverrouillage audio iOS ────────────────────────────────────────
+    // iOS exige que audio.play() soit appelé de façon SYNCHRONE, dans le
+    // prolongement direct d'un geste utilisateur (tap). Nos flux d'import
+    // et de reprise de lecture passent par plusieurs `await` (dézippage,
+    // IndexedDB, extraction du blob audio) avant d'appeler réellement
+    // play() — trop de délai pour iOS, qui bloque alors silencieusement
+    // la lecture (symptôme observé : le titre s'affiche mais le temps
+    // reste bloqué à 00:00, sans aucune erreur visible à l'écran).
+    //
+    // Correctif : on appelle play()/pause() sur l'élément <audio> ICI, en
+    // tout début du gestionnaire d'événement, avant le moindre `await`.
+    // Une fois cet appel synchrone effectué pendant un vrai geste, iOS
+    // autorise cet élément <audio> à être piloté par la suite — même
+    // après des délais asynchrones — pour le reste de la session.
+    function unlockAudioForIOS() {
+        const playAttempt = player.audio.play();
+        if (playAttempt && typeof playAttempt.catch === 'function') {
+            playAttempt
+                .then(() => player.audio.pause())
+                .catch(() => { /* Pas de source encore chargée : normal, on ignore. */ });
+        }
+    }
+
     // ─── Explorateur de fichiers & Drag & Drop ──────────────────────────
     const fileInput = document.getElementById('file-input');
     const dropZone  = document.getElementById('dropZone');
@@ -84,6 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         dropZone.addEventListener('drop', async (e) => {
             e.preventDefault();
+            unlockAudioForIOS(); // doit rester avant tout await ci-dessous
             dropZone.style.backgroundColor = '';
             if (e.dataTransfer.files.length > 0) await handleFileSelection(e.dataTransfer.files[0]);
         });
@@ -91,6 +115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (fileInput) {
         fileInput.addEventListener('change', async (e) => {
+            unlockAudioForIOS(); // doit rester avant tout await ci-dessous
             if (e.target.files.length > 0) await handleFileSelection(e.target.files[0]);
         });
     }
@@ -274,6 +299,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 resumeBtn.innerHTML = `<span class="material-symbols-outlined">play_arrow</span> Reprendre`;
 
                 resumeBtn.addEventListener('click', async () => {
+                    unlockAudioForIOS(); // doit rester avant tout await ci-dessous
                     const overlay = document.getElementById('loading-overlay');
                     if (overlay) overlay.classList.add('visible');
                     try {
