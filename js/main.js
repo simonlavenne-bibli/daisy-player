@@ -72,17 +72,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     // la lecture (symptôme observé : le titre s'affiche mais le temps
     // reste bloqué à 00:00, sans aucune erreur visible à l'écran).
     //
-    // Correctif : on appelle play()/pause() sur l'élément <audio> ICI, en
-    // tout début du gestionnaire d'événement, avant le moindre `await`.
-    // Une fois cet appel synchrone effectué pendant un vrai geste, iOS
-    // autorise cet élément <audio> à être piloté par la suite — même
-    // après des délais asynchrones — pour le reste de la session.
+    // 1er correctif tenté : appeler play()/pause() SANS source chargée.
+    // Insuffisant sur cette version d'iOS — WebKit exige qu'un VRAI
+    // fragment audio soit effectivement joué (même silencieux) pour
+    // valider le déverrouillage ; un play() "à vide" ne suffit pas
+    // toujours.
+    //
+    // Correctif définitif : on charge un minuscule fichier WAV silencieux
+    // (0,2s, ~1,6 Ko, encodé en base64 ci-dessous) comme amorce, on le
+    // joue réellement pendant le geste utilisateur, puis on restaure la
+    // source d'origine. Une fois cette vraie lecture effectuée pendant
+    // un geste, iOS autorise cet élément <audio> à être piloté par la
+    // suite — même après des délais asynchrones — pour le reste de la
+    // session.
+    const SILENT_AUDIO_SRC =
+        'data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUAGAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+
     function unlockAudioForIOS() {
-        const playAttempt = player.audio.play();
+        const audio = player.audio;
+        const originalSrc = audio.src;
+        audio.src = SILENT_AUDIO_SRC;
+        const playAttempt = audio.play();
+        const restore = () => {
+            audio.pause();
+            audio.src = originalSrc || '';
+        };
         if (playAttempt && typeof playAttempt.catch === 'function') {
-            playAttempt
-                .then(() => player.audio.pause())
-                .catch(() => { /* Pas de source encore chargée : normal, on ignore. */ });
+            playAttempt.then(restore).catch(restore);
+        } else {
+            restore();
         }
     }
 
