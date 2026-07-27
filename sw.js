@@ -1,10 +1,12 @@
 // ================================================================
 // LUMIÈRE AUDIO — sw.js (racine du projet)
-// v6 — Version incrémentée pour forcer l'invalidation du cache
-//       et servir les nouvelles ressources CSS/JS immédiatement.
+// v7 — Version incrémentée pour forcer l'invalidation du cache
+//       et servir immédiatement le panneau de diagnostic iOS
+//       (js/debug.js) et le correctif de lien externe
+//       (js/external-links.js), absents du cache v6.
 // ================================================================
 
-const CACHE_NAME = 'lumiere-audio-v6';
+const CACHE_NAME = 'lumiere-audio-v7';
 const ASSETS = [
   './',
   './index.html',
@@ -13,6 +15,8 @@ const ASSETS = [
   './js/ui.js',
   './js/player.js',
   './js/parser.js',
+  './js/debug.js',
+  './js/external-links.js',
   'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
 ];
 
@@ -34,7 +38,7 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('activate', (e) => {
-  // Supprime tous les anciens caches (v1, v2, v3, v4, v5…)
+  // Supprime tous les anciens caches (v1, v2, v3, v4, v5, v6…)
   e.waitUntil(
     caches.keys().then((names) =>
       Promise.all(
