@@ -110,12 +110,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     listen('btn-browse', 'click', (e) => {
         e.stopPropagation();
+        // Déverrouillage ICI : c'est le vrai tap de l'utilisateur.
+        // L'événement "change" du file input, plus loin, se déclenche
+        // APRÈS la fermeture du sélecteur de fichiers natif iOS — trop
+        // tard, WebKit ne le considère probablement plus comme un geste
+        // utilisateur actif à ce moment-là.
+        unlockAudioForIOS();
         if (fileInput) fileInput.click();
     });
 
     if (dropZone) {
-        dropZone.addEventListener('click',   () => { if (fileInput) fileInput.click(); });
-        dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+        dropZone.addEventListener('click',   () => {
+            unlockAudioForIOS(); // même logique : c'est le vrai tap
+            if (fileInput) fileInput.click();
+        });
+        dropZone.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                unlockAudioForIOS(); // une touche clavier est aussi un geste valide
+                fileInput.click();
+            }
+        });
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.style.backgroundColor = 'var(--surface-hover)';
