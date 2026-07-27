@@ -8,6 +8,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const player = new DaisyPlayer();
     const toggleCleanModeBtn = document.getElementById('toggleCleanMode');
 
+    // ─── DIAGNOSTIC TEMPORAIRE : écouteurs sur l'élément <audio> ────────
+    // Ces événements révèlent les erreurs iOS invisibles autrement
+    // (ex: format non supporté, blob: bloqué, réseau, etc.)
+    // À retirer une fois le bug de lecture résolu.
+    if (window.debugLog) {
+        const codes = { 1: 'MEDIA_ERR_ABORTED', 2: 'MEDIA_ERR_NETWORK', 3: 'MEDIA_ERR_DECODE', 4: 'MEDIA_ERR_SRC_NOT_SUPPORTED' };
+        ['loadstart', 'loadedmetadata', 'canplay', 'canplaythrough', 'playing', 'pause', 'stalled', 'suspend', 'waiting', 'abort', 'emptied'].forEach((evt) => {
+            player.audio.addEventListener(evt, () => {
+                window.debugLog('audio event: ' + evt + ' | readyState=' + player.audio.readyState + ' currentTime=' + player.audio.currentTime.toFixed(2));
+            });
+        });
+        player.audio.addEventListener('error', () => {
+            const err = player.audio.error;
+            const codeLabel = err ? (codes[err.code] || ('code inconnu ' + err.code)) : 'aucun détail';
+            window.debugLog('audio event: ERROR | ' + codeLabel + ' | src=' + (player.audio.currentSrc || '').slice(0, 60));
+        });
+    }
+
     // ─── Initialisation de la base de données ──────────────────────────
     await library.initLibrary();
 
@@ -92,15 +110,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         const audio = player.audio;
         const originalSrc = audio.src;
         audio.src = SILENT_AUDIO_SRC;
+        if (window.debugLog) window.debugLog('unlockAudioForIOS: tentative play() sur amorce silencieuse');
         const playAttempt = audio.play();
-        const restore = () => {
+        const restore = (label) => {
+            if (window.debugLog) window.debugLog('unlockAudioForIOS: ' + label);
             audio.pause();
             audio.src = originalSrc || '';
         };
         if (playAttempt && typeof playAttempt.catch === 'function') {
-            playAttempt.then(restore).catch(restore);
+            playAttempt.then(() => restore('SUCCÈS (amorce jouée)')).catch((err) => restore('ÉCHEC - ' + err.name + ': ' + err.message));
         } else {
-            restore();
+            restore('play() sans promesse (ancien navigateur)');
         }
     }
 
