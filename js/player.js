@@ -52,6 +52,28 @@ export class DaisyPlayer {
         return track;
     }
 
+    // ── Devine le type MIME correct selon l'extension du fichier ──
+    // BUG RACINE (identifié via le panneau de diagnostic iOS) :
+    // JSZip renvoie un Blob dont le type MIME est vide par défaut.
+    // Chrome/Android tolèrent un blob: URL sans type ("reniflage" du
+    // contenu), mais Safari/iOS le refuse catégoriquement et déclenche
+    // MEDIA_ERR_SRC_NOT_SUPPORTED — exactement le symptôme observé
+    // (le titre s'affiche, mais la lecture ne démarre jamais).
+    _guessMimeType(filename) {
+        const ext = (filename.split('.').pop() || '').toLowerCase();
+        const map = {
+            mp3: 'audio/mpeg',
+            wav: 'audio/wav',
+            ogg: 'audio/ogg',
+            oga: 'audio/ogg',
+            m4a: 'audio/mp4',
+            mp4: 'audio/mp4',
+            aac: 'audio/aac',
+            flac: 'audio/flac',
+        };
+        return map[ext] || 'audio/mpeg'; // mp3 par défaut : format DAISY le plus courant
+    }
+
     // ── Chargement et lecture de la piste courante ─────────────
     async loadCurrentTrack() {
         if (this.playlist.length === 0) return null;
@@ -59,10 +81,14 @@ export class DaisyPlayer {
 
         if (!track.audioUrl) {
             try {
-                const fileData = await this.zip.file(track.audioFile).async('blob');
-                track.audioUrl = URL.createObjectURL(fileData);
+                const rawBlob = await this.zip.file(track.audioFile).async('blob');
+                // Le Blob de JSZip a un type vide : on le reconstruit
+                // avec le bon type MIME, indispensable pour Safari/iOS.
+                const mimeType = this._guessMimeType(track.audioFile);
+                const typedBlob = new Blob([rawBlob], { type: mimeType });
+                track.audioUrl = URL.createObjectURL(typedBlob);
                 if (window.debugLog) {
-                    window.debugLog('loadCurrentTrack: blob créé pour ' + track.audioFile + ' | type MIME=' + fileData.type + ' | taille=' + fileData.size + ' octets');
+                    window.debugLog('loadCurrentTrack: blob créé pour ' + track.audioFile + ' | type MIME forcé=' + mimeType + ' | taille=' + typedBlob.size + ' octets');
                 }
             } catch (err) {
                 console.error('[Player] Impossible de charger le fichier audio :', track.audioFile, err);
