@@ -61,20 +61,27 @@ export class DaisyPlayer {
             try {
                 const fileData = await this.zip.file(track.audioFile).async('blob');
                 track.audioUrl = URL.createObjectURL(fileData);
+                if (window.debugLog) {
+                    window.debugLog('loadCurrentTrack: blob créé pour ' + track.audioFile + ' | type MIME=' + fileData.type + ' | taille=' + fileData.size + ' octets');
+                }
             } catch (err) {
                 console.error('[Player] Impossible de charger le fichier audio :', track.audioFile, err);
+                if (window.debugLog) window.debugLog('loadCurrentTrack: ÉCHEC extraction blob - ' + err.message);
                 return null;
             }
         }
 
+        if (window.debugLog) window.debugLog('loadCurrentTrack: assignation audio.src = ' + track.audioUrl.slice(0, 50) + '...');
         this.audio.src = track.audioUrl;
         this.audio.load();
 
         if (this.isPlaying) {
             try {
                 await this.audio.play();
+                if (window.debugLog) window.debugLog('loadCurrentTrack: play() RÉUSSI | readyState=' + this.audio.readyState + ' currentTime=' + this.audio.currentTime);
             } catch (err) {
                 console.warn('[Player] Lecture automatique bloquée par le navigateur.', err);
+                if (window.debugLog) window.debugLog('loadCurrentTrack: play() ÉCHEC - ' + err.name + ': ' + err.message + ' | readyState=' + this.audio.readyState + ' networkState=' + this.audio.networkState);
             }
         }
         return track;
@@ -85,7 +92,13 @@ export class DaisyPlayer {
         if (this.playlist.length === 0) return false;
         this.isPlaying = !this.isPlaying;
         if (this.isPlaying) {
-            this.audio.play().catch(e => console.warn('[Player] toggle play error:', e));
+            if (window.debugLog) window.debugLog('toggle(): tentative play() | src=' + (this.audio.currentSrc || '').slice(0, 50) + ' readyState=' + this.audio.readyState);
+            this.audio.play()
+                .then(() => { if (window.debugLog) window.debugLog('toggle(): play() RÉUSSI'); })
+                .catch(e => {
+                    console.warn('[Player] toggle play error:', e);
+                    if (window.debugLog) window.debugLog('toggle(): play() ÉCHEC - ' + e.name + ': ' + e.message);
+                });
         } else {
             this.audio.pause();
         }
