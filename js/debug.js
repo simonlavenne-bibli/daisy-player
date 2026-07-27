@@ -15,6 +15,13 @@
 (function () {
     'use strict';
 
+    // Panneau visible UNIQUEMENT si l'URL contient ?debug=1
+    // (ex: https://tonsite.be/?debug=1). Sans ce paramètre, le
+    // panneau reste entièrement caché, mais debugLog() continue de
+    // fonctionner en arrière-plan (console + mémoire) — rien à
+    // toucher dans main.js/player.js le jour où on en aura besoin.
+    var debugEnabled = /(?:\?|&)debug=1\b/.test(window.location.search);
+
     var panel = document.createElement('div');
     panel.id = 'debug-panel';
     panel.style.position = 'fixed';
@@ -33,6 +40,7 @@
     panel.style.whiteSpace = 'pre-wrap';
     panel.style.wordBreak = 'break-word';
     panel.style.borderBottom = '3px solid #7CFC00';
+    panel.style.display = debugEnabled ? 'block' : 'none';
 
     function mount() {
         if (document.body) document.body.appendChild(panel);
