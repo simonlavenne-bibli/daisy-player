@@ -1,5 +1,5 @@
 import { parseDaisyZip } from './parser.js';
-import { DaisyPlayer } from './player.js';
+import { DaisyPlayer } from './player.js?v=8'; // versionné : ce fichier a été corrigé (type MIME audio)
 import * as ui from './ui.js';
 import * as library from './library.js';
 
@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const toggleCleanModeBtn = document.getElementById('toggleCleanMode');
 
     // ─── DIAGNOSTIC TEMPORAIRE : écouteurs sur l'élément <audio> ────────
+    // Ces événements révèlent les erreurs iOS invisibles autrement
+    // (ex: format non supporté, blob: bloqué, réseau, etc.)
+    // À retirer une fois le bug de lecture résolu.
     if (window.debugLog) {
         const codes = { 1: 'MEDIA_ERR_ABORTED', 2: 'MEDIA_ERR_NETWORK', 3: 'MEDIA_ERR_DECODE', 4: 'MEDIA_ERR_SRC_NOT_SUPPORTED' };
         ['loadstart', 'loadedmetadata', 'canplay', 'canplaythrough', 'playing', 'pause', 'stalled', 'suspend', 'waiting', 'abort', 'emptied'].forEach((evt) => {
@@ -24,13 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ─── Initialisation de la base de données ──────────────────────────
-    try {
-        if (window.debugLog) window.debugLog('Initialisation de IndexedDB...');
-        await library.initLibrary();
-        if (window.debugLog) window.debugLog('IndexedDB initialisée avec succès.');
-    } catch (dbErr) {
-        if (window.debugLog) window.debugLog('Erreur initialisation DB : ' + dbErr.message);
-    }
+    await library.initLibrary();
 
     // ─── Utilitaire : raccourci addEventListener ────────────────────────
     function listen(id, event, callback) {
@@ -85,8 +82,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ─── Déverrouillage audio iOS ────────────────────────────────────────
+    // iOS exige que audio.play() soit appelé de façon SYNCHRONE, dans le
+    // prolongement direct d'un geste utilisateur (tap). Nos flux d'import
+    // et de reprise de lecture passent par plusieurs `await` (dézippage,
+    // IndexedDB, extraction du blob audio) avant d'appeler réellement
+    // play() — trop de délai pour iOS, qui bloque alors silencieusement
+    // la lecture (symptôme observé : le titre s'affiche mais le temps
+    // reste bloqué à 00:00, sans aucune erreur visible à l'écran).
+    //
+    // 1er correctif tenté : appeler play()/pause() SANS source chargée.
+    // Insuffisant sur cette version d'iOS — WebKit exige qu'un VRAI
+    // fragment audio soit effectivement joué (même silencieux) pour
+    // valider le déverrouillage ; un play() "à vide" ne suffit pas
+    // toujours.
+    //
+    // Correctif définitif : on charge un minuscule fichier WAV silencieux
+    // (0,2s, ~1,6 Ko, encodé en base64 ci-dessous) comme amorce, on le
+    // joue réellement pendant le geste utilisateur, puis on restaure la
+    // source d'origine. Une fois cette vraie lecture effectuée pendant
+    // un geste, iOS autorise cet élément <audio> à être piloté par la
+    // suite — même après des délais asynchrones — pour le reste de la
+    // session.
     const SILENT_AUDIO_SRC =
-        'data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUAGAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+        'data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUAGAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
 
     function unlockAudioForIOS() {
         const audio = player.audio;
@@ -97,13 +115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const restore = (label) => {
             if (window.debugLog) window.debugLog('unlockAudioForIOS: ' + label);
             audio.pause();
-            if (originalSrc) {
-                audio.src = originalSrc;
-            } else {
-                // Correctif : suppression propre de la source pour éviter MEDIA_ERR_SRC_NOT_SUPPORTED
-                audio.removeAttribute('src');
-                audio.load();
-            }
+            audio.src = originalSrc || '';
         };
         if (playAttempt && typeof playAttempt.catch === 'function') {
             playAttempt.then(() => restore('SUCCÈS (amorce jouée)')).catch((err) => restore('ÉCHEC - ' + err.name + ': ' + err.message));
@@ -116,11 +128,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fileInput = document.getElementById('file-input');
     const dropZone  = document.getElementById('dropZone');
 
+    // Garde-fou anti-réentrance : empêche d'ouvrir le sélecteur de
+    // fichiers une 2e fois pendant que le premier est encore en train
+    // de s'ouvrir (cause du bug Android : 2 ouvertures quasi simultanées
+    // invalidaient la 1ère sélection). Se réinitialise dès que le
+    // sélecteur se referme (focus qui revient sur la page).
     let filePickerOpening = false;
     function openFilePicker() {
         if (filePickerOpening || !fileInput) return;
         filePickerOpening = true;
-        unlockAudioForIOS();
+        unlockAudioForIOS(); // c'est ici le vrai tap de l'utilisateur
         fileInput.click();
         window.addEventListener('focus', () => { filePickerOpening = false; }, { once: true });
     }
@@ -144,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         dropZone.addEventListener('drop', async (e) => {
             e.preventDefault();
-            unlockAudioForIOS();
+            unlockAudioForIOS(); // doit rester avant tout await ci-dessous
             dropZone.style.backgroundColor = '';
             if (e.dataTransfer.files.length > 0) await handleFileSelection(e.dataTransfer.files[0]);
         });
@@ -152,29 +169,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (fileInput) {
         fileInput.addEventListener('change', async (e) => {
-            unlockAudioForIOS();
+            unlockAudioForIOS(); // doit rester avant tout await ci-dessous
             if (e.target.files.length > 0) await handleFileSelection(e.target.files[0]);
         });
     }
 
     // ─── Chargement d'un fichier ZIP ────────────────────────────────────
     async function handleFileSelection(file) {
-        if (window.debugLog) window.debugLog('handleFileSelection: début du traitement pour ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' Mo)');
         const overlay = document.getElementById('loading-overlay');
         if (overlay) overlay.classList.add('visible');
         try {
-            if (window.debugLog) window.debugLog('Appel de parseDaisyZip...');
             const bookData = await parseDaisyZip(file);
-            if (window.debugLog) window.debugLog('parseDaisyZip RÉUSSI : "' + bookData.title + '", ' + bookData.playlist.length + ' pistes trouvées');
 
-            if (window.debugLog) window.debugLog('Sauvegarde IndexedDB (importBook)...');
+            // Sauvegarde dans IndexedDB
             const importResult = await library.importBook(file, bookData);
-            if (window.debugLog) window.debugLog('IndexedDB importBook Terminé. ID: ' + importResult.bookId + ', Statut: ' + importResult.status);
             window.currentBookId = importResult.bookId;
 
             let startChapter = 0;
             let startPos = 0;
 
+            // Reprise si livre déjà commencé
             if (importResult.status === 'duplicate') {
                 const prog = importResult.progress;
                 if (prog && (prog.chapterIndex > 0 || prog.positionSeconds > 0)) {
@@ -185,13 +199,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            if (window.debugLog) window.debugLog('Chargement dans le lecteur audio (player.setBook)...');
+            // Chargement dans le lecteur
             player.setBook(bookData.zip, bookData.playlist);
 
             const bTitle = document.getElementById('book-title');
             if (bTitle) bTitle.textContent = bookData.title;
 
-            if (window.debugLog) window.debugLog('Activation de la piste initiale (resumeAt)...');
             await handleTrackChange(player.resumeAt(startChapter, startPos));
 
             showView('view-player', 'nav-player');
@@ -200,8 +213,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!player.isPlaying) playPauseAction();
 
         } catch (error) {
-            console.error(error);
-            if (window.debugLog) window.debugLog('ERREUR DANS handleFileSelection : ' + (error.stack || error.message || error));
             alert(error.message || "Erreur lors de l'ouverture du livre.");
         } finally {
             if (overlay) overlay.classList.remove('visible');
@@ -229,17 +240,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     async function handleTrackChange(trackPromise) {
-        if (window.debugLog) window.debugLog('handleTrackChange: attente de l\'extraction du Blob audio...');
-        try {
-            const track = await trackPromise;
-            if (track) {
-                if (window.debugLog) window.debugLog('Piste chargée : ' + track.title + ' | audioUrl=' + (track.audioUrl ? track.audioUrl.slice(0, 40) : 'null'));
-                ui.highlightActiveChapter(track.title);
-            } else if (player.currentIndex === player.playlist.length - 1 && !player.isPlaying) {
-                ui.updatePlayPauseUI(false);
-            }
-        } catch (err) {
-            if (window.debugLog) window.debugLog('ERREUR handleTrackChange : ' + err.message);
+        const track = await trackPromise;
+        if (track) {
+            ui.highlightActiveChapter(track.title);
+        } else if (player.currentIndex === player.playlist.length - 1 && !player.isPlaying) {
+            ui.updatePlayPauseUI(false);
         }
     }
 
@@ -318,6 +323,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             section.style.display = '';
 
+            // Tri : lecture la plus récente en premier
             books.sort((a, b) => (b.lastOpenedAt || 0) - (a.lastOpenedAt || 0));
 
             books.forEach(item => {
@@ -341,21 +347,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'book-card-actions';
 
+                // Bouton Reprendre
                 const resumeBtn = document.createElement('button');
                 resumeBtn.className = 'btn-resume';
                 resumeBtn.innerHTML = `<span class="material-symbols-outlined">play_arrow</span> Reprendre`;
 
                 resumeBtn.addEventListener('click', async () => {
-                    unlockAudioForIOS();
+                    unlockAudioForIOS(); // doit rester avant tout await ci-dessous
                     const overlay = document.getElementById('loading-overlay');
                     if (overlay) overlay.classList.add('visible');
                     try {
-                        if (window.debugLog) window.debugLog('Reprise livre ' + item.bookId + ' depuis IndexedDB...');
                         const openedBook = await library.openBook(item.bookId);
                         if (!openedBook || !openedBook.zipBlob)
                             throw new Error("Fichier du livre introuvable dans la base locale.");
 
-                        if (window.debugLog) window.debugLog('Parsing du ZIP depuis IndexedDB...');
                         const bookData = await parseDaisyZip(openedBook.zipBlob);
                         player.setBook(bookData.zip, bookData.playlist);
 
@@ -368,7 +373,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const startChap = prog?.chapterIndex    || 0;
                         const startPos  = prog?.positionSeconds || 0;
 
-                        if (window.debugLog) window.debugLog('Reprise chapitre ' + startChap + ' pos ' + startPos);
                         await handleTrackChange(player.resumeAt(startChap, startPos));
 
                         showView('view-player', 'nav-player');
@@ -377,13 +381,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (!player.isPlaying) playPauseAction();
 
                     } catch(e) {
-                        if (window.debugLog) window.debugLog('ERREUR Reprise : ' + e.message);
                         alert(e.message);
                     } finally {
                         if (overlay) overlay.classList.remove('visible');
                     }
                 });
 
+                // Bouton Supprimer
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'btn-delete';
                 deleteBtn.setAttribute('aria-label', `Supprimer "${item.title || 'ce livre'}"`);
@@ -415,5 +419,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Chargement initial
     loadHistory();
 });
