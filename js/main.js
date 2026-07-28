@@ -128,27 +128,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fileInput = document.getElementById('file-input');
     const dropZone  = document.getElementById('dropZone');
 
+    // Garde-fou anti-réentrance : empêche d'ouvrir le sélecteur de
+    // fichiers une 2e fois pendant que le premier est encore en train
+    // de s'ouvrir (cause du bug Android : 2 ouvertures quasi simultanées
+    // invalidaient la 1ère sélection). Se réinitialise dès que le
+    // sélecteur se referme (focus qui revient sur la page).
+    let filePickerOpening = false;
+    function openFilePicker() {
+        if (filePickerOpening || !fileInput) return;
+        filePickerOpening = true;
+        unlockAudioForIOS(); // c'est ici le vrai tap de l'utilisateur
+        fileInput.click();
+        window.addEventListener('focus', () => { filePickerOpening = false; }, { once: true });
+    }
+
     listen('btn-browse', 'click', (e) => {
         e.stopPropagation();
-        // Déverrouillage ICI : c'est le vrai tap de l'utilisateur.
-        // L'événement "change" du file input, plus loin, se déclenche
-        // APRÈS la fermeture du sélecteur de fichiers natif iOS — trop
-        // tard, WebKit ne le considère probablement plus comme un geste
-        // utilisateur actif à ce moment-là.
-        unlockAudioForIOS();
-        if (fileInput) fileInput.click();
+        openFilePicker();
     });
 
     if (dropZone) {
-        dropZone.addEventListener('click',   () => {
-            unlockAudioForIOS(); // même logique : c'est le vrai tap
-            if (fileInput) fileInput.click();
-        });
+        dropZone.addEventListener('click',   openFilePicker);
         dropZone.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                unlockAudioForIOS(); // une touche clavier est aussi un geste valide
-                fileInput.click();
-            }
+            if (e.key === 'Enter' || e.key === ' ') openFilePicker();
         });
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
