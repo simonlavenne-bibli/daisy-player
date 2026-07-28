@@ -1,12 +1,10 @@
 // ================================================================
 // LUMIÈRE AUDIO — sw.js (racine du projet)
-// v7 — Version incrémentée pour forcer l'invalidation du cache
-//       et servir immédiatement le panneau de diagnostic iOS
-//       (js/debug.js) et le correctif de lien externe
-//       (js/external-links.js), absents du cache v6.
+// v8 — Version incrémentée pour forcer le rechargement du CSS corrigeant
+//       le chevauchement nav/boutons (nav sortie de position:fixed).
 // ================================================================
 
-const CACHE_NAME = 'lumiere-audio-v7';
+const CACHE_NAME = 'lumiere-audio-v8';
 const ASSETS = [
   './',
   './index.html',
