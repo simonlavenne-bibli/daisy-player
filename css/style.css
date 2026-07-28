@@ -481,21 +481,26 @@ p, span, button, a, label {
   flex-shrink: 0;
 }
 
-.player-info-card h3 {
-  text-align: center;
-  color: var(--text-primary);
-  white-space: normal;
-  word-break: break-word;
-}
-
+.player-info-card h3,
 .player-chapter {
-  text-align: center;
-  color: var(--text-secondary);
-  white-space: normal;
-  word-break: break-word;
-  margin-top: 0.15rem;
-  font-size: 1rem;
-  font-weight: 900;
+  /*
+    Masqués VISUELLEMENT (gain de place vertical pour le gros bouton
+    de lecture) mais toujours annoncés par les lecteurs d'écran
+    (VoiceOver/TalkBack) : cette app s'adresse justement aux
+    utilisateurs malvoyants, on ne retire donc pas complètement
+    l'information, seulement son occupation d'espace à l'écran.
+    Technique "visually-hidden" standard, PAS display:none (qui
+    masquerait aussi aux lecteurs d'écran).
+  */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .progress-row {
@@ -655,15 +660,15 @@ input[type="range"] {
 .clean-play-btn {
   /*
     min(A, B, C) choisit la plus petite valeur :
-      A = 65% de la largeur viewport (bon pour mobile portrait)
-      B = 16rem (plafond absolu, indépendant de la base fluide
-          grâce à l'usage direct en rem ici — évite un bouton
-          disproportionné sur les très grands écrans)
-      C = 42dvh (empêche le débordement sur PC où la hauteur
-          disponible est limitée)
+      A = 60% de la largeur viewport (bon pour mobile portrait)
+      B = 14rem (plafond absolu, indépendant de la base fluide)
+      C = 34dvh (réduit depuis 42dvh : laisse davantage de marge
+          verticale une fois le titre/chapitre masqués, pour que
+          le bouton tienne dans l'espace disponible sans avoir à
+          scroller, même sur une fenêtre de navigateur redimensionnée)
   */
-  width: min(65vw, 16rem, 42dvh);
-  height: min(65vw, 16rem, 42dvh);
+  width: min(60vw, 14rem, 34dvh);
+  height: min(60vw, 14rem, 34dvh);
   border-radius: 2rem;
   background-color: var(--accent);
   color: var(--text-on-accent);
@@ -683,10 +688,10 @@ input[type="range"] {
 /* Fallback pour navigateurs sans dvh (IE, très vieux Safari) */
 @supports not (height: 1dvh) {
   .clean-play-btn {
-    width: min(65vw, 16rem);
-    height: min(65vw, 16rem);
-    max-height: 40vh;
-    max-width: 40vh;
+    width: min(60vw, 14rem);
+    height: min(60vw, 14rem);
+    max-height: 34vh;
+    max-width: 34vh;
   }
 }
 
