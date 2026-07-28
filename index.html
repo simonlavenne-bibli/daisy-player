@@ -100,8 +100,18 @@
         <span class="material-symbols-outlined drop-icon">cloud_upload</span>
         <p>Déposez votre fichier ZIP ici</p>
         <button id="btn-browse" class="btn-browse">Parcourir mes fichiers</button>
-        <input type="file" id="file-input" accept=".zip" style="display:none;">
       </div>
+      <!--
+        input déplacé HORS de #dropZone : appeler fileInput.click() par
+        code déclenche un vrai événement "click" qui REMONTE (bubbling)
+        vers ses ancêtres. Tant qu'il était enfant de #dropZone, ce
+        rebond déclenchait AUSSI le clic-listener de #dropZone lui-même,
+        qui rappelait fileInput.click() une seconde fois → le sélecteur
+        de fichiers s'ouvrait deux fois de suite, invalidant la première
+        sélection sur Android/Chrome (message "permission problems...
+        after a reference to a file was acquired").
+      -->
+      <input type="file" id="file-input" accept=".zip" style="display:none;">
     </div>
 
   </section>
