@@ -20,7 +20,13 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400..700,0..1,-50..200" />
 
   <!-- Notre seule feuille de style -->
-  <link rel="stylesheet" href="css/style.css">
+  <!--
+    ?v=8 : numéro de version manuel. À incrémenter à CHAQUE modification
+    de css/style.css, sinon le navigateur peut continuer à servir
+    l'ancienne version depuis son cache HTTP standard, même après un
+    déploiement — ceci est indépendant de tout service worker.
+  -->
+  <link rel="stylesheet" href="css/style.css?v=8">
 
   <!-- JSZip pour lire les archives -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -201,8 +207,9 @@
   <p>Analyse en cours…</p>
 </div>
 
-<script src="js/debug.js"></script>
-<script type="module" src="js/main.js"></script>
-<script src="js/external-links.js" defer></script>
+<!-- ?v=8 : même principe que pour le CSS, à incrémenter à chaque modification -->
+<script src="js/debug.js?v=8"></script>
+<script type="module" src="js/main.js?v=8"></script>
+<script src="js/external-links.js?v=8" defer></script>
 </body>
 </html>
