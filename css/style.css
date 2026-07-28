@@ -141,13 +141,21 @@ html {
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  min-height: 100vh;
-  /* Sur les navigateurs modernes, dvh exclut la barre d'adresse mobile */
-  min-height: 100dvh;
+  /*
+    BUG CORRIGÉ : min-height laissait le body grandir au-delà de
+    l'écran si le contenu était trop grand, mais la nav (position:
+    fixed) restait plaquée au bas du VIEWPORT, chevauchant alors le
+    contenu qui continuait, lui, au-delà. Résultat : la nav pouvait
+    recouvrir les boutons du lecteur selon la hauteur de la fenêtre.
+    On fixe maintenant le body à EXACTEMENT 100dvh (ni plus ni moins)
+    et on laisse .app-main scroller en interne si besoin (voir plus
+    bas) : le header et la nav, eux, ne bougent jamais.
+  */
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  /* Empêche le contenu de passer sous la nav fixe */
-  padding-bottom: var(--nav-height);
+  overflow: hidden;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -268,6 +276,12 @@ p, span, button, a, label {
   max-width: 900px;
   margin: 0 auto;
   padding: 0.75rem 0.85rem;
+  /* Absorbe tout débordement de contenu en défilant sur elle-même :
+     le header et la nav (flex-shrink:0, voir plus haut) restent
+     ainsi toujours entièrement visibles, quelle que soit la taille
+     de l'écran ou du contenu affiché. */
+  overflow-y: auto;
+  min-height: 0; /* indispensable pour qu'un enfant flex puisse scroller correctement */
 }
 
 /* Règle de base : on cache les vues */
@@ -285,9 +299,14 @@ p, span, button, a, label {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  /* Hauteur max = fenêtre visible - nav - header - padding body */
-  max-height: calc(100dvh - var(--nav-height) - 5rem);
-  overflow: hidden;
+  /*
+    Plus besoin de max-height calculé à la main ni d'overflow:hidden
+    ici : .app-main (le parent) gère maintenant le défilement de
+    façon fiable si ce contenu dépasse l'espace disponible. Header
+    et nav restent garantis visibles dans tous les cas (voir plus
+    haut : flex-shrink:0 sur .app-header et .app-nav).
+  */
+  min-height: min-content;
 }
 
 /* ================================================================
@@ -746,15 +765,21 @@ input[type="range"] {
    NAVIGATION FIXE EN BAS
 ================================================================ */
 .app-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  /*
+    BUG CORRIGÉ : position:fixed plaquait la nav au bas du VIEWPORT,
+    indépendamment de la hauteur réelle du contenu au-dessus — elle
+    pouvait donc chevaucher les boutons du lecteur si le contenu
+    dépassait l'écran. En tant qu'élément normal du flex-column du
+    body (flex-shrink:0 = ne rétrécit jamais), elle reste maintenant
+    TOUJOURS visible, en bas, sans jamais recouvrir quoi que ce soit :
+    c'est .app-main (le contenu du milieu) qui absorbe le débordement
+    en devenant scrollable, jamais la nav qui se fait recouvrir.
+  */
+  flex-shrink: 0;
   height: var(--nav-height);
   background-color: var(--surface);
   border-top: 4px solid var(--border);
   display: flex;
-  z-index: 40;
 }
 
 .nav-tab {
