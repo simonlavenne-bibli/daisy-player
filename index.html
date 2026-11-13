@@ -28,8 +28,10 @@
   -->
   <link rel="stylesheet" href="css/style.css?v=9">
 
-  <!-- JSZip pour lire les archives -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- JSZip pour lire les archives.
+       v10 : copie locale (js/vendor) au lieu du CDN — si le CDN ne répond
+       pas (réseau faible, hors ligne), plus aucun livre ne pouvait s'ouvrir. -->
+  <script src="js/vendor/jszip.min.js?v=10"></script>
 </head>
 
 <body data-theme="light">
@@ -117,7 +119,11 @@
         sélection sur Android/Chrome (message "permission problems...
         after a reference to a file was acquired").
       -->
-      <input type="file" id="file-input" accept=".zip" style="display:none;">
+      <!-- v10 : types MIME ajoutés — sur Android, un ZIP téléchargé arrive souvent
+           avec un autre type que application/zip et apparaissait grisé. -->
+      <input type="file" id="file-input"
+             accept=".zip,application/zip,application/x-zip-compressed,application/octet-stream"
+             style="display:none;">
     </div>
 
   </section>
@@ -209,7 +215,7 @@
 
 <!-- ?v=9 : même principe que pour le CSS, à incrémenter à chaque modification -->
 <script src="js/debug.js?v=9"></script>
-<script type="module" src="js/main.js?v=9"></script>
+<script type="module" src="js/main.js?v=10"></script>
 <script src="js/external-links.js?v=9" defer></script>
 </body>
 </html>

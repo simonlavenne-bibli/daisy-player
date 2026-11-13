@@ -106,21 +106,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     const SILENT_AUDIO_SRC =
         'data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUAGAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
 
+    // v10 — Correctifs Android :
+    //   • L'amorce ne tourne QUE sur iOS (inutile ailleurs), et une seule
+    //     fois par session dès qu'elle a réussi.
+    //   • La restauration ne touche à l'audio QUE si l'amorce est toujours
+    //     en place. Avant, la restauration (asynchrone) pouvait survenir
+    //     APRÈS le chargement de la vraie piste et l'écraser : titre affiché
+    //     mais aucun son.
+    const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let audioUnlocked = false;
+
     function unlockAudioForIOS() {
+        if (!IS_IOS || audioUnlocked) return;
         const audio = player.audio;
-        const originalSrc = audio.src;
+        const originalSrc = audio.getAttribute('src');
         audio.src = SILENT_AUDIO_SRC;
         if (window.debugLog) window.debugLog('unlockAudioForIOS: tentative play() sur amorce silencieuse');
         const playAttempt = audio.play();
-        const restore = (label) => {
+        const restore = (label, success) => {
             if (window.debugLog) window.debugLog('unlockAudioForIOS: ' + label);
+            if (success) audioUnlocked = true;
+            // Une vraie piste a déjà été chargée entre-temps : on n'y touche pas.
+            if (audio.src !== SILENT_AUDIO_SRC) return;
             audio.pause();
-            audio.src = originalSrc || '';
+            if (originalSrc) audio.src = originalSrc;
+            else audio.removeAttribute('src');
         };
         if (playAttempt && typeof playAttempt.catch === 'function') {
-            playAttempt.then(() => restore('SUCCÈS (amorce jouée)')).catch((err) => restore('ÉCHEC - ' + err.name + ': ' + err.message));
+            playAttempt
+                .then(() => restore('SUCCÈS (amorce jouée)', true))
+                .catch((err) => restore('ÉCHEC - ' + err.name + ': ' + err.message, false));
         } else {
-            restore('play() sans promesse (ancien navigateur)');
+            restore('play() sans promesse (ancien navigateur)', true);
         }
     }
 
@@ -132,14 +150,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     // fichiers une 2e fois pendant que le premier est encore en train
     // de s'ouvrir (cause du bug Android : 2 ouvertures quasi simultanées
     // invalidaient la 1ère sélection). Se réinitialise dès que le
-    // sélecteur se referme (focus qui revient sur la page).
+    // sélecteur se referme.
+    //
+    // v10 — Sur Android, l'événement "focus" ne revient pas toujours après
+    // le sélecteur (surtout en cas d'annulation) : le verrou restait bloqué
+    // et le bouton "Parcourir" ne répondait plus jusqu'au rechargement.
+    // Le verrou est désormais libéré par plusieurs signaux, avec en dernier
+    // recours un délai d'une seconde (largement suffisant pour bloquer un
+    // double déclenchement quasi simultané).
     let filePickerOpening = false;
+    function releaseFilePicker() { filePickerOpening = false; }
+    window.addEventListener('focus', releaseFilePicker);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') releaseFilePicker();
+    });
+
     function openFilePicker() {
         if (filePickerOpening || !fileInput) return;
         filePickerOpening = true;
         unlockAudioForIOS(); // c'est ici le vrai tap de l'utilisateur
         fileInput.click();
-        window.addEventListener('focus', () => { filePickerOpening = false; }, { once: true });
+        setTimeout(releaseFilePicker, 1000);
     }
 
     listen('btn-browse', 'click', (e) => {
@@ -169,16 +200,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (fileInput) {
         fileInput.addEventListener('change', async (e) => {
-            unlockAudioForIOS(); // doit rester avant tout await ci-dessous
-            if (e.target.files.length > 0) await handleFileSelection(e.target.files[0]);
+            // v10 : pas d'amorce audio ici — le tap a déjà eu lieu dans
+            // openFilePicker() ; une 2e amorce entrait en concurrence avec
+            // le chargement du livre.
+            releaseFilePicker();
+            const file = e.target.files.length > 0 ? e.target.files[0] : null;
+            // Vide le champ pour pouvoir re-sélectionner le même fichier.
+            e.target.value = '';
+            if (file) await handleFileSelection(file);
         });
     }
 
     // ─── Chargement d'un fichier ZIP ────────────────────────────────────
-    async function handleFileSelection(file) {
+    async function handleFileSelection(pickedFile) {
         const overlay = document.getElementById('loading-overlay');
         if (overlay) overlay.classList.add('visible');
         try {
+            // v10 — Android retire l'accès au fichier choisi peu après la
+            // sélection. L'application le relisait plus tard (sauvegarde,
+            // calcul du hash), d'où l'erreur "permission problems… after a
+            // reference to a file was acquired". On en fait donc une copie
+            // en mémoire immédiatement, et on n'utilise plus que cette copie.
+            let file;
+            try {
+                const buffer = await pickedFile.arrayBuffer();
+                file = new File([buffer], pickedFile.name || 'livre.zip', { type: 'application/zip' });
+            } catch (readErr) {
+                throw new Error("Impossible de lire ce fichier. Réessayez de le choisir depuis le dossier Téléchargements.");
+            }
+
             const bookData = await parseDaisyZip(file);
 
             // Sauvegarde dans IndexedDB
